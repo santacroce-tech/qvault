@@ -39,6 +39,7 @@ struct ActivateResponse {
 }
 
 #[derive(Deserialize)]
+#[cfg_attr(debug_assertions, allow(dead_code))]
 struct ValidateResponse {
     valid: bool,
     expires_at: Option<String>,
@@ -146,12 +147,21 @@ pub async fn deactivate_license(
 
 #[tauri::command]
 pub async fn check_license(
+    #[allow(unused_variables)]
     state: State<'_, AppState>,
 ) -> Result<bool, String> {
-    state
-        .db
-        .is_licensed()
-        .map_err(|e| format!("License check failed: {}", e))
+    #[cfg(debug_assertions)]
+    {
+        return Ok(true);
+    }
+
+    #[cfg(not(debug_assertions))]
+    {
+        state
+            .db
+            .is_licensed()
+            .map_err(|e| format!("License check failed: {}", e))
+    }
 }
 
 /// Called on app startup to validate the license with the server.
@@ -159,49 +169,59 @@ pub async fn check_license(
 /// On failure, marks license as deactivated (unless within offline grace period).
 #[tauri::command]
 pub async fn validate_license_online(
+    #[allow(unused_variables)]
     state: State<'_, AppState>,
 ) -> Result<bool, String> {
-    let license = state
-        .db
-        .get_license()
-        .map_err(|e| format!("Database error: {}", e))?;
+    // In debug/dev builds, skip server validation entirely
+    #[cfg(debug_assertions)]
+    {
+        return Ok(true);
+    }
 
-    let lic = match license {
-        Some(l) if l.status == "active" => l,
-        _ => return Ok(false), // No license or not active
-    };
+    #[cfg(not(debug_assertions))]
+    {
+        let license = state
+            .db
+            .get_license()
+            .map_err(|e| format!("Database error: {}", e))?;
 
-    let result = call_validate_server(&lic.license_key, &lic.machine_id).await;
+        let lic = match license {
+            Some(l) if l.status == "active" => l,
+            _ => return Ok(false), // No license or not active
+        };
 
-    match result {
-        Ok(resp) if resp.valid => {
-            // Server says valid — update local state
-            if let Some(expires_at) = resp.expires_at {
-                let _ = state.db.update_license_validation(&expires_at);
-            } else {
-                let _ = state.db.update_license_validation(&lic.expires_at);
+        let result = call_validate_server(&lic.license_key, &lic.machine_id).await;
+
+        match result {
+            Ok(resp) if resp.valid => {
+                // Server says valid — update local state
+                if let Some(expires_at) = resp.expires_at {
+                    let _ = state.db.update_license_validation(&expires_at);
+                } else {
+                    let _ = state.db.update_license_validation(&lic.expires_at);
+                }
+                let _ = state.db.insert_audit_log(None, "license_validated", Some("Server: valid"));
+                Ok(true)
             }
-            let _ = state.db.insert_audit_log(None, "license_validated", Some("Server: valid"));
-            Ok(true)
-        }
-        Ok(resp) => {
-            // Server explicitly says invalid — deactivate
-            let reason = resp.error.unwrap_or_else(|| "Server rejected license".to_string());
-            log::warn!("License validation failed: {}", reason);
-            let _ = state.db.deactivate_license();
-            let _ = state.db.insert_audit_log(None, "license_revoked", Some(&reason));
-            Ok(false)
-        }
-        Err(e) => {
-            // Server unreachable — check offline grace period
-            log::warn!("License server unreachable: {}", e);
-            let _ = state.db.insert_audit_log(
-                None,
-                "license_validation_failed",
-                Some(&format!("Server unreachable: {}", e)),
-            );
-            // is_licensed() already checks the 7-day offline grace
-            state.db.is_licensed().map_err(|e| format!("DB error: {}", e))
+            Ok(resp) => {
+                // Server explicitly says invalid — deactivate
+                let reason = resp.error.unwrap_or_else(|| "Server rejected license".to_string());
+                log::warn!("License validation failed: {}", reason);
+                let _ = state.db.deactivate_license();
+                let _ = state.db.insert_audit_log(None, "license_revoked", Some(&reason));
+                Ok(false)
+            }
+            Err(e) => {
+                // Server unreachable — check offline grace period
+                log::warn!("License server unreachable: {}", e);
+                let _ = state.db.insert_audit_log(
+                    None,
+                    "license_validation_failed",
+                    Some(&format!("Server unreachable: {}", e)),
+                );
+                // is_licensed() already checks the 7-day offline grace
+                state.db.is_licensed().map_err(|e| format!("DB error: {}", e))
+            }
         }
     }
 }
@@ -230,6 +250,7 @@ async fn call_activate_server(key: &str, machine_id: &str) -> Result<ActivateRes
         .map_err(|e| format!("Invalid server response: {}", e))
 }
 
+#[cfg_attr(debug_assertions, allow(dead_code))]
 async fn call_validate_server(key: &str, machine_id: &str) -> Result<ValidateResponse, String> {
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10))

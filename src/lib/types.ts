@@ -121,7 +121,11 @@ export const PII_COLORS: Record<string, string> = {
   CompanyName: "#0891B2",
 };
 
-export function piiCategoryLabel(cat: PiiCategory): string {
+export function piiCategoryLabel(cat: PiiCategory, t?: (key: string) => string): string {
+  if (t) {
+    return t(`pii.${cat}`);
+  }
+  // Fallback for contexts without i18n
   const labels: Record<PiiCategory, string> = {
     PersonName: "Name",
     Email: "Email",

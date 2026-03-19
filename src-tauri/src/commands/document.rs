@@ -17,13 +17,17 @@ pub async fn upload_document(
     state: State<'_, AppState>,
 ) -> Result<String, String> {
     // Check license (yearly license = unlimited documents)
-    let licensed = state
-        .db
-        .is_licensed()
-        .map_err(|e| format!("License check failed: {}", e))?;
+    // In debug/dev builds, skip the license check so you can test freely
+    #[cfg(not(debug_assertions))]
+    {
+        let licensed = state
+            .db
+            .is_licensed()
+            .map_err(|e| format!("License check failed: {}", e))?;
 
-    if !licensed {
-        return Err("No active license. Please activate a yearly license to use Qvault.".to_string());
+        if !licensed {
+            return Err("No active license. Please activate a yearly license to use Qvault.".to_string());
+        }
     }
 
     let source = Path::new(&file_path);

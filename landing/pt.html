@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qvault — Detec&ccedil;&atilde;o e Reda&ccedil;&atilde;o Autom&aacute;tica de PII para Profissionais Jur&iacute;dicos</title>
+  <meta name="description" content="Qvault detecta e redige informa&ccedil;&otilde;es sens&iacute;veis de documentos jur&iacute;dicos localmente. Seus dados nunca saem do seu computador.">
+  <link rel="alternate" hreflang="en" href="index.html" />
+  <link rel="alternate" hreflang="es" href="es.html" />
+  <link rel="alternate" hreflang="pt" href="pt.html" />
+  <style>
+    :root {
+      --navy: #0F1B2D;
+      --navy-light: #1A2B45;
+      --blue-accent: #3B82F6;
+      --blue-hover: #2563EB;
+      --blue-light: #DBEAFE;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-800: #1F2937;
+      --gray-900: #111827;
+      --white: #FFFFFF;
+      --green: #10B981;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--gray-800);
+      line-height: 1.6;
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fade-in animation */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(15, 27, 45, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo span {
+      color: var(--blue-accent);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--white);
+    }
+
+    /* Sections */
+    section {
+      padding: 100px 24px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--blue-accent);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      font-size: 1.125rem;
+      color: var(--gray-500);
+      max-width: 640px;
+      margin: 0 auto 60px;
+      text-align: center;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 160px 24px 100px;
+      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-light) 60%, var(--gray-50) 100%);
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--blue-accent);
+      margin-bottom: 32px;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 3.75rem);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.6);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 64px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: var(--blue-accent);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s, transform 0.15s;
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+
+    /* Screenshot Placeholders */
+    .screenshots {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .screenshot-placeholder {
+      width: 340px;
+      height: 212px;
+      border: 2px dashed var(--gray-400);
+      border-radius: 12px;
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: var(--gray-500);
+      font-weight: 500;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .screenshot-placeholder.large {
+      width: 800px;
+      height: 500px;
+      max-width: 100%;
+      font-size: 1rem;
+    }
+
+    /* Features */
+    .features {
+      background: var(--gray-50);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .feature-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 32px;
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+
+    .feature-card:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--blue-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 0.95rem;
+      color: var(--gray-500);
+      line-height: 1.6;
+    }
+
+    /* How It Works */
+    .how-it-works {
+      background: var(--white);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 40px;
+      left: calc(16.66% + 24px);
+      right: calc(16.66% + 24px);
+      height: 2px;
+      background: var(--gray-200);
+    }
+
+    .step {
+      text-align: center;
+    }
+
+    .step-number {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--white);
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 0.95rem;
+      color: var(--gray-500);
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    /* Pricing */
+    .pricing {
+      background: var(--gray-50);
+    }
+
+    .pricing-card {
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--white);
+      border: 2px solid var(--blue-accent);
+      border-radius: 18px;
+      padding: 48px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(59, 130, 246, 0.1);
+    }
+
+    .pricing-card .plan-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--blue-accent);
+      margin-bottom: 8px;
+    }
+
+    .pricing-card .price {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--gray-900);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .pricing-card .price-period {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      margin-bottom: 32px;
+    }
+
+    .pricing-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 40px;
+    }
+
+    .pricing-features li {
+      padding: 10px 0;
+      font-size: 0.95rem;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pricing-features li::before {
+      content: '';
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.1);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%2310B981' d='M16.707 5.293a1 1 0 0 1 0 1.414l-8 8a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L8 12.586l7.293-7.293a1 1 0 0 1 1.414 0z'/%3E%3C/svg%3E");
+      background-size: 14px;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .btn-pricing {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 16px;
+      background: var(--blue-accent);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-pricing:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--navy);
+      padding: 48px 24px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-copy {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .nav-lang { display: flex; gap: 4px; margin-left: 16px; }
+    .nav-lang a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 4px; transition: color 0.2s, background 0.2s; }
+    .nav-lang a:hover, .nav-lang a.active { color: white; background: rgba(255,255,255,0.1); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .steps::before {
+        display: none;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      section {
+        padding: 72px 20px;
+      }
+
+      .hero {
+        padding: 120px 20px 72px;
+      }
+
+      .hero h1 {
+        font-size: 2.25rem;
+      }
+
+      .hero p {
+        font-size: 1.05rem;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-title {
+        font-size: 1.75rem;
+      }
+
+      .screenshot-placeholder {
+        width: 100%;
+        height: 180px;
+      }
+
+      .pricing-card {
+        padding: 32px 24px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navega&ccedil;&atilde;o -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo"><span>Q</span>vault</a>
+      <ul class="nav-links">
+        <li><a href="#features">Recursos</a></li>
+        <li><a href="#how-it-works">Como Funciona</a></li>
+        <li><a href="#pricing">Pre&ccedil;os</a></li>
+      </ul>
+      <div class="nav-lang">
+        <a href="index.html">EN</a>
+        <a href="es.html">ES</a>
+        <a href="pt.html" class="active">PT</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">Processamento 100% Local</div>
+      <h1>Proteja a Privacidade dos seus Clientes. Automaticamente.</h1>
+      <p>Qvault detecta e redige informa&ccedil;&otilde;es sens&iacute;veis de documentos jur&iacute;dicos &mdash; nomes, CPFs, endere&ccedil;os, dados financeiros &mdash; tudo sem que seus dados saiam do seu computador.</p>
+      <div class="hero-buttons">
+        <a href="#" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Baixar para Mac
+        </a>
+        <a href="#pricing" class="btn-secondary">Ver Pre&ccedil;os</a>
+      </div>
+      <div class="screenshots fade-in">
+        <div class="screenshot-placeholder">Captura: Tela de Upload</div>
+        <div class="screenshot-placeholder">Captura: Tela de Revis&atilde;o com PII Destacado</div>
+        <div class="screenshot-placeholder">Captura: Tela do Banco de Dados de Entidades</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recursos -->
+  <section class="features" id="features">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">Recursos</div>
+        <h2 class="section-title">Tudo que voc&ecirc; precisa para proteger dados sens&iacute;veis</h2>
+        <p class="section-subtitle">Desenvolvido especificamente para profissionais jur&iacute;dicos que lidam com informa&ccedil;&otilde;es confidenciais de clientes todos os dias.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128269;</div>
+          <h3>Detec&ccedil;&atilde;o Inteligente</h3>
+          <p>An&aacute;lise com express&otilde;es regulares e heur&iacute;sticas detecta nomes, empresas, CPFs, cart&otilde;es de cr&eacute;dito, endere&ccedil;os, datas e muito mais nos seus documentos.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128274;</div>
+          <h3>Processamento Local</h3>
+          <p>Zero transmiss&atilde;o de dados. Tudo roda na sua m&aacute;quina. Os dados dos seus clientes nunca tocam a nuvem.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128200;</div>
+          <h3>Intelig&ecirc;ncia Entre Documentos</h3>
+          <p>O banco de dados de entidades rastreia todos os dados sens&iacute;veis entre documentos. Saiba exatamente qual PII existe no seu escrit&oacute;rio.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128196;</div>
+          <h3>Suporte a PDF e DOCX</h3>
+          <p>Funciona com os formatos de documentos jur&iacute;dicos mais comuns desde o primeiro uso.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#10003;</div>
+          <h3>Exportar Vers&otilde;es Limpas</h3>
+          <p>Um clique para produzir documentos com reda&ccedil;&otilde;es de caixa preta prontos para protocolar ou compartilhar.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128209;</div>
+          <h3>Trilha de Auditoria</h3>
+          <p>Cada a&ccedil;&atilde;o registrada para conformidade. Saiba quem revisou o qu&ecirc; e quando.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Como Funciona -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">Como Funciona</div>
+        <h2 class="section-title">Tr&ecirc;s passos para documentos protegidos</h2>
+        <p class="section-subtitle">Do upload &agrave; exporta&ccedil;&atilde;o com reda&ccedil;&otilde;es em minutos, n&atilde;o horas.</p>
+      </div>
+      <div class="steps">
+        <div class="step fade-in">
+          <div class="step-number">1</div>
+          <h3>Carregar</h3>
+          <p>Arraste e solte seu PDF ou DOCX. O Qvault come&ccedil;a instantaneamente a escanear informa&ccedil;&otilde;es sens&iacute;veis.</p>
+        </div>
+        <div class="step fade-in">
+          <div class="step-number">2</div>
+          <h3>Revisar</h3>
+          <p>Veja todo o PII detectado destacado com c&oacute;digos de cores. Aprove, rejeite ou edite cada reda&ccedil;&atilde;o.</p>
+        </div>
+        <div class="step fade-in">
+          <div class="step-number">3</div>
+          <h3>Exportar</h3>
+          <p>Baixe a vers&atilde;o limpa com todas as reda&ccedil;&otilde;es aprovadas aplicadas. Pronta para protocolar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pre&ccedil;os -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">Pre&ccedil;os</div>
+        <h2 class="section-title">Pre&ccedil;os simples e transparentes</h2>
+        <p class="section-subtitle">Um plano. Tudo incluso. Sem cobran&ccedil;a por documento.</p>
+      </div>
+      <div class="pricing-card fade-in">
+        <div class="plan-name">Profissional</div>
+        <div class="price">$299</div>
+        <div class="price-period">por ano</div>
+        <ul class="pricing-features">
+          <li>Documentos ilimitados</li>
+          <li>Todos os padr&otilde;es de detec&ccedil;&atilde;o de PII</li>
+          <li>Rastreamento de entidades entre documentos</li>
+          <li>Suporte priorit&aacute;rio</li>
+          <li>Atualiza&ccedil;&otilde;es gratuitas</li>
+        </ul>
+        <a href="#" class="btn-pricing">Iniciar Teste Gratuito</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rodap&eacute; -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-copy">&copy; 2026 Qvault. Todos os direitos reservados.</div>
+      <ul class="footer-links">
+        <li><a href="#">Pol&iacute;tica de Privacidade</a></li>
+        <li><a href="#">Termos de Servi&ccedil;o</a></li>
+        <li><a href="#">Contato</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Anima&ccedil;&otilde;es de Rolagem -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.15,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    });
+  </script>
+
+</body>
+</html>
