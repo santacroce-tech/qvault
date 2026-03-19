@@ -93,8 +93,17 @@ export async function invoke(cmd: string, args?: any): Promise<any> {
       return [];
     case "get_document_pages":
       return [];
-    case "get_document_bytes":
-      return ""; // empty base64
+    case "get_document_bytes": {
+      // Fetch the example PDF from /public and return as base64
+      const resp = await fetch("/example-contract.pdf");
+      const buf = await resp.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    }
     case "get_document_text":
       return "This is sample document text for preview purposes.";
     case "upload_document":
