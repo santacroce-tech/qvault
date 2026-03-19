@@ -8,7 +8,7 @@ use crate::AppState;
 const LICENSE_SERVER_URL: &str = "http://localhost:3000";
 
 #[cfg(not(debug_assertions))]
-const LICENSE_SERVER_URL: &str = "https://api.qvault.io";
+const LICENSE_SERVER_URL: &str = "https://api.qvault.tech";
 
 /// Generate a stable machine ID from hostname + OS info
 fn get_machine_id() -> String {
