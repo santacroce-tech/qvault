@@ -36,8 +36,19 @@ export function initDatabase(dbPath) {
       UNIQUE(license_key_id, machine_id)
     );
 
+    CREATE TABLE IF NOT EXISTS purchases (
+      id                INTEGER PRIMARY KEY AUTOINCREMENT,
+      stripe_session_id TEXT UNIQUE NOT NULL,
+      customer_email    TEXT,
+      license_key_id    INTEGER REFERENCES license_keys(id),
+      amount_cents      INTEGER,
+      currency          TEXT DEFAULT 'usd',
+      created_at        TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE INDEX IF NOT EXISTS idx_license_keys_key ON license_keys(key);
     CREATE INDEX IF NOT EXISTS idx_activations_status ON activations(license_key_id, status);
+    CREATE INDEX IF NOT EXISTS idx_purchases_session ON purchases(stripe_session_id);
   `);
 
   return db;
@@ -132,4 +143,35 @@ export function insertLicenseKey(key, plan = "yearly", maxMachines = 2) {
       "INSERT INTO license_keys (key, plan, max_machines) VALUES (?, ?, ?)"
     )
     .run(key, plan, maxMachines);
+}
+
+// ─── Purchase queries ───
+
+export function insertPurchase(stripeSessionId, customerEmail, licenseKeyId, amountCents, currency = "usd") {
+  return getDb()
+    .prepare(
+      "INSERT INTO purchases (stripe_session_id, customer_email, license_key_id, amount_cents, currency) VALUES (?, ?, ?, ?, ?)"
+    )
+    .run(stripeSessionId, customerEmail, licenseKeyId, amountCents, currency);
+}
+
+export function findPurchaseBySessionId(sessionId) {
+  return getDb()
+    .prepare("SELECT p.*, lk.key as license_key FROM purchases p LEFT JOIN license_keys lk ON lk.id = p.license_key_id WHERE p.stripe_session_id = ?")
+    .get(sessionId);
+}
+
+// ─── Stats queries ───
+
+export function getLicenseStats() {
+  const total = getDb().prepare("SELECT COUNT(*) as count FROM license_keys").get().count;
+  const active = getDb().prepare(
+    "SELECT COUNT(DISTINCT lk.id) as count FROM license_keys lk JOIN activations a ON a.license_key_id = lk.id WHERE a.status = 'active'"
+  ).get().count;
+  const expired = getDb().prepare(
+    "SELECT COUNT(*) as count FROM license_keys WHERE expires_at IS NOT NULL AND expires_at < datetime('now')"
+  ).get().count;
+  const purchases = getDb().prepare("SELECT COUNT(*) as count FROM purchases").get().count;
+  const revenue = getDb().prepare("SELECT COALESCE(SUM(amount_cents), 0) as total FROM purchases").get().total;
+  return { total, active, expired, unused: total - active, purchases, revenue };
 }

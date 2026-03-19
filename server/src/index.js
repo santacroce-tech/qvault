@@ -4,6 +4,8 @@ import cors from "cors";
 import { initDatabase } from "./db.js";
 import licenseRoutes from "./routes/license.js";
 import adminRoutes from "./routes/admin.js";
+import adminPanelRoutes from "./routes/admin-panel.js";
+import stripeRoutes from "./routes/stripe.js";
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const DB_PATH = process.env.DB_PATH || "./data/licenses.db";
@@ -15,7 +17,16 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+
+// NOTE: The Stripe webhook route uses express.raw() internally,
+// so we must NOT apply express.json() to /api/stripe/webhook.
+// We apply JSON parsing to all routes except the webhook.
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/stripe/webhook") {
+    return next(); // Skip JSON parsing — stripe.js handles raw body
+  }
+  express.json()(req, res, next);
+});
 
 // Request logging
 app.use((req, res, next) => {
@@ -32,6 +43,8 @@ app.use((req, res, next) => {
 // Routes
 app.use("/api/license", licenseRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/stripe", stripeRoutes);
+app.use("/admin", adminPanelRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
@@ -58,5 +71,9 @@ app.listen(PORT, () => {
   console.log(`  POST /api/license/deactivate`);
   console.log(`  GET  /api/admin/licenses`);
   console.log(`  POST /api/admin/licenses/generate`);
+  console.log(`  POST /api/stripe/create-checkout-session`);
+  console.log(`  POST /api/stripe/webhook`);
+  console.log(`  GET  /api/stripe/session-info`);
+  console.log(`  GET  /admin`);
   console.log(`  GET  /health\n`);
 });

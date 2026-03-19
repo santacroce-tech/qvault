@@ -704,7 +704,7 @@
           <li>Priority support</li>
           <li>Free updates</li>
         </ul>
-        <a href="#" class="btn-pricing">Start Free Trial</a>
+        <button class="btn-pricing" id="buy-btn" style="border:none;cursor:pointer;font-family:inherit;">Buy Now — $299/year</button>
       </div>
     </div>
   </section>
@@ -712,18 +712,30 @@
   <!-- Footer -->
   <footer>
     <div class="footer-inner">
-      <div class="footer-copy">&copy; 2026 Qvault. All rights reserved.</div>
+      <div class="footer-copy">&copy; 2026 Qvault. All rights reserved. A product by <a href="https://santacroce.es" style="color:rgba(255,255,255,0.5);text-decoration:underline;">Santacroce SL</a></div>
       <ul class="footer-links">
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Terms of Service</a></li>
-        <li><a href="#">Contact</a></li>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms of Service</a></li>
+        <li><a href="license-agreement.html">EULA</a></li>
       </ul>
     </div>
   </footer>
 
-  <!-- Scroll Animations -->
+  <!-- GDPR Cookie Consent Banner -->
+  <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1F2937;color:white;padding:1rem 2rem;z-index:9999;font-size:0.9rem;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <p style="margin:0;flex:1;min-width:200px;">We use essential cookies to ensure the website functions properly. See our <a href="privacy.html" style="color:#93C5FD;text-decoration:underline;">Privacy Policy</a>.</p>
+      <div style="display:flex;gap:0.5rem;">
+        <button onclick="acceptCookies('all')" style="padding:0.5rem 1rem;background:#3B82F6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;">Accept All</button>
+        <button onclick="acceptCookies('necessary')" style="padding:0.5rem 1rem;background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;cursor:pointer;font-size:0.85rem;">Necessary Only</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll Animations + Stripe + Cookies -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Scroll animations
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -735,9 +747,46 @@
         threshold: 0.15,
         rootMargin: '0px 0px -40px 0px'
       });
-
       document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+      // Stripe checkout
+      const buyBtn = document.getElementById('buy-btn');
+      if (buyBtn) {
+        buyBtn.addEventListener('click', async () => {
+          buyBtn.textContent = 'Redirecting...';
+          buyBtn.disabled = true;
+          try {
+            const res = await fetch('https://api.qvault.tech/api/stripe/create-checkout-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ locale: document.documentElement.lang || 'en' })
+            });
+            const data = await res.json();
+            if (data.url) {
+              window.location.href = data.url;
+            } else {
+              buyBtn.textContent = 'Buy Now — $299/year';
+              buyBtn.disabled = false;
+              alert('Unable to start checkout. Please try again.');
+            }
+          } catch (e) {
+            buyBtn.textContent = 'Buy Now — $299/year';
+            buyBtn.disabled = false;
+            alert('Unable to connect to payment server. Please try again.');
+          }
+        });
+      }
+
+      // Cookie banner
+      if (!document.cookie.includes('qvault_consent=')) {
+        document.getElementById('cookie-banner').style.display = 'block';
+      }
     });
+
+    function acceptCookies(level) {
+      document.cookie = 'qvault_consent=' + level + ';max-age=31536000;path=/;SameSite=Lax';
+      document.getElementById('cookie-banner').style.display = 'none';
+    }
   </script>
 
 </body>

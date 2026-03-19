@@ -704,7 +704,7 @@
           <li>Soporte prioritario</li>
           <li>Actualizaciones gratuitas</li>
         </ul>
-        <a href="#" class="btn-pricing">Iniciar Prueba Gratuita</a>
+        <button class="btn-pricing" id="buy-btn" style="border:none;cursor:pointer;font-family:inherit;">Comprar — $299/a&ntilde;o</button>
       </div>
     </div>
   </section>
@@ -712,16 +712,27 @@
   <!-- Pie de p&aacute;gina -->
   <footer>
     <div class="footer-inner">
-      <div class="footer-copy">&copy; 2026 Qvault. Todos los derechos reservados.</div>
+      <div class="footer-copy">&copy; 2026 Qvault. Todos los derechos reservados. Un producto de <a href="https://santacroce.es" style="color:rgba(255,255,255,0.5);text-decoration:underline;">Santacroce SL</a></div>
       <ul class="footer-links">
-        <li><a href="#">Pol&iacute;tica de Privacidad</a></li>
-        <li><a href="#">T&eacute;rminos de Servicio</a></li>
-        <li><a href="#">Contacto</a></li>
+        <li><a href="privacy.html">Pol&iacute;tica de Privacidad</a></li>
+        <li><a href="terms.html">T&eacute;rminos de Servicio</a></li>
+        <li><a href="license-agreement.html">EULA</a></li>
       </ul>
     </div>
   </footer>
 
-  <!-- Animaciones de Desplazamiento -->
+  <!-- Banner de Consentimiento de Cookies -->
+  <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1F2937;color:white;padding:1rem 2rem;z-index:9999;font-size:0.9rem;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <p style="margin:0;flex:1;min-width:200px;">Usamos cookies esenciales para el funcionamiento del sitio. Consulta nuestra <a href="privacy.html" style="color:#93C5FD;text-decoration:underline;">Pol&iacute;tica de Privacidad</a>.</p>
+      <div style="display:flex;gap:0.5rem;">
+        <button onclick="acceptCookies('all')" style="padding:0.5rem 1rem;background:#3B82F6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;">Aceptar Todo</button>
+        <button onclick="acceptCookies('necessary')" style="padding:0.5rem 1rem;background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;cursor:pointer;font-size:0.85rem;">Solo Necesarias</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Animaciones + Stripe + Cookies -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const observer = new IntersectionObserver((entries) => {
@@ -735,9 +746,42 @@
         threshold: 0.15,
         rootMargin: '0px 0px -40px 0px'
       });
-
       document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+      const buyBtn = document.getElementById('buy-btn');
+      if (buyBtn) {
+        buyBtn.addEventListener('click', async () => {
+          buyBtn.textContent = 'Redirigiendo...';
+          buyBtn.disabled = true;
+          try {
+            const res = await fetch('https://api.qvault.tech/api/stripe/create-checkout-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ locale: 'es' })
+            });
+            const data = await res.json();
+            if (data.url) {
+              window.location.href = data.url;
+            } else {
+              buyBtn.textContent = 'Comprar — $299/a\u00f1o';
+              buyBtn.disabled = false;
+            }
+          } catch (e) {
+            buyBtn.textContent = 'Comprar — $299/a\u00f1o';
+            buyBtn.disabled = false;
+          }
+        });
+      }
+
+      if (!document.cookie.includes('qvault_consent=')) {
+        document.getElementById('cookie-banner').style.display = 'block';
+      }
     });
+
+    function acceptCookies(level) {
+      document.cookie = 'qvault_consent=' + level + ';max-age=31536000;path=/;SameSite=Lax';
+      document.getElementById('cookie-banner').style.display = 'none';
+    }
   </script>
 
 </body>
