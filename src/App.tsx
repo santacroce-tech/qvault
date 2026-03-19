@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import QueueDashboard from "./components/QueueDashboard";
 import DocumentViewer from "./components/DocumentViewer";
 import RedactionSidebar from "./components/RedactionSidebar";
 import HistoryView from "./components/HistoryView";
 import Settings from "./components/Settings";
 import type { RedactionRect } from "./lib/tauri-commands";
+import { validateLicenseOnline } from "./lib/tauri-commands";
 
 type View = "upload" | "review" | "history" | "settings";
 
@@ -15,6 +16,13 @@ function App() {
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const pdfRectsRef = useRef<GetPdfRectsForExport>(() => []);
   const [advancedMode, setAdvancedMode] = useState(false);
+
+  // Validate license with server on every app startup
+  useEffect(() => {
+    validateLicenseOnline().catch((e) => {
+      console.warn("License validation failed:", e);
+    });
+  }, []);
 
   const handleDocumentReady = (docId: string) => {
     setActiveDocumentId(docId);

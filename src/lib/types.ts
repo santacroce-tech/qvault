@@ -58,8 +58,10 @@ export interface Redaction {
 export interface LicenseInfo {
   id: string;
   license_key: string;
+  machine_id: string;
   activated_at: string;
   expires_at: string;
+  last_validated_at: string | null;
   plan: string;
   status: string;
 }

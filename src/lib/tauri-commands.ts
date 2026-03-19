@@ -114,6 +114,10 @@ export async function checkLicense(): Promise<boolean> {
   return invoke("check_license");
 }
 
+export async function validateLicenseOnline(): Promise<boolean> {
+  return invoke("validate_license_online");
+}
+
 // History
 export async function getHistory(
   offset: number,
