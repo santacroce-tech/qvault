@@ -205,7 +205,7 @@ All builds are produced by a single GitHub Actions workflow using a matrix strat
 
 ## Jurisdictional Coverage
 
-Legal work is increasingly international. A firm in Barcelona might handle documents containing US Social Security Numbers, Brazilian CPFs, and German tax IDs — all in the same case.
+Legal work is increasingly international. A firm in Madrid might handle documents containing US Social Security Numbers, Brazilian CPFs, and German tax IDs — all in the same case.
 
 Qvault's pattern library covers five jurisdictional categories:
 
@@ -244,4 +244,4 @@ The legal industry is built on trust. Qvault is built to make that trust verifia
 
 ---
 
-*Qvault is developed by [Santacroce SL](https://santacroce.es), Barcelona, Spain. Learn more at [qvault.tech](https://qvault.tech).*
+*Qvault is developed by [Santacroce SL](https://santacroce.es), Madrid, Spain. Learn more at [qvault.tech](https://qvault.tech).*
