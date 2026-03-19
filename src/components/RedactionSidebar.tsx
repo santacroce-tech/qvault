@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useRedactions } from "../hooks/useRedactions";
+import { useTranslation } from "react-i18next";
 import { exportClean } from "../lib/tauri-commands";
 import type { RedactionRect } from "../lib/tauri-commands";
+import type { UseRedactionsReturn } from "../hooks/useRedactions";
 import { PII_COLORS, piiCategoryLabel } from "../lib/types";
 import type { PiiCategory } from "../lib/types";
 
@@ -10,9 +11,19 @@ interface Props {
   getPdfRects: () => RedactionRect[];
   advancedMode: boolean;
   onToggleAdvanced: () => void;
+  redactionsHook: UseRedactionsReturn;
+  onExportSuccess?: (outputPath: string) => void;
 }
 
-export default function RedactionSidebar({ documentId, getPdfRects, advancedMode, onToggleAdvanced }: Props) {
+export default function RedactionSidebar({
+  documentId,
+  getPdfRects,
+  advancedMode,
+  onToggleAdvanced,
+  redactionsHook,
+  onExportSuccess,
+}: Props) {
+  const { t } = useTranslation();
   const {
     redactions,
     loading,
@@ -20,14 +31,15 @@ export default function RedactionSidebar({ documentId, getPdfRects, advancedMode
     setSelectedId,
     updateRedaction,
     bulkApprove,
-  } = useRedactions(documentId);
+  } = redactionsHook;
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
 
   if (loading) {
     return (
-      <div className="p-4 text-gray-400 text-sm">Loading redactions...</div>
+      <div className="p-4 text-gray-400 text-sm">{t('sidebar.loading')}</div>
     );
   }
 
@@ -46,12 +58,20 @@ export default function RedactionSidebar({ documentId, getPdfRects, advancedMode
 
   const handleExport = async () => {
     setExporting(true);
+    setExportError(null);
     try {
       const rects = getPdfRects();
+      console.log("[Qvault] Exporting with", rects.length, "redaction rects");
+      if (rects.length === 0) {
+        setExportError(t('sidebar.exportErrorNoApproved'));
+        return;
+      }
       const outputPath = await exportClean(documentId, rects);
-      console.log("Exported to:", outputPath);
+      console.log("[Qvault] Exported to:", outputPath);
+      onExportSuccess?.(outputPath);
     } catch (e) {
       console.error("Export failed:", e);
+      setExportError(e instanceof Error ? e.message : String(e));
     } finally {
       setExporting(false);
     }
@@ -61,28 +81,35 @@ export default function RedactionSidebar({ documentId, getPdfRects, advancedMode
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-gray-900 mb-2">Redactions</h3>
+        <h3 className="font-semibold text-gray-900 mb-2">{t('sidebar.title')}</h3>
         <div className="flex gap-3 text-xs text-gray-500">
-          <span>{redactions.length} total</span>
-          <span>{pendingCount} pending</span>
-          <span className="text-green-600">{approvedCount} approved</span>
+          <span>{t('sidebar.total', { count: redactions.length })}</span>
+          <span>{t('sidebar.pending', { count: pendingCount })}</span>
+          <span className="text-green-600">{t('sidebar.approved', { count: approvedCount })}</span>
         </div>
 
         <div className="mt-3 flex gap-2">
           <button
             onClick={() => bulkApprove()}
-            className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+            disabled={pendingCount === 0}
+            className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Approve All
+            {t('sidebar.approveAll')}
           </button>
           <button
             onClick={handleExport}
-            disabled={exporting || pendingCount > 0}
+            disabled={exporting || approvedCount === 0}
             className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {exporting ? "Exporting..." : "Export Clean"}
+            {exporting ? t('sidebar.exporting') : t('sidebar.exportClean')}
           </button>
         </div>
+
+        {exportError && (
+          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
+            {exportError}
+          </div>
+        )}
 
         <button
           onClick={onToggleAdvanced}
@@ -92,7 +119,7 @@ export default function RedactionSidebar({ documentId, getPdfRects, advancedMode
               : "border-gray-200 text-gray-600 hover:bg-gray-50"
           }`}
         >
-          {advancedMode ? "Exit Advanced Mode" : "Advanced Mode"}
+          {advancedMode ? t('sidebar.exitAdvanced') : t('sidebar.enterAdvanced')}
         </button>
       </div>
 
@@ -109,14 +136,14 @@ export default function RedactionSidebar({ documentId, getPdfRects, advancedMode
                     style={{ backgroundColor: color }}
                   />
                   <span className="text-xs font-medium text-gray-700">
-                    {piiCategoryLabel(category as PiiCategory)}
+                    {piiCategoryLabel(category as PiiCategory, t)}
                   </span>
                 </div>
                 <button
                   onClick={() => bulkApprove(category as PiiCategory)}
                   className="text-xs text-green-600 hover:text-green-800"
                 >
-                  Approve {items.length}
+                  {t('sidebar.approveCount', { count: items.length })}
                 </button>
               </div>
 
@@ -163,7 +190,7 @@ export default function RedactionSidebar({ documentId, getPdfRects, advancedMode
                                 ? "bg-green-100 text-green-700"
                                 : "text-gray-500 hover:bg-green-50 hover:text-green-600"
                             }`}
-                            title="Approve"
+                            title={t('sidebar.approve')}
                           >
                             &#10003;
                           </button>
@@ -177,7 +204,7 @@ export default function RedactionSidebar({ documentId, getPdfRects, advancedMode
                                 ? "bg-red-100 text-red-700"
                                 : "text-gray-500 hover:bg-red-50 hover:text-red-600"
                             }`}
-                            title="Reject"
+                            title={t('sidebar.reject')}
                           >
                             &#10005;
                           </button>
@@ -188,7 +215,7 @@ export default function RedactionSidebar({ documentId, getPdfRects, advancedMode
                               setEditValue(r.replacement);
                             }}
                             className="px-2 py-0.5 text-xs text-gray-500 hover:bg-gray-100 rounded transition-colors"
-                            title="Edit replacement"
+                            title={t('sidebar.editReplacement')}
                           >
                             &#9998;
                           </button>

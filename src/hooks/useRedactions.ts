@@ -6,6 +6,8 @@ import {
 } from "../lib/tauri-commands";
 import type { Redaction, PiiCategory } from "../lib/types";
 
+export type UseRedactionsReturn = ReturnType<typeof useRedactions>;
+
 export function useRedactions(documentId: string | null) {
   const [redactions, setRedactions] = useState<Redaction[]>([]);
   const [loading, setLoading] = useState(false);

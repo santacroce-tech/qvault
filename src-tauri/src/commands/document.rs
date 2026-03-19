@@ -8,7 +8,7 @@ use crate::storage::database::DocumentRow;
 use crate::storage::encryption;
 use crate::AppState;
 
-/// Upload a document: encrypt + store. Does NOT extract text or scan for PII.
+/// Upload a document: check license, encrypt + store. Does NOT extract text or scan for PII.
 /// The frontend will extract text via PDF.js and call scan_document_text.
 #[tauri::command]
 pub async fn upload_document(
@@ -16,14 +16,18 @@ pub async fn upload_document(
     page_count: i32,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    // Check credits
-    let has_credit = state
-        .db
-        .decrement_credit()
-        .map_err(|e| format!("Credit check failed: {}", e))?;
+    // Check license (yearly license = unlimited documents)
+    // In debug/dev builds, skip the license check so you can test freely
+    #[cfg(not(debug_assertions))]
+    {
+        let licensed = state
+            .db
+            .is_licensed()
+            .map_err(|e| format!("License check failed: {}", e))?;
 
-    if !has_credit {
-        return Err("No credits remaining. Purchase credits to continue.".to_string());
+        if !licensed {
+            return Err("No active license. Please activate a yearly license to use Qvault.".to_string());
+        }
     }
 
     let source = Path::new(&file_path);
@@ -72,10 +76,18 @@ pub async fn upload_document(
         )
         .map_err(|e| format!("Database error: {}", e))?;
 
+    // Audit log
+    let _ = state.db.insert_audit_log(
+        Some(&doc_id),
+        "upload",
+        Some(&format!("Uploaded {}", filename)),
+    );
+
     Ok(doc_id)
 }
 
 /// Receive text extracted by PDF.js on the frontend, run PII detection, store results.
+/// Now also stores: entities in the knowledge base, page text for reconstruction, and cleaned text.
 #[tauri::command]
 pub async fn scan_document_text(
     id: String,
@@ -91,15 +103,36 @@ pub async fn scan_document_text(
         .map_err(|e| format!("Failed to create text dir: {}", e))?;
 
     for (page_num, text) in pages.iter().enumerate() {
-        // Save text for later use
+        // Save text to filesystem (backward compat)
         let text_path = text_dir.join(format!("{}_{}.txt", id, page_num));
         std::fs::write(&text_path, text)
             .map_err(|e| format!("Failed to write text: {}", e))?;
 
+        // Store raw page text in database for reconstruction
+        state
+            .db
+            .insert_document_page(&id, page_num as i32, text)
+            .map_err(|e| format!("Failed to store page text: {}", e))?;
+
         // Run PII pipeline
         let entities = pipeline::run_pipeline(text, page_num as u32, &jurisdictions);
 
+        // Build cleaned text by applying redactions
+        let mut cleaned = text.clone();
+        // Apply replacements in reverse order to preserve offsets
+        let mut sorted_entities = entities.clone();
+        sorted_entities.sort_by(|a, b| b.start.cmp(&a.start));
+        for entity in &sorted_entities {
+            if entity.start < cleaned.len() && entity.end <= cleaned.len() {
+                cleaned.replace_range(entity.start..entity.end, &entity.replacement);
+            }
+        }
+
+        // Store cleaned text
+        let _ = state.db.update_page_cleaned_text(&id, page_num as i32, &cleaned);
+
         for entity in &entities {
+            // Store redaction (for review workflow)
             state
                 .db
                 .insert_redaction(
@@ -115,6 +148,25 @@ pub async fn scan_document_text(
                     entity.confidence,
                 )
                 .map_err(|e| format!("Failed to store redaction: {}", e))?;
+
+            // Store entity in knowledge base (normalized for cross-document search)
+            let normalized = entity.text.trim().to_string();
+            let entity_id = Uuid::new_v4().to_string();
+            state
+                .db
+                .insert_entity(
+                    &entity_id,
+                    &id,
+                    &entity.text,
+                    &normalized,
+                    &entity.category.to_string(),
+                    page_num as i32,
+                    entity.start as i32,
+                    entity.end as i32,
+                    entity.confidence,
+                    &entity.layer,
+                )
+                .map_err(|e| format!("Failed to store entity: {}", e))?;
         }
 
         total_pii += entities.len();
@@ -130,6 +182,13 @@ pub async fn scan_document_text(
         .db
         .update_document_status(&id, "review", total_pii as i32)
         .map_err(|e| format!("Failed to update document: {}", e))?;
+
+    // Audit log
+    let _ = state.db.insert_audit_log(
+        Some(&id),
+        "scan_complete",
+        Some(&format!("Found {} PII entities across {} pages", total_pii, pages.len())),
+    );
 
     Ok(total_pii as i32)
 }
@@ -163,6 +222,21 @@ pub async fn add_manual_redaction(
             1.0,
         )
         .map_err(|e| format!("Failed to add redaction: {}", e))?;
+
+    // Also store as entity for cross-document tracking
+    let entity_id = Uuid::new_v4().to_string();
+    let _ = state.db.insert_entity(
+        &entity_id,
+        &document_id,
+        &original_text,
+        &original_text.trim().to_string(),
+        &category,
+        page,
+        start_offset,
+        end_offset,
+        1.0,
+        "manual",
+    );
 
     // Update PII count
     let redactions = state
@@ -221,6 +295,41 @@ pub async fn get_document_bytes(
     Ok(base64::engine::general_purpose::STANDARD.encode(&decrypted))
 }
 
+/// Get entities extracted from a document (knowledge base entries)
+#[tauri::command]
+pub async fn get_document_entities(
+    document_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<crate::storage::database::EntityRow>, String> {
+    state
+        .db
+        .get_entities_by_document(&document_id)
+        .map_err(|e| format!("Database error: {}", e))
+}
+
+/// Get all unique entities across all documents with occurrence counts
+#[tauri::command]
+pub async fn get_entity_summary(
+    state: State<'_, AppState>,
+) -> Result<Vec<crate::storage::database::EntitySummary>, String> {
+    state
+        .db
+        .get_entity_summary()
+        .map_err(|e| format!("Database error: {}", e))
+}
+
+/// Get stored page text (raw + cleaned) for a document
+#[tauri::command]
+pub async fn get_document_pages(
+    document_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<crate::storage::database::DocumentPageRow>, String> {
+    state
+        .db
+        .get_document_pages(&document_id)
+        .map_err(|e| format!("Database error: {}", e))
+}
+
 #[derive(Debug, Deserialize)]
 pub struct RedactionRect {
     pub page: u32,
@@ -261,6 +370,13 @@ pub async fn export_clean(
         .update_document_clean_path(&id, clean_path.to_str().unwrap_or(""))
         .map_err(|e| format!("Database error: {}", e))?;
 
+    // Audit log
+    let _ = state.db.insert_audit_log(
+        Some(&id),
+        "export",
+        Some(&format!("Exported redacted version: {}", clean_filename)),
+    );
+
     Ok(clean_path.to_string_lossy().to_string())
 }
 
@@ -277,6 +393,8 @@ pub async fn reset_app_data(
 
     state.db.with_conn(|conn| {
         conn.execute_batch("
+            DELETE FROM entities;
+            DELETE FROM document_pages;
             DELETE FROM redactions;
             DELETE FROM documents;
             DELETE FROM audit_log;

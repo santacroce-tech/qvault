@@ -49,6 +49,51 @@ impl Database {
                 reviewed_at TEXT
             );
 
+            -- Extracted entities: every PII occurrence found in a document,
+            -- stored for cross-document analysis and occurrence history
+            CREATE TABLE IF NOT EXISTS entities (
+                id TEXT PRIMARY KEY,
+                document_id TEXT REFERENCES documents(id),
+                original_text TEXT NOT NULL,
+                normalized_text TEXT NOT NULL,
+                category TEXT NOT NULL,
+                page INTEGER NOT NULL,
+                start_offset INTEGER NOT NULL,
+                end_offset INTEGER NOT NULL,
+                confidence REAL NOT NULL,
+                detection_layer TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+
+            -- Create index for fast lookups by normalized text (cross-document search)
+            CREATE INDEX IF NOT EXISTS idx_entities_normalized ON entities(normalized_text);
+            CREATE INDEX IF NOT EXISTS idx_entities_category ON entities(category);
+            CREATE INDEX IF NOT EXISTS idx_entities_document ON entities(document_id);
+
+            -- Extracted page text: full text of each page for reconstruction
+            CREATE TABLE IF NOT EXISTS document_pages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id TEXT REFERENCES documents(id),
+                page_number INTEGER NOT NULL,
+                raw_text TEXT NOT NULL,
+                cleaned_text TEXT,
+                created_at TEXT NOT NULL,
+                UNIQUE(document_id, page_number)
+            );
+
+            -- License: yearly subscription (replaces old credits table)
+            CREATE TABLE IF NOT EXISTS license (
+                id TEXT PRIMARY KEY,
+                license_key TEXT NOT NULL,
+                machine_id TEXT NOT NULL,
+                activated_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                last_validated_at TEXT,
+                plan TEXT NOT NULL DEFAULT 'yearly',
+                status TEXT NOT NULL DEFAULT 'active'
+            );
+
+            -- Keep credits table for backward compat migration, but it's no longer used
             CREATE TABLE IF NOT EXISTS credits (
                 id TEXT PRIMARY KEY,
                 license_key TEXT,
@@ -77,6 +122,8 @@ impl Database {
         let conn = self.conn.lock().unwrap();
         f(&conn)
     }
+
+    // ─── Documents ───
 
     pub fn insert_document(
         &self,
@@ -153,6 +200,8 @@ impl Database {
             None => Ok(None),
         }
     }
+
+    // ─── Redactions ───
 
     pub fn insert_redaction(
         &self,
@@ -237,6 +286,248 @@ impl Database {
         Ok(())
     }
 
+    // ─── Entities (cross-document PII knowledge base) ───
+
+    pub fn insert_entity(
+        &self,
+        id: &str,
+        document_id: &str,
+        original_text: &str,
+        normalized_text: &str,
+        category: &str,
+        page: i32,
+        start_offset: i32,
+        end_offset: i32,
+        confidence: f64,
+        detection_layer: &str,
+    ) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        let now = chrono::Utc::now().to_rfc3339();
+        conn.execute(
+            "INSERT INTO entities (id, document_id, original_text, normalized_text, category, page, start_offset, end_offset, confidence, detection_layer, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+            params![id, document_id, original_text, normalized_text, category, page, start_offset, end_offset, confidence, detection_layer, now],
+        )?;
+        Ok(())
+    }
+
+    pub fn get_entities_by_document(&self, document_id: &str) -> Result<Vec<EntityRow>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, document_id, original_text, normalized_text, category, page, start_offset, end_offset, confidence, detection_layer, created_at
+             FROM entities WHERE document_id = ?1 ORDER BY page, start_offset"
+        )?;
+
+        let rows = stmt.query_map(params![document_id], |row| {
+            Ok(EntityRow {
+                id: row.get(0)?,
+                document_id: row.get(1)?,
+                original_text: row.get(2)?,
+                normalized_text: row.get(3)?,
+                category: row.get(4)?,
+                page: row.get(5)?,
+                start_offset: row.get(6)?,
+                end_offset: row.get(7)?,
+                confidence: row.get(8)?,
+                detection_layer: row.get(9)?,
+                created_at: row.get(10)?,
+            })
+        })?;
+
+        rows.collect()
+    }
+
+    /// Find all documents containing a specific entity text (cross-document search)
+    pub fn find_entity_occurrences(&self, normalized_text: &str) -> Result<Vec<EntityRow>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT e.id, e.document_id, e.original_text, e.normalized_text, e.category, e.page, e.start_offset, e.end_offset, e.confidence, e.detection_layer, e.created_at
+             FROM entities e ORDER BY e.created_at DESC"
+        )?;
+
+        // Use normalized text for matching
+        let pattern = normalized_text.to_lowercase();
+        let rows = stmt.query_map([], |row| {
+            Ok(EntityRow {
+                id: row.get(0)?,
+                document_id: row.get(1)?,
+                original_text: row.get(2)?,
+                normalized_text: row.get(3)?,
+                category: row.get(4)?,
+                page: row.get(5)?,
+                start_offset: row.get(6)?,
+                end_offset: row.get(7)?,
+                confidence: row.get(8)?,
+                detection_layer: row.get(9)?,
+                created_at: row.get(10)?,
+            })
+        })?;
+
+        let all: Vec<EntityRow> = rows.filter_map(|r| r.ok()).collect();
+        Ok(all.into_iter().filter(|e| e.normalized_text.to_lowercase() == pattern).collect())
+    }
+
+    /// Get all unique entities across all documents with occurrence counts
+    pub fn get_entity_summary(&self) -> Result<Vec<EntitySummary>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT normalized_text, category, COUNT(*) as occurrence_count, COUNT(DISTINCT document_id) as document_count
+             FROM entities GROUP BY normalized_text, category ORDER BY occurrence_count DESC"
+        )?;
+
+        let rows = stmt.query_map([], |row| {
+            Ok(EntitySummary {
+                normalized_text: row.get(0)?,
+                category: row.get(1)?,
+                occurrence_count: row.get(2)?,
+                document_count: row.get(3)?,
+            })
+        })?;
+
+        rows.collect()
+    }
+
+    // ─── Document Pages (text storage for reconstruction) ───
+
+    pub fn insert_document_page(
+        &self,
+        document_id: &str,
+        page_number: i32,
+        raw_text: &str,
+    ) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        let now = chrono::Utc::now().to_rfc3339();
+        conn.execute(
+            "INSERT OR REPLACE INTO document_pages (document_id, page_number, raw_text, created_at)
+             VALUES (?1, ?2, ?3, ?4)",
+            params![document_id, page_number, raw_text, now],
+        )?;
+        Ok(())
+    }
+
+    pub fn update_page_cleaned_text(
+        &self,
+        document_id: &str,
+        page_number: i32,
+        cleaned_text: &str,
+    ) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "UPDATE document_pages SET cleaned_text = ?1 WHERE document_id = ?2 AND page_number = ?3",
+            params![cleaned_text, document_id, page_number],
+        )?;
+        Ok(())
+    }
+
+    pub fn get_document_pages(&self, document_id: &str) -> Result<Vec<DocumentPageRow>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT document_id, page_number, raw_text, cleaned_text, created_at
+             FROM document_pages WHERE document_id = ?1 ORDER BY page_number"
+        )?;
+
+        let rows = stmt.query_map(params![document_id], |row| {
+            Ok(DocumentPageRow {
+                document_id: row.get(0)?,
+                page_number: row.get(1)?,
+                raw_text: row.get(2)?,
+                cleaned_text: row.get(3)?,
+                created_at: row.get(4)?,
+            })
+        })?;
+
+        rows.collect()
+    }
+
+    // ─── License ───
+
+    pub fn get_license(&self) -> Result<Option<LicenseRow>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, license_key, machine_id, activated_at, expires_at, last_validated_at, plan, status FROM license LIMIT 1"
+        )?;
+
+        let mut rows = stmt.query_map([], |row| {
+            Ok(LicenseRow {
+                id: row.get(0)?,
+                license_key: row.get(1)?,
+                machine_id: row.get(2)?,
+                activated_at: row.get(3)?,
+                expires_at: row.get(4)?,
+                last_validated_at: row.get(5)?,
+                plan: row.get(6)?,
+                status: row.get(7)?,
+            })
+        })?;
+
+        match rows.next() {
+            Some(row) => Ok(Some(row?)),
+            None => Ok(None),
+        }
+    }
+
+    pub fn activate_license(&self, license_key: &str, machine_id: &str, expires_at: &str) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        let now = chrono::Utc::now().to_rfc3339();
+        let id = uuid::Uuid::new_v4().to_string();
+
+        // Remove any existing license
+        conn.execute("DELETE FROM license", [])?;
+
+        conn.execute(
+            "INSERT INTO license (id, license_key, machine_id, activated_at, expires_at, last_validated_at, plan, status)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?4, 'yearly', 'active')",
+            params![id, license_key, machine_id, now, expires_at],
+        )?;
+        Ok(())
+    }
+
+    pub fn update_license_validation(&self, expires_at: &str) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        let now = chrono::Utc::now().to_rfc3339();
+        conn.execute(
+            "UPDATE license SET last_validated_at = ?1, expires_at = ?2 WHERE status = 'active'",
+            params![now, expires_at],
+        )?;
+        Ok(())
+    }
+
+    pub fn deactivate_license(&self) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute("DELETE FROM license", [])?;
+        Ok(())
+    }
+
+    pub fn is_licensed(&self) -> Result<bool> {
+        let license = self.get_license()?;
+        match license {
+            Some(lic) => {
+                if lic.status != "active" {
+                    return Ok(false);
+                }
+                // Check expiry
+                let now = chrono::Utc::now().to_rfc3339();
+                if lic.expires_at <= now {
+                    return Ok(false);
+                }
+                // Check offline grace period (7 days)
+                if let Some(last_validated) = &lic.last_validated_at {
+                    if let Ok(validated_time) = chrono::DateTime::parse_from_rfc3339(last_validated) {
+                        let grace_deadline = validated_time + chrono::Duration::days(7);
+                        let now_time = chrono::Utc::now();
+                        if now_time > grace_deadline {
+                            return Ok(false); // Offline too long
+                        }
+                    }
+                }
+                Ok(true)
+            }
+            None => Ok(false),
+        }
+    }
+
+    // ─── History ───
+
     pub fn get_history(&self, offset: i64, limit: i64) -> Result<Vec<DocumentRow>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
@@ -292,83 +583,27 @@ impl Database {
 
     pub fn delete_document(&self, id: &str) -> Result<()> {
         let conn = self.conn.lock().unwrap();
+        conn.execute("DELETE FROM entities WHERE document_id = ?1", params![id])?;
+        conn.execute("DELETE FROM document_pages WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM redactions WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM documents WHERE id = ?1", params![id])?;
         Ok(())
     }
 
-    // Credit management
-    pub fn get_or_init_credits(&self) -> Result<CreditRow> {
+    // ─── Audit Log ───
+
+    pub fn insert_audit_log(&self, document_id: Option<&str>, action: &str, details: Option<&str>) -> Result<()> {
         let conn = self.conn.lock().unwrap();
-        let current_month = chrono::Utc::now().format("%Y-%m").to_string();
-
-        let mut stmt = conn.prepare("SELECT id, license_key, balance, free_remaining, free_month, last_synced_at FROM credits LIMIT 1")?;
-        let mut rows = stmt.query_map([], |row| {
-            Ok(CreditRow {
-                id: row.get(0)?,
-                license_key: row.get(1)?,
-                balance: row.get(2)?,
-                free_remaining: row.get(3)?,
-                free_month: row.get(4)?,
-                last_synced_at: row.get(5)?,
-            })
-        })?;
-
-        match rows.next() {
-            Some(row) => {
-                let mut credit = row?;
-                // Reset free credits if month changed
-                if credit.free_month != current_month {
-                    credit.free_remaining = 3;
-                    credit.free_month = current_month.clone();
-                    drop(rows);
-                    conn.execute(
-                        "UPDATE credits SET free_remaining = 3, free_month = ?1 WHERE id = ?2",
-                        params![current_month, credit.id],
-                    )?;
-                }
-                Ok(credit)
-            }
-            None => {
-                drop(rows);
-                let id = uuid::Uuid::new_v4().to_string();
-                conn.execute(
-                    "INSERT INTO credits (id, balance, free_remaining, free_month) VALUES (?1, 0, 3, ?2)",
-                    params![id, current_month],
-                )?;
-                Ok(CreditRow {
-                    id,
-                    license_key: None,
-                    balance: 0,
-                    free_remaining: 3,
-                    free_month: current_month,
-                    last_synced_at: None,
-                })
-            }
-        }
-    }
-
-    pub fn decrement_credit(&self) -> Result<bool> {
-        let credits = self.get_or_init_credits()?;
-        let conn = self.conn.lock().unwrap();
-
-        if credits.free_remaining > 0 {
-            conn.execute(
-                "UPDATE credits SET free_remaining = free_remaining - 1 WHERE id = ?1",
-                params![credits.id],
-            )?;
-            Ok(true)
-        } else if credits.balance > 0 {
-            conn.execute(
-                "UPDATE credits SET balance = balance - 1 WHERE id = ?1",
-                params![credits.id],
-            )?;
-            Ok(true)
-        } else {
-            Ok(false)
-        }
+        let now = chrono::Utc::now().to_rfc3339();
+        conn.execute(
+            "INSERT INTO audit_log (document_id, action, details, created_at) VALUES (?1, ?2, ?3, ?4)",
+            params![document_id, action, details, now],
+        )?;
+        Ok(())
     }
 }
+
+// ─── Row types ───
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct DocumentRow {
@@ -402,11 +637,45 @@ pub struct RedactionRow {
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
-pub struct CreditRow {
+pub struct EntityRow {
     pub id: String,
-    pub license_key: Option<String>,
-    pub balance: i32,
-    pub free_remaining: i32,
-    pub free_month: String,
-    pub last_synced_at: Option<String>,
+    pub document_id: String,
+    pub original_text: String,
+    pub normalized_text: String,
+    pub category: String,
+    pub page: i32,
+    pub start_offset: i32,
+    pub end_offset: i32,
+    pub confidence: f64,
+    pub detection_layer: String,
+    pub created_at: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct EntitySummary {
+    pub normalized_text: String,
+    pub category: String,
+    pub occurrence_count: i32,
+    pub document_count: i32,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct DocumentPageRow {
+    pub document_id: String,
+    pub page_number: i32,
+    pub raw_text: String,
+    pub cleaned_text: Option<String>,
+    pub created_at: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct LicenseRow {
+    pub id: String,
+    pub license_key: String,
+    pub machine_id: String,
+    pub activated_at: String,
+    pub expires_at: String,
+    pub last_validated_at: Option<String>,
+    pub plan: String,
+    pub status: String,
 }

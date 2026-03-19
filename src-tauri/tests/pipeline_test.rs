@@ -369,10 +369,63 @@ fn test_legal_contract_dates_and_money() {
     println!("  Money: {:?}", money);
     println!("  Names: {:?}", names);
 
+    let companies: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::CompanyName)
+        .map(|e| e.text.as_str())
+        .collect();
+
+    println!("  Companies: {:?}", companies);
+
     assert!(!dates.is_empty(), "Should detect dates in legal contract");
     assert!(!money.is_empty(), "Should detect monetary amounts");
     assert!(names.iter().any(|n| n.contains("Shanti Cillo")),
         "Should detect 'Shanti Cillo' from percentage distribution");
     assert!(names.iter().any(|n| n.contains("Bernardo Schucman")),
         "Should detect 'Bernardo Schucman' from percentage distribution");
+
+    // Company name detection
+    assert!(companies.iter().any(|c| c.contains("CS DIGITAL VENTURES LLC")),
+        "Should detect 'CS DIGITAL VENTURES LLC', found: {:?}", companies);
+}
+
+#[test]
+fn test_legal_contract_company_names() {
+    let text = r#"THIS AMENDMENT to the Agreement of CS DIGITAL VENTURES LLC, a Delaware limited liability company, is entered into by and among the Company and the Members.
+
+CS Management Group LLC – 12.6316%
+
+The equity will be sold to Olenox Industries (the "Transaction") for USD $50,000,000.
+
+CS MANAGEMENT GROUP LLC
+
+Roberto Santacroce Martins, Shareholder"#;
+
+    let entities = pipeline::run_pipeline(text, 0, &["global", "us", "eu", "br", "de"]);
+
+    println!("\n=== Company Name Detection Test ===");
+    for e in &entities {
+        println!("  [{:?}] '{}' (confidence: {:.0}%, layer: {})",
+            e.category, e.text, e.confidence * 100.0, e.layer);
+    }
+
+    let companies: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::CompanyName)
+        .map(|e| e.text.as_str())
+        .collect();
+
+    let names: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::PersonName)
+        .map(|e| e.text.as_str())
+        .collect();
+
+    println!("  Companies: {:?}", companies);
+    println!("  Names: {:?}", names);
+
+    assert!(companies.iter().any(|c| c.contains("CS DIGITAL VENTURES LLC")),
+        "Should detect 'CS DIGITAL VENTURES LLC', found: {:?}", companies);
+    assert!(companies.iter().any(|c| c.contains("CS Management Group LLC")),
+        "Should detect 'CS Management Group LLC', found: {:?}", companies);
+    // "Roberto Santacroce Martins" should be a PersonName, not a CompanyName
+    assert!(names.iter().any(|n| n.contains("Roberto Santacroce Martins")),
+        "Should detect 'Roberto Santacroce Martins' as a name, found: {:?}", names);
 }

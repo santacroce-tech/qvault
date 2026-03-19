@@ -1,17 +1,26 @@
 import { useState, useCallback, useEffect } from "react";
-import { getCredits } from "../lib/tauri-commands";
-import type { CreditInfo } from "../lib/types";
+import { checkLicense } from "../lib/tauri-commands";
 
-export function useCredits() {
-  const [credits, setCredits] = useState<CreditInfo | null>(null);
-  const [loading, setLoading] = useState(true);
+// In Tauri dev mode, __TAURI_INTERNALS__ is present and the backend
+// already returns true for checkLicense — but guard the frontend too.
+const isDevMode = typeof window !== "undefined" && !!(window as any).__TAURI_INTERNALS__;
+
+export function useLicense() {
+  const [licensed, setLicensed] = useState<boolean>(isDevMode);
+  const [loading, setLoading] = useState(!isDevMode);
 
   const load = useCallback(async () => {
     try {
-      const info = await getCredits();
-      setCredits(info);
+      const isLicensed = await checkLicense();
+      setLicensed(isLicensed);
     } catch (e) {
-      console.error("Failed to load credits:", e);
+      if (isDevMode) {
+        console.debug("License check failed in dev mode, defaulting to licensed:", e);
+        setLicensed(true);
+      } else {
+        console.error("Failed to check license:", e);
+        setLicensed(false);
+      }
     } finally {
       setLoading(false);
     }
@@ -21,5 +30,5 @@ export function useCredits() {
     load();
   }, [load]);
 
-  return { credits, loading, reload: load };
+  return { licensed, loading, reload: load };
 }

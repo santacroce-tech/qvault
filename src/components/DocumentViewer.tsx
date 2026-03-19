@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import * as pdfjsLib from "pdfjs-dist";
 import type { PDFDocumentProxy, TextItem } from "pdfjs-dist/types/src/display/api";
 import { useDocument } from "../hooks/useDocument";
-import { useRedactions } from "../hooks/useRedactions";
+import type { UseRedactionsReturn } from "../hooks/useRedactions";
 import { getDocumentBytes, scanDocumentText, addManualRedaction } from "../lib/tauri-commands";
 import type { RedactionRect } from "../lib/tauri-commands";
 import { PII_COLORS } from "../lib/types";
@@ -16,6 +17,7 @@ interface Props {
   documentId: string;
   onRectsReady: (getter: GetPdfRectsForExport) => void;
   advancedMode: boolean;
+  redactionsHook: UseRedactionsReturn;
 }
 
 interface TextSpan {
@@ -76,9 +78,10 @@ interface PageData {
   scale: number;
 }
 
-export default function DocumentViewer({ documentId, onRectsReady, advancedMode }: Props) {
+export default function DocumentViewer({ documentId, onRectsReady, advancedMode, redactionsHook }: Props) {
+  const { t } = useTranslation();
   const { document: doc, loading: docLoading, error, loadDocument } = useDocument();
-  const { redactions, selectedId, setSelectedId, reload: reloadRedactions } = useRedactions(documentId);
+  const { redactions, selectedId, setSelectedId, reload: reloadRedactions } = redactionsHook;
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pageData, setPageData] = useState<PageData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -254,7 +257,7 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode 
       <div className="flex items-center justify-center h-full">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500 text-sm">Loading document...</p>
+          <p className="text-gray-500 text-sm">{t('viewer.loading')}</p>
         </div>
       </div>
     );
@@ -264,7 +267,7 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode 
     return (
       <div className="p-8">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
-          <p className="font-medium">Error loading document</p>
+          <p className="font-medium">{t('viewer.errorTitle')}</p>
           <p className="mt-1">{pdfError || error}</p>
         </div>
       </div>
@@ -281,16 +284,16 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode 
           {scanning && (
             <span className="text-sm text-amber-600 flex items-center gap-1.5">
               <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-              Scanning for PII...
+              {t('viewer.scanning')}
             </span>
           )}
           {advancedMode && (
             <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
-              Advanced Mode — Select text to redact
+              {t('viewer.advancedMode')}
             </span>
           )}
           <span className="text-sm text-gray-500">
-            {pdfDoc.numPages} page{pdfDoc.numPages !== 1 ? "s" : ""} | {doc.pii_count} PII detected
+            {t('viewer.pageInfo', { count: pdfDoc.numPages, piiCount: doc.pii_count })}
           </span>
         </div>
       </div>
@@ -337,6 +340,7 @@ function PdfPage({
   advancedMode: boolean;
   onManualRedaction: (pageIdx: number, text: string) => void;
 }) {
+  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [rendered, setRendered] = useState(false);
   const [selectionPopup, setSelectionPopup] = useState<{
@@ -461,7 +465,7 @@ function PdfPage({
             onClick={handleAddRedaction}
             className="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap"
           >
-            Redact
+            {t('viewer.redact')}
           </button>
           <button
             onClick={() => {
@@ -502,14 +506,14 @@ function PdfPage({
                   boxShadow: isSelected ? `0 0 0 2px ${color}40` : undefined,
                   pointerEvents: advancedMode ? "none" : "auto",
                 }}
-                title={`${redaction.category}: ${redaction.original_text}`}
+                title={`${t('pii.' + redaction.category)}: ${redaction.original_text}`}
               />
             );
           })
         )}
 
       <div className="absolute bottom-2 right-3 text-xs text-gray-400 bg-white/80 px-1.5 py-0.5 rounded">
-        Page {pageNum}
+        {t('viewer.page', { number: pageNum })}
       </div>
     </div>
   );

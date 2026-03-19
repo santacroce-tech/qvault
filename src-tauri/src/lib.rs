@@ -54,6 +54,9 @@ pub fn run() {
             commands::document::get_document,
             commands::document::get_document_text,
             commands::document::get_document_bytes,
+            commands::document::get_document_entities,
+            commands::document::get_entity_summary,
+            commands::document::get_document_pages,
             commands::document::export_clean,
             commands::document::delete_document,
             commands::document::reset_app_data,
@@ -62,7 +65,11 @@ pub fn run() {
             commands::redaction::bulk_approve,
             commands::history::get_history,
             commands::history::search_history,
-            commands::license::get_credits,
+            commands::license::get_license,
+            commands::license::activate_license,
+            commands::license::deactivate_license,
+            commands::license::check_license,
+            commands::license::validate_license_online,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

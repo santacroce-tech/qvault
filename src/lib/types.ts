@@ -49,17 +49,50 @@ export interface Redaction {
   original_text: string;
   replacement: string;
   category: PiiCategory;
-  detection_layer: "regex" | "ner" | "heuristic";
+  detection_layer: "regex" | "ner" | "heuristic" | "manual";
   confidence: number;
   status: RedactionStatus;
   reviewed_at: string | null;
 }
 
-export interface CreditInfo {
-  balance: number;
-  free_remaining: number;
-  free_month: string;
-  license_key: string | null;
+export interface LicenseInfo {
+  id: string;
+  license_key: string;
+  machine_id: string;
+  activated_at: string;
+  expires_at: string;
+  last_validated_at: string | null;
+  plan: string;
+  status: string;
+}
+
+export interface EntityRow {
+  id: string;
+  document_id: string;
+  original_text: string;
+  normalized_text: string;
+  category: string;
+  page: number;
+  start_offset: number;
+  end_offset: number;
+  confidence: number;
+  detection_layer: string;
+  created_at: string;
+}
+
+export interface EntitySummary {
+  normalized_text: string;
+  category: string;
+  occurrence_count: number;
+  document_count: number;
+}
+
+export interface DocumentPage {
+  document_id: string;
+  page_number: number;
+  raw_text: string;
+  cleaned_text: string | null;
+  created_at: string;
 }
 
 export const PII_COLORS: Record<string, string> = {
@@ -88,7 +121,11 @@ export const PII_COLORS: Record<string, string> = {
   CompanyName: "#0891B2",
 };
 
-export function piiCategoryLabel(cat: PiiCategory): string {
+export function piiCategoryLabel(cat: PiiCategory, t?: (key: string) => string): string {
+  if (t) {
+    return t(`pii.${cat}`);
+  }
+  // Fallback for contexts without i18n
   const labels: Record<PiiCategory, string> = {
     PersonName: "Name",
     Email: "Email",
