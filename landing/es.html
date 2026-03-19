@@ -278,6 +278,19 @@
       font-size: 1rem;
     }
 
+    /* Download Section */
+    .download-section { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); color: white; padding: 80px 0; text-align: center; }
+    .download-section h2 { font-size: 2rem; margin-bottom: 0.5rem; }
+    .download-section .subtitle { color: rgba(255,255,255,0.6); margin-bottom: 2.5rem; font-size: 1.1rem; }
+    .download-primary { display: inline-flex; align-items: center; gap: 12px; background: var(--blue-accent); color: white; padding: 16px 40px; border-radius: 12px; font-size: 1.2rem; font-weight: 700; text-decoration: none; transition: background 0.2s, transform 0.1s; margin-bottom: 1.5rem; }
+    .download-primary:hover { background: var(--blue-hover); transform: translateY(-1px); }
+    .download-primary svg { width: 24px; height: 24px; }
+    .download-alt { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-top: 1rem; }
+    .download-alt a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.95rem; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; transition: all 0.2s; }
+    .download-alt a:hover { color: white; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
+    .download-alt a.active-os { display: none; }
+    .download-version { margin-top: 2rem; color: rgba(255,255,255,0.4); font-size: 0.85rem; }
+
     /* Features */
     .features {
       background: var(--gray-50);
@@ -581,6 +594,7 @@
     <div class="nav-inner">
       <a href="#" class="nav-logo"><span>Q</span>vault</a>
       <ul class="nav-links">
+        <li><a href="#download">Descargar</a></li>
         <li><a href="#features">Funciones</a></li>
         <li><a href="#how-it-works">C&oacute;mo Funciona</a></li>
         <li><a href="#pricing">Precios</a></li>
@@ -600,9 +614,9 @@
       <h1>Proteja la Privacidad de sus Clientes. Autom&aacute;ticamente.</h1>
       <p>Qvault detecta y redacta informaci&oacute;n sensible de documentos legales &mdash; nombres, n&uacute;meros de seguro social, direcciones, datos financieros &mdash; todo sin que sus datos salgan de su computadora.</p>
       <div class="hero-buttons">
-        <a href="#" class="btn-primary">
+        <a href="#download" class="btn-primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Descargar para Mac
+          Descargar Qvault
         </a>
         <a href="#pricing" class="btn-secondary">Ver Precios</a>
       </div>
@@ -611,6 +625,26 @@
         <div class="screenshot-placeholder">Captura: Vista de Revisi&oacute;n con PII Resaltado</div>
         <div class="screenshot-placeholder">Captura: Vista de Base de Datos de Entidades</div>
       </div>
+    </div>
+  </section>
+
+  <!-- Descargar -->
+  <section class="download-section" id="download">
+    <div class="container">
+      <h2>Descargar Qvault</h2>
+      <p class="subtitle">Disponible para macOS, Windows y Linux</p>
+      <div>
+        <a id="download-primary" href="#" class="download-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span id="download-label">Descargar para macOS</span>
+        </a>
+      </div>
+      <div class="download-alt">
+        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-mac" data-os="macos">macOS (.dmg)</a>
+        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-win" data-os="windows">Windows (.exe)</a>
+        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
+      </div>
+      <p class="download-version">v0.1.0 &middot; Requiere clave de licencia &middot; <a href="#pricing" style="color:rgba(255,255,255,0.5);text-decoration:underline;">Comprar aqu&iacute;</a></p>
     </div>
   </section>
 
@@ -747,6 +781,21 @@
         rootMargin: '0px 0px -40px 0px'
       });
       document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+      // OS detection
+      (function() {
+        const ua = navigator.userAgent;
+        let os = 'linux';
+        if (ua.includes('Mac')) os = 'macos';
+        else if (ua.includes('Win')) os = 'windows';
+        const labels = { macos: 'Descargar para macOS', windows: 'Descargar para Windows', linux: 'Descargar para Linux' };
+        const primary = document.getElementById('download-primary');
+        const label = document.getElementById('download-label');
+        if (primary && label) { label.textContent = labels[os]; primary.href = 'https://github.com/santacroce-tech/qvault/releases/latest'; }
+        const altId = os === 'macos' ? 'dl-mac' : os === 'windows' ? 'dl-win' : 'dl-linux';
+        const altLink = document.getElementById(altId);
+        if (altLink) altLink.classList.add('active-os');
+      })();
 
       const buyBtn = document.getElementById('buy-btn');
       if (buyBtn) {

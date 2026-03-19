@@ -278,6 +278,84 @@
       font-size: 1rem;
     }
 
+    /* Download Section */
+    .download-section {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white;
+      padding: 80px 0;
+      text-align: center;
+    }
+
+    .download-section h2 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .download-section .subtitle {
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 2.5rem;
+      font-size: 1.1rem;
+    }
+
+    .download-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--blue-accent);
+      color: white;
+      padding: 16px 40px;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+      margin-bottom: 1.5rem;
+    }
+
+    .download-primary:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    .download-primary svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .download-alt {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .download-alt a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 0.95rem;
+      padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .download-alt a:hover {
+      color: white;
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .download-alt a.active-os {
+      display: none;
+    }
+
+    .download-version {
+      margin-top: 2rem;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.85rem;
+    }
+
     /* Features */
     .features {
       background: var(--gray-50);
@@ -581,6 +659,7 @@
     <div class="nav-inner">
       <a href="#" class="nav-logo"><span>Q</span>vault</a>
       <ul class="nav-links">
+        <li><a href="#download">Download</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#how-it-works">How It Works</a></li>
         <li><a href="#pricing">Pricing</a></li>
@@ -600,9 +679,9 @@
       <h1>Protect Client Privacy. Automatically.</h1>
       <p>Qvault detects and redacts sensitive information from legal documents &mdash; names, SSNs, addresses, financial data &mdash; all without your data ever leaving your computer.</p>
       <div class="hero-buttons">
-        <a href="#" class="btn-primary">
+        <a href="#download" class="btn-primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download for Mac
+          Download Qvault
         </a>
         <a href="#pricing" class="btn-secondary">View Pricing</a>
       </div>
@@ -611,6 +690,29 @@
         <div class="screenshot-placeholder">Screenshot: Review View with PII Highlighted</div>
         <div class="screenshot-placeholder">Screenshot: Entity Database View</div>
       </div>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section class="download-section" id="download">
+    <div class="container">
+      <h2>Download Qvault</h2>
+      <p class="subtitle">Available for macOS, Windows, and Linux</p>
+
+      <div>
+        <a id="download-primary" href="#" class="download-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span id="download-label">Download for macOS</span>
+        </a>
+      </div>
+
+      <div class="download-alt">
+        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-mac" data-os="macos">macOS (.dmg)</a>
+        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-win" data-os="windows">Windows (.exe)</a>
+        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
+      </div>
+
+      <p class="download-version">v0.1.0 &middot; Requires a license key &middot; <a href="#pricing" style="color:rgba(255,255,255,0.5);text-decoration:underline;">Purchase here</a></p>
     </div>
   </section>
 
@@ -748,6 +850,26 @@
         rootMargin: '0px 0px -40px 0px'
       });
       document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+      // OS detection for download section
+      (function() {
+        const ua = navigator.userAgent;
+        let os = 'linux';
+        if (ua.includes('Mac')) os = 'macos';
+        else if (ua.includes('Win')) os = 'windows';
+
+        const labels = { macos: 'Download for macOS', windows: 'Download for Windows', linux: 'Download for Linux' };
+        const primary = document.getElementById('download-primary');
+        const label = document.getElementById('download-label');
+        if (primary && label) {
+          label.textContent = labels[os];
+          primary.href = 'https://github.com/santacroce-tech/qvault/releases/latest';
+        }
+
+        // Hide current OS from alt links
+        const altLink = document.getElementById('dl-' + (os === 'macos' ? 'mac' : os === 'windows' ? 'win' : 'linux'));
+        if (altLink) altLink.classList.add('active-os');
+      })();
 
       // Stripe checkout
       const buyBtn = document.getElementById('buy-btn');
