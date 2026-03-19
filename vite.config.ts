@@ -4,8 +4,16 @@ import { copyFileSync, mkdirSync } from "fs";
 import { resolve } from "path";
 
 const host = process.env.TAURI_DEV_HOST;
+const isTauri = !!process.env.TAURI_ENV_PLATFORM || !!host;
 
 export default defineConfig(async () => ({
+  resolve: isTauri ? {} : {
+    alias: {
+      "@tauri-apps/api/core": resolve("src/lib/tauri-mock.ts"),
+      "@tauri-apps/api/webview": resolve("src/lib/tauri-mock-webview.ts"),
+      "@tauri-apps/plugin-dialog": resolve("src/lib/tauri-mock-dialog.ts"),
+    },
+  },
   plugins: [
     react(),
     {
