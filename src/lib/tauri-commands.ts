@@ -1,5 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Document, Redaction, CreditInfo } from "./types";
+import type {
+  Document,
+  Redaction,
+  LicenseInfo,
+  EntityRow,
+  EntitySummary,
+  DocumentPage,
+} from "./types";
 
 // Documents
 export async function uploadDocument(filePath: string, pageCount: number): Promise<string> {
@@ -42,6 +49,18 @@ export async function getDocumentBytes(id: string): Promise<string> {
   return invoke("get_document_bytes", { id });
 }
 
+export async function getDocumentEntities(documentId: string): Promise<EntityRow[]> {
+  return invoke("get_document_entities", { documentId });
+}
+
+export async function getEntitySummary(): Promise<EntitySummary[]> {
+  return invoke("get_entity_summary");
+}
+
+export async function getDocumentPages(documentId: string): Promise<DocumentPage[]> {
+  return invoke("get_document_pages", { documentId });
+}
+
 export interface RedactionRect {
   page: number;
   x: number;
@@ -78,9 +97,21 @@ export async function bulkApprove(
   return invoke("bulk_approve", { documentId, category });
 }
 
-// License & Credits
-export async function getCredits(): Promise<CreditInfo> {
-  return invoke("get_credits");
+// License
+export async function getLicense(): Promise<LicenseInfo | null> {
+  return invoke("get_license");
+}
+
+export async function activateLicense(licenseKey: string): Promise<LicenseInfo> {
+  return invoke("activate_license", { licenseKey });
+}
+
+export async function deactivateLicense(): Promise<void> {
+  return invoke("deactivate_license");
+}
+
+export async function checkLicense(): Promise<boolean> {
+  return invoke("check_license");
 }
 
 // History

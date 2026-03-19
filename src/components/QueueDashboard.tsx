@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { useDocument } from "../hooks/useDocument";
-import { useCredits } from "../hooks/useCredits";
-import CreditBalance from "./CreditBalance";
+import { useLicense } from "../hooks/useCredits";
+import LicenseStatus from "./CreditBalance";
 
 interface Props {
   onDocumentReady: (docId: string) => void;
@@ -11,18 +11,17 @@ interface Props {
 
 export default function QueueDashboard({ onDocumentReady }: Props) {
   const { upload, loading, error } = useDocument();
-  const { credits, reload: reloadCredits } = useCredits();
+  const { licensed } = useLicense();
   const [dragOver, setDragOver] = useState(false);
 
   const handleFile = useCallback(
     async (filePath: string) => {
       const docId = await upload(filePath, 0);
       if (docId) {
-        await reloadCredits();
         onDocumentReady(docId);
       }
     },
-    [upload, onDocumentReady, reloadCredits]
+    [upload, onDocumentReady]
   );
 
   // Listen to Tauri's native drag-and-drop events
@@ -58,6 +57,7 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
   }, [handleFile]);
 
   const handleClick = useCallback(async () => {
+    if (!licensed) return;
     const selected = await open({
       multiple: false,
       filters: [
@@ -67,11 +67,7 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
     if (selected) {
       await handleFile(selected as string);
     }
-  }, [handleFile]);
-
-  const canUpload = credits
-    ? credits.free_remaining > 0 || credits.balance > 0
-    : true;
+  }, [handleFile, licensed]);
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 bg-content">
@@ -82,14 +78,14 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
           computer.
         </p>
 
-        {/* Credit Balance */}
-        <CreditBalance />
+        {/* License Status */}
+        <LicenseStatus />
 
         {/* Drop Zone */}
         <div
-          onClick={canUpload ? handleClick : undefined}
+          onClick={licensed ? handleClick : undefined}
           className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors ${
-            !canUpload
+            !licensed
               ? "border-gray-200 bg-gray-50 cursor-not-allowed"
               : dragOver
               ? "border-blue-400 bg-blue-50"
@@ -101,16 +97,16 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               <p className="text-gray-600">Processing document...</p>
             </div>
-          ) : !canUpload ? (
+          ) : !licensed ? (
             <div className="flex flex-col items-center gap-3">
               <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
               </svg>
               <p className="text-gray-400 font-medium">
-                No credits remaining this month
+                License required
               </p>
               <p className="text-gray-400 text-sm">
-                Purchase credits in Settings to continue
+                Activate a yearly license in Settings to start processing documents
               </p>
             </div>
           ) : (

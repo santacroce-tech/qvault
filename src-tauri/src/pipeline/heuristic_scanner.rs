@@ -3,7 +3,7 @@ use uuid::Uuid;
 use std::collections::HashSet;
 use crate::pipeline::types::{PiiEntity, PiiCategory};
 
-/// Heuristic-based scanner for detecting person names and entities in legal documents.
+/// Heuristic-based scanner for detecting person names and company names in legal documents.
 /// Uses contextual patterns and capitalization analysis rather than ML.
 pub struct HeuristicScanner {
     // Patterns that capture "Name, Title" or "Name – percentage"
@@ -11,9 +11,19 @@ pub struct HeuristicScanner {
     name_percentage_re: Regex,
     // Capitalized word sequences on a single line (2+ words)
     cap_sequence_re: Regex,
+    // Company patterns: "Foo Bar LLC", "Foo Bar Inc.", etc.
+    company_suffix_re: Regex,
+    // Company patterns from context: "... of CompanyName, a Delaware ..."
+    company_entity_re: Regex,
+    // Company name + percentage pattern (like name percentage)
+    company_percentage_re: Regex,
     // Common terms that look like names but aren't
     stop_phrases: HashSet<&'static str>,
     stop_words: HashSet<&'static str>,
+    // Formal legal entity suffixes (LLC, Inc, etc.)
+    company_suffixes: HashSet<&'static str>,
+    // Words that strongly suggest a company name (Industries, Ventures, etc.)
+    company_indicators: HashSet<&'static str>,
 }
 
 impl HeuristicScanner {
@@ -34,20 +44,36 @@ impl HeuristicScanner {
             r"(?m)^.*?([A-Z][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das|van|von|del|di|el|la|le))*(?:[ ]+[A-Z][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das|van|von|del|di|el|la|le))*)+)"
         ).unwrap();
 
+        // Company with suffix: "CS Digital Ventures LLC", "Acme Corp.", "Olenox Industries Inc"
+        // Matches sequences of words (including uppercase, mixed case, single uppercase letters) followed by a company suffix
+        // Requires at least 2 words before the suffix to avoid "Restated Limited" false positives
+        let company_suffix_re = Regex::new(
+            r"\b((?:[A-Z][A-Za-z]*(?:[ ]+[A-Z][A-Za-z]*)+))[ ]+(LLC|Inc\.?|Corp\.?|Corporation|Ltd\.?|Limited|LLP|LP|PLC|GmbH|S\.?A\.?|SARL|AG|BV|NV|Pty|Co\.?)\b"
+        ).unwrap();
+
+        // "...of CompanyName, a Delaware limited liability company..."
+        let company_entity_re = Regex::new(
+            r"(?:of|by|to|from|with|and)\s+((?:[A-Z][A-Za-z]*(?:\s+[A-Z][A-Za-z]*)*)\s+(?:LLC|Inc\.?|Corp\.?|Corporation|Ltd\.?|Limited|LLP|LP))"
+        ).unwrap();
+
+        // "CompanyName LLC – XX.XXXX%" in distribution tables
+        let company_percentage_re = Regex::new(
+            r"((?:[A-Z][A-Za-z]*(?:[ ]+[A-Z][A-Za-z]*)*[ ]+(?:LLC|Inc\.?|Corp\.?|Ltd\.?)?))\s*[–—\-]\s*\d+(?:\.\d+)?%"
+        ).unwrap();
+
         let stop_phrases: HashSet<&'static str> = [
             // Two-word legal/document terms
             "Amendment No", "Amended And", "Annual Income",
             "Bank Account", "Banker Fee",
             "Capital Contribution", "Case Reference", "Closing Consideration",
             "Company Agreement", "Court File", "Credit Card",
-            "Digital Ventures",
             "Earn Out", "Emergency Contact", "Employment Information",
             "Financial Information", "Full Satisfaction",
             "General Release",
             "Limited Liability",
-            "Management Group", "Medical Record", "Miscellaneous Except",
+            "Medical Record", "Miscellaneous Except",
             "Net Proceeds",
-            "Oak Street", "Olenox Industries",
+            "Oak Street",
             "Restated Limited",
             "Side Agreements", "Social Security",
             "Tax Treatment", "Transaction Costs",
@@ -75,7 +101,6 @@ impl HeuristicScanner {
             "Capital", "Contribution", "Tax", "Treatment", "Miscellaneous",
             "Witness", "Whereof", "State", "Federal", "United", "States",
             "Distribution", "Costs", "Investment", "Payment", "Prior",
-            "Management", "Group", "Digital", "Ventures", "Industries",
             "Financial", "Information", "Employment", "Emergency",
             "Contact", "Credit", "Card", "Account", "Bank", "Record",
             "Medical", "Social", "Security", "Number", "Court", "File",
@@ -85,18 +110,112 @@ impl HeuristicScanner {
             "Schedule", "Appendix", "Annex", "Name", "Date",
         ].iter().copied().collect();
 
+        let company_suffixes: HashSet<&'static str> = [
+            // Formal legal entity suffixes
+            "LLC", "Inc", "Inc.", "Corp", "Corp.", "Corporation",
+            "Ltd", "Ltd.", "Limited", "LLP", "LP", "PLC",
+            "GmbH", "SA", "S.A.", "SARL", "AG", "BV", "NV", "Pty", "Co", "Co.",
+        ].iter().copied().collect();
+
+        let company_indicators: HashSet<&'static str> = [
+            "Industries", "Enterprises", "Holdings", "Ventures", "Partners",
+            "Associates", "Solutions", "Technologies", "Services",
+            "Consulting", "Advisors", "Systems", "Networks",
+            "International", "Global",
+        ].iter().copied().collect();
+
         HeuristicScanner {
             name_title_re,
             name_percentage_re,
             cap_sequence_re,
+            company_suffix_re,
+            company_entity_re,
+            company_percentage_re,
             stop_phrases,
             stop_words,
+            company_suffixes,
+            company_indicators,
         }
     }
 
     pub fn scan(&self, text: &str, page: u32, existing_ranges: &[(usize, usize)]) -> Vec<PiiEntity> {
         let mut entities: Vec<PiiEntity> = Vec::new();
         let mut matched_ranges: Vec<(usize, usize)> = existing_ranges.to_vec();
+
+        // === Company detection (before person names to avoid overlap) ===
+
+        // Pass 0a: Company names with legal suffixes (LLC, Inc, Corp, etc.)
+        for cap in self.company_suffix_re.captures_iter(text) {
+            if let (Some(name_part), Some(suffix)) = (cap.get(1), cap.get(2)) {
+                let full_start = name_part.start();
+                let full_end = suffix.end();
+                let full_text = &text[full_start..full_end];
+
+                // Skip ALL-CAPS headings that happen to end with LLC
+                // but do allow mixed-case company names
+                if full_text.len() < 4 {
+                    continue;
+                }
+
+                self.maybe_add_entity(
+                    full_text,
+                    full_start,
+                    full_end,
+                    page,
+                    PiiCategory::CompanyName,
+                    0.90,
+                    &mut entities,
+                    &mut matched_ranges,
+                );
+            }
+        }
+
+        // Pass 0b: Company names from percentage distributions
+        for cap in self.company_percentage_re.captures_iter(text) {
+            if let Some(m) = cap.get(1) {
+                let candidate = m.as_str().trim();
+                // Must contain a company suffix
+                let has_suffix = candidate.split_whitespace()
+                    .any(|w| self.company_suffixes.contains(w));
+                if has_suffix {
+                    self.maybe_add_entity(
+                        candidate,
+                        m.start(),
+                        m.start() + candidate.len(),
+                        page,
+                        PiiCategory::CompanyName,
+                        0.90,
+                        &mut entities,
+                        &mut matched_ranges,
+                    );
+                }
+            }
+        }
+
+        // Pass 0c: Company names from entity descriptions
+        for cap in self.company_entity_re.captures_iter(text) {
+            if let Some(m) = cap.get(1) {
+                let candidate = m.as_str();
+                // Skip legal boilerplate like "Restated Limited Liability"
+                let lower = candidate.to_lowercase();
+                if lower.contains("restated") || lower.contains("amended")
+                    || lower.contains("liability") || lower.contains("agreement") {
+                    continue;
+                }
+                self.maybe_add_entity(
+                    candidate,
+                    m.start(),
+                    m.end(),
+                    page,
+                    PiiCategory::CompanyName,
+                    0.88,
+                    &mut entities,
+                    &mut matched_ranges,
+                );
+            }
+        }
+
+        // === Person name detection ===
 
         // Pass 1: High-confidence — "Name, Title" patterns
         for cap in self.name_title_re.captures_iter(text) {
@@ -146,7 +265,24 @@ impl HeuristicScanner {
                     continue;
                 }
 
-                if self.looks_like_name(candidate, text, m.start()) {
+                // Check if this looks like a company name (has indicator words)
+                let words: Vec<&str> = candidate.split_whitespace().collect();
+                let has_company_indicator = words.iter().any(|w| self.company_indicators.contains(w));
+                let has_company_suffix = words.iter().any(|w| self.company_suffixes.contains(w));
+
+                if has_company_indicator || has_company_suffix {
+                    // Classify as company name
+                    self.maybe_add_entity(
+                        candidate,
+                        m.start(),
+                        m.start() + candidate.len(),
+                        page,
+                        PiiCategory::CompanyName,
+                        0.80,
+                        &mut entities,
+                        &mut matched_ranges,
+                    );
+                } else if self.looks_like_name(candidate, text, m.start()) {
                     self.maybe_add_name(
                         candidate,
                         m.start(),
@@ -161,6 +297,50 @@ impl HeuristicScanner {
         }
 
         entities
+    }
+
+    fn maybe_add_entity(
+        &self,
+        text: &str,
+        start: usize,
+        end: usize,
+        page: u32,
+        category: PiiCategory,
+        confidence: f64,
+        entities: &mut Vec<PiiEntity>,
+        matched_ranges: &mut Vec<(usize, usize)>,
+    ) {
+        if text.contains('\n') || text.contains('\r') {
+            return;
+        }
+
+        // Skip legal boilerplate that looks like company names
+        let lower = text.to_lowercase();
+        if lower.contains("restated") || lower.contains("amended")
+            || lower.contains("agreement") || lower.starts_with("liability") {
+            return;
+        }
+
+        let overlaps = matched_ranges.iter().any(|&(rs, re)| {
+            start < re && end > rs
+        });
+        if overlaps {
+            return;
+        }
+
+        matched_ranges.push((start, end));
+
+        entities.push(PiiEntity {
+            id: Uuid::new_v4().to_string(),
+            text: text.to_string(),
+            start,
+            end,
+            page,
+            category: category.clone(),
+            layer: "heuristic".to_string(),
+            confidence,
+            replacement: category.replacement_label().to_string(),
+        });
     }
 
     fn maybe_add_name(
@@ -188,6 +368,12 @@ impl HeuristicScanner {
 
         // Filter out stop phrases
         if self.is_stop_phrase(text) {
+            return;
+        }
+
+        // Skip if it looks like a company name (has a company suffix)
+        let words: Vec<&str> = text.split_whitespace().collect();
+        if words.iter().any(|w| self.company_suffixes.contains(w)) {
             return;
         }
 
@@ -250,7 +436,7 @@ impl HeuristicScanner {
             "closing consideration", "earn out", "net proceeds",
             "transaction cost", "general release", "tax treatment",
             "capital contribution", "side agreement", "witness whereof",
-            "management group", "digital ventures", "authorized representative",
+            "authorized representative",
             "amendment no", "full satisfaction", "file number",
             "record number", "security number", "intake form",
         ];
@@ -265,6 +451,11 @@ impl HeuristicScanner {
 
     fn looks_like_name(&self, candidate: &str, full_text: &str, pos: usize) -> bool {
         let words: Vec<&str> = candidate.split_whitespace().collect();
+
+        // If any word is a company suffix, it's not a person name
+        if words.iter().any(|w| self.company_suffixes.contains(w)) {
+            return false;
+        }
 
         // Filter to "real" name parts (skip connectors like de/da/von)
         let name_parts: Vec<&str> = words.iter()
