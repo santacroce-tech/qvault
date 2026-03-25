@@ -467,6 +467,8 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
               redactions={redactions}
               selectedId={selectedId}
               onSelectRedaction={setSelectedId}
+              advancedMode={advancedMode}
+              onManualRedaction={handleManualRedaction}
             />
           ) : (
             <PdfPage
@@ -495,20 +497,70 @@ function DocxPage({
   redactions,
   selectedId,
   onSelectRedaction,
+  advancedMode,
+  onManualRedaction,
 }: {
   pageData: PageData;
   pageIdx: number;
   redactions: Redaction[];
   selectedId: string | null;
   onSelectRedaction: (id: string) => void;
+  advancedMode: boolean;
+  onManualRedaction: (pageIdx: number, text: string) => void;
 }) {
+  const { t } = useTranslation();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [selectionPopup, setSelectionPopup] = useState<{
+    x: number;
+    y: number;
+    text: string;
+  } | null>(null);
+
   const pageRedactions = redactions.filter((r) => r.page === pageIdx);
   const mapped = mapRedactionsToRects(pd.textSpans, pageRedactions);
 
+  const handleMouseUp = useCallback(() => {
+    if (!advancedMode) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) {
+      setSelectionPopup(null);
+      return;
+    }
+
+    const text = selection.toString().trim();
+    if (!text) {
+      setSelectionPopup(null);
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    const pageEl = containerRef.current;
+    if (!pageEl) return;
+
+    const pageRect = pageEl.getBoundingClientRect();
+    setSelectionPopup({
+      x: rect.left - pageRect.left + rect.width / 2,
+      y: rect.top - pageRect.top - 8,
+      text,
+    });
+  }, [advancedMode]);
+
+  const handleAddRedaction = useCallback(() => {
+    if (selectionPopup) {
+      onManualRedaction(pageIdx, selectionPopup.text);
+      setSelectionPopup(null);
+      window.getSelection()?.removeAllRanges();
+    }
+  }, [selectionPopup, pageIdx, onManualRedaction]);
+
   return (
     <div
-      className="relative bg-white shadow-lg border border-gray-200 p-8 font-serif text-sm leading-relaxed"
-      style={{ width: pd.width, minHeight: pd.height }}
+      ref={containerRef}
+      className="relative bg-white shadow-lg border border-gray-200 p-8 font-serif text-sm leading-relaxed select-text"
+      style={{ width: pd.width, minHeight: pd.height, cursor: advancedMode ? "text" : "default" }}
+      onMouseUp={handleMouseUp}
     >
       {/* Text content */}
       {pd.textSpans.map((span, i) => (
@@ -538,11 +590,39 @@ function DocxPage({
                 border: isSelected ? `2px solid ${color}` : `1px solid ${color}80`,
                 borderRadius: 2,
                 zIndex: isSelected ? 10 : 1,
+                pointerEvents: advancedMode ? "none" : "auto",
               }}
               title={`${redaction.category}: ${redaction.original_text}`}
             />
           );
         })
+      )}
+
+      {/* Selection popup for manual redaction */}
+      {selectionPopup && (
+        <div
+          className="absolute z-30 bg-gray-900 text-white text-xs rounded-lg shadow-lg px-3 py-1.5 flex items-center gap-2 -translate-x-1/2 -translate-y-full"
+          style={{ left: selectionPopup.x, top: selectionPopup.y }}
+        >
+          <span className="max-w-[200px] truncate">
+            &quot;{selectionPopup.text}&quot;
+          </span>
+          <button
+            onClick={handleAddRedaction}
+            className="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap"
+          >
+            {t('viewer.redact')}
+          </button>
+          <button
+            onClick={() => {
+              setSelectionPopup(null);
+              window.getSelection()?.removeAllRanges();
+            }}
+            className="text-gray-400 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
       )}
     </div>
   );
