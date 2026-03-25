@@ -295,6 +295,37 @@ pub async fn get_document_bytes(
     Ok(base64::engine::general_purpose::STANDARD.encode(&decrypted))
 }
 
+/// Extract text from a DOCX file stored in encrypted storage
+#[tauri::command]
+pub async fn extract_docx_text(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<String>, String> {
+    let doc = state
+        .db
+        .get_document(&id)
+        .map_err(|e| format!("Database error: {}", e))?
+        .ok_or_else(|| "Document not found".to_string())?;
+
+    if doc.file_type != "docx" {
+        return Err("Not a DOCX document".to_string());
+    }
+
+    // Decrypt and write to a temp file for the parser
+    let decrypted = encryption::decrypt_file(Path::new(&doc.original_path))?;
+    let tmp_path = state.storage_dir.join(format!("{}_tmp.docx", id));
+    std::fs::write(&tmp_path, &decrypted)
+        .map_err(|e| format!("Failed to write temp file: {}", e))?;
+
+    let pages = crate::document::docx_parser::extract_docx_text(&tmp_path)
+        .map_err(|e| format!("Failed to extract DOCX text: {}", e))?;
+
+    // Clean up temp file
+    let _ = std::fs::remove_file(&tmp_path);
+
+    Ok(pages.into_iter().map(|p| p.text).collect())
+}
+
 /// Get entities extracted from a document (knowledge base entries)
 #[tauri::command]
 pub async fn get_document_entities(
@@ -337,38 +368,63 @@ pub struct RedactionRect {
     pub y: f64,
     pub width: f64,
     pub height: f64,
+    pub replacement: Option<String>,
+    pub category: Option<String>,
 }
 
 #[tauri::command]
 pub async fn export_clean(
     id: String,
     redaction_rects: Vec<RedactionRect>,
+    redaction_mode: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
+    let mode = match redaction_mode.as_deref() {
+        Some("text_replace") => crate::document::redactor::RedactionMode::TextReplace,
+        _ => crate::document::redactor::RedactionMode::BlackBar,
+    };
+
     let doc = state
         .db
         .get_document(&id)
         .map_err(|e| format!("Database error: {}", e))?
         .ok_or_else(|| "Document not found".to_string())?;
 
-    let pdf_bytes = encryption::decrypt_file(Path::new(&doc.original_path))?;
+    let file_bytes = encryption::decrypt_file(Path::new(&doc.original_path))?;
 
     let clean_dir = state.storage_dir.join("clean");
     std::fs::create_dir_all(&clean_dir)
         .map_err(|e| format!("Failed to create clean dir: {}", e))?;
 
-    let clean_filename = format!(
-        "{}_redacted.pdf",
-        doc.filename.rsplit_once('.').map(|(n, _)| n).unwrap_or(&doc.filename)
-    );
-    let clean_path = clean_dir.join(&clean_filename);
+    let base_name = doc.filename.rsplit_once('.').map(|(n, _)| n).unwrap_or(&doc.filename);
 
-    crate::document::redactor::export_redacted_pdf(&pdf_bytes, &redaction_rects, &clean_path)?;
+    // For DOCX files: replace text directly in the DOCX XML (preserves formatting)
+    // For PDF files: overlay redaction rectangles
+    let clean_path = if doc.file_type == "docx" {
+        let clean_filename = format!("{}_redacted.docx", base_name);
+        let path = clean_dir.join(&clean_filename);
+
+        let redactions = state.db.get_redactions(&id)
+            .map_err(|e| format!("Database error: {}", e))?;
+
+        crate::document::redactor::export_redacted_docx(&file_bytes, &redactions, &path, mode)?;
+        path
+    } else {
+        let clean_filename = format!("{}_redacted.pdf", base_name);
+        let path = clean_dir.join(&clean_filename);
+
+        crate::document::redactor::export_redacted_pdf(&file_bytes, &redaction_rects, &path, mode)?;
+        path
+    };
 
     state
         .db
         .update_document_clean_path(&id, clean_path.to_str().unwrap_or(""))
         .map_err(|e| format!("Database error: {}", e))?;
+
+    let clean_filename = clean_path.file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_default();
 
     // Audit log
     let _ = state.db.insert_audit_log(
@@ -378,6 +434,78 @@ pub async fn export_clean(
     );
 
     Ok(clean_path.to_string_lossy().to_string())
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PageImageData {
+    pub jpeg_base64: String,
+    pub width: u32,
+    pub height: u32,
+    pub page_width: f64,
+    pub page_height: f64,
+}
+
+#[tauri::command]
+pub async fn export_clean_flat(
+    id: String,
+    pages: Vec<PageImageData>,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let doc = state
+        .db
+        .get_document(&id)
+        .map_err(|e| format!("Database error: {}", e))?
+        .ok_or_else(|| "Document not found".to_string())?;
+
+    let clean_dir = state.storage_dir.join("clean");
+    std::fs::create_dir_all(&clean_dir)
+        .map_err(|e| format!("Failed to create clean dir: {}", e))?;
+
+    let base_name = doc.filename.rsplit_once('.').map(|(n, _)| n).unwrap_or(&doc.filename);
+    let clean_filename = format!("{}_redacted.pdf", base_name);
+    let clean_path = clean_dir.join(&clean_filename);
+
+    // Decode base64 JPEG images
+    use base64::Engine;
+    let page_images: Vec<crate::document::redactor::PageImage> = pages
+        .iter()
+        .map(|p| {
+            let jpeg_bytes = base64::engine::general_purpose::STANDARD
+                .decode(&p.jpeg_base64)
+                .map_err(|e| format!("Failed to decode image: {}", e))?;
+            Ok(crate::document::redactor::PageImage {
+                jpeg_bytes,
+                width: p.width,
+                height: p.height,
+                page_width: p.page_width,
+                page_height: p.page_height,
+            })
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+
+    crate::document::redactor::create_pdf_from_images(&page_images, &clean_path)?;
+
+    state
+        .db
+        .update_document_clean_path(&id, clean_path.to_str().unwrap_or(""))
+        .map_err(|e| format!("Database error: {}", e))?;
+
+    let _ = state.db.insert_audit_log(
+        Some(&id),
+        "export",
+        Some(&format!("Exported flattened redacted version: {}", clean_filename)),
+    );
+
+    Ok(clean_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub async fn open_file(path: String, app: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    app.opener()
+        .open_path(path, None::<&str>)
+        .map_err(|e| format!("Failed to open file: {}", e))
 }
 
 #[tauri::command]

@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { getHistory, searchHistory, deleteDocument } from "../lib/tauri-commands";
+import { getHistory, searchHistory, deleteDocument, openFile } from "../lib/tauri-commands";
 import type { Document } from "../lib/types";
 
 interface Props {
-  onOpenDocument: (docId: string) => void;
+  onOpenDocument: (docId: string, fileType?: string) => void;
 }
 
 export default function HistoryView({ onOpenDocument }: Props) {
@@ -91,11 +91,19 @@ export default function HistoryView({ onOpenDocument }: Props) {
                     <td className="px-4 py-3">{statusBadge(doc.status)}</td>
                     <td className="px-4 py-3 text-right">
                       <button
-                        onClick={() => onOpenDocument(doc.id)}
+                        onClick={() => onOpenDocument(doc.id, doc.file_type)}
                         className="text-blue-600 hover:text-blue-800 text-sm mr-3"
                       >
                         {t('history.open')}
                       </button>
+                      {doc.clean_path && (
+                        <button
+                          onClick={() => openFile(doc.clean_path!)}
+                          className="text-green-600 hover:text-green-800 text-sm mr-3"
+                        >
+                          {t('history.viewClean', 'View Clean')}
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDelete(doc.id)}
                         className="text-red-500 hover:text-red-700 text-sm"

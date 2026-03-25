@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { exportClean } from "../lib/tauri-commands";
-import type { RedactionRect } from "../lib/tauri-commands";
+import { exportClean, exportCleanFlat, openFile } from "../lib/tauri-commands";
+import type { RedactionRect, PageImageData } from "../lib/tauri-commands";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
 import { PII_COLORS, piiCategoryLabel } from "../lib/types";
 import type { PiiCategory } from "../lib/types";
 
 interface Props {
   documentId: string;
+  fileType: string;
   getPdfRects: () => RedactionRect[];
+  renderFlatPages: () => Promise<PageImageData[]>;
   advancedMode: boolean;
   onToggleAdvanced: () => void;
   redactionsHook: UseRedactionsReturn;
@@ -17,7 +19,9 @@ interface Props {
 
 export default function RedactionSidebar({
   documentId,
+  fileType,
   getPdfRects,
+  renderFlatPages,
   advancedMode,
   onToggleAdvanced,
   redactionsHook,
@@ -61,14 +65,32 @@ export default function RedactionSidebar({
     setExportError(null);
     try {
       const rects = getPdfRects();
-      console.log("[Qvault] Exporting with", rects.length, "redaction rects");
+      console.log("[Qvault] Exporting with", rects.length, "redaction rects, fileType:", fileType);
       if (rects.length === 0) {
         setExportError(t('sidebar.exportErrorNoApproved'));
         return;
       }
-      const outputPath = await exportClean(documentId, rects);
+
+      let outputPath: string;
+
+      if (fileType === "docx") {
+        // DOCX: use structured export — replaces PII text directly in the DOCX XML
+        // Produces a clean .docx file preserving original formatting
+        console.log("[Qvault] Exporting redacted DOCX...");
+        outputPath = await exportClean(documentId, rects, "text_replace");
+      } else {
+        // PDF: render pages to flattened images with redaction overlays baked in.
+        // This produces an image-based PDF with no copyable text layer.
+        console.log("[Qvault] Rendering flattened pages...");
+        const pageImages = await renderFlatPages();
+        outputPath = await exportCleanFlat(documentId, pageImages);
+      }
+
       console.log("[Qvault] Exported to:", outputPath);
       onExportSuccess?.(outputPath);
+      await openFile(outputPath).catch((e) =>
+        console.error("Failed to open exported file:", e)
+      );
     } catch (e) {
       console.error("Export failed:", e);
       setExportError(e instanceof Error ? e.message : String(e));

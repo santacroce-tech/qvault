@@ -6,19 +6,22 @@ import RedactionSidebar from "./components/RedactionSidebar";
 import HistoryView from "./components/HistoryView";
 import EntityDatabaseView from "./components/EntityDatabaseView";
 import Settings from "./components/Settings";
-import type { RedactionRect } from "./lib/tauri-commands";
+import type { RedactionRect, PageImageData } from "./lib/tauri-commands";
 import { validateLicenseOnline } from "./lib/tauri-commands";
 import { useRedactions } from "./hooks/useRedactions";
 
 type View = "upload" | "review" | "history" | "entities" | "settings";
 
 export type GetPdfRectsForExport = () => RedactionRect[];
+export type RenderFlatPages = () => Promise<PageImageData[]>;
 
 function App() {
   const { t } = useTranslation();
   const [view, setView] = useState<View>("upload");
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
+  const [activeFileType, setActiveFileType] = useState<string>("pdf");
   const pdfRectsRef = useRef<GetPdfRectsForExport>(() => []);
+  const flatPagesRef = useRef<RenderFlatPages>(async () => []);
   const [advancedMode, setAdvancedMode] = useState(false);
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
@@ -38,8 +41,9 @@ function App() {
     });
   }, []);
 
-  const handleDocumentReady = (docId: string) => {
+  const handleDocumentReady = (docId: string, fileType?: string) => {
     setActiveDocumentId(docId);
+    setActiveFileType(fileType || "pdf");
     setView("review");
     setExportSuccess(null);
   };
@@ -134,6 +138,7 @@ function App() {
               <DocumentViewer
                 documentId={activeDocumentId}
                 onRectsReady={(getter) => { pdfRectsRef.current = getter; }}
+                onFlatPagesReady={(renderer) => { flatPagesRef.current = renderer; }}
                 advancedMode={advancedMode}
                 redactionsHook={redactionsHook}
               />
@@ -141,7 +146,9 @@ function App() {
             <div className="w-96 border-l border-gray-200 overflow-auto">
               <RedactionSidebar
                 documentId={activeDocumentId}
+                fileType={activeFileType}
                 getPdfRects={() => pdfRectsRef.current()}
+                renderFlatPages={() => flatPagesRef.current()}
                 advancedMode={advancedMode}
                 onToggleAdvanced={() => setAdvancedMode((v) => !v)}
                 redactionsHook={redactionsHook}

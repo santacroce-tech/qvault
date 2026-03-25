@@ -18,6 +18,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
@@ -54,10 +55,13 @@ pub fn run() {
             commands::document::get_document,
             commands::document::get_document_text,
             commands::document::get_document_bytes,
+            commands::document::extract_docx_text,
             commands::document::get_document_entities,
             commands::document::get_entity_summary,
             commands::document::get_document_pages,
             commands::document::export_clean,
+            commands::document::export_clean_flat,
+            commands::document::open_file,
             commands::document::delete_document,
             commands::document::reset_app_data,
             commands::redaction::get_redactions,

@@ -4,11 +4,12 @@ import * as pdfjsLib from "pdfjs-dist";
 import type { PDFDocumentProxy, TextItem } from "pdfjs-dist/types/src/display/api";
 import { useDocument } from "../hooks/useDocument";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
-import { getDocumentBytes, scanDocumentText, addManualRedaction } from "../lib/tauri-commands";
+import { getDocumentBytes, extractDocxText, scanDocumentText, addManualRedaction } from "../lib/tauri-commands";
 import type { RedactionRect } from "../lib/tauri-commands";
 import { PII_COLORS } from "../lib/types";
 import type { Redaction } from "../lib/types";
-import type { GetPdfRectsForExport } from "../App";
+import type { GetPdfRectsForExport, RenderFlatPages } from "../App";
+import type { PageImageData } from "../lib/tauri-commands";
 
 // Set up PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
@@ -16,6 +17,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 interface Props {
   documentId: string;
   onRectsReady: (getter: GetPdfRectsForExport) => void;
+  onFlatPagesReady: (renderer: RenderFlatPages) => void;
   advancedMode: boolean;
   redactionsHook: UseRedactionsReturn;
 }
@@ -78,7 +80,7 @@ interface PageData {
   scale: number;
 }
 
-export default function DocumentViewer({ documentId, onRectsReady, advancedMode, redactionsHook }: Props) {
+export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesReady, advancedMode, redactionsHook }: Props) {
   const { t } = useTranslation();
   const { document: doc, loading: docLoading, error, loadDocument } = useDocument();
   const { redactions, selectedId, setSelectedId, reload: reloadRedactions } = redactionsHook;
@@ -93,92 +95,24 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode,
     loadDocument(documentId);
   }, [documentId, loadDocument]);
 
-  // Load PDF, extract text, and trigger PII scan
+  // Load document content — PDF via PDF.js, DOCX via stored page text
   useEffect(() => {
     let cancelled = false;
 
-    async function loadPdf() {
+    async function loadContent() {
       setLoading(true);
       setPdfError(null);
       try {
-        const base64 = await getDocumentBytes(documentId);
+        // Wait for doc metadata to know the file type
+        if (!doc) return;
 
-        const binaryStr = atob(base64);
-        const bytes = new Uint8Array(binaryStr.length);
-        for (let i = 0; i < binaryStr.length; i++) {
-          bytes[i] = binaryStr.charCodeAt(i);
+        if (doc.file_type === "docx") {
+          await loadDocxContent(cancelled);
+        } else {
+          await loadPdfContent(cancelled);
         }
-
-        const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
-        if (cancelled) return;
-        setPdfDoc(pdf);
-
-        const pageTexts: string[] = [];
-        const allPageData: PageData[] = [];
-        const scale = 1.5;
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const viewport = page.getViewport({ scale });
-          const textContent = await page.getTextContent();
-          const spans: TextSpan[] = [];
-          const pageTextParts: string[] = [];
-
-          for (const item of textContent.items) {
-            const ti = item as TextItem;
-            if (!ti.str) continue;
-
-            const tx = ti.transform;
-            const pdfX = tx[4];
-            const pdfY = tx[5];
-            const pdfHeight = ti.height;
-            const pdfWidth = ti.width;
-
-            const [x, y] = viewport.convertToViewportPoint(pdfX, pdfY + pdfHeight);
-            const [x2, y2] = viewport.convertToViewportPoint(pdfX + pdfWidth, pdfY);
-
-            spans.push({
-              text: ti.str,
-              x: Math.min(x, x2),
-              y: Math.min(y, y2),
-              width: Math.abs(x2 - x),
-              height: Math.abs(y2 - y),
-              pdfX,
-              pdfY,
-              pdfWidth,
-              pdfHeight,
-            });
-
-            pageTextParts.push(ti.str);
-          }
-
-          pageTexts.push(pageTextParts.join(""));
-
-          allPageData.push({
-            pageNum: i,
-            textSpans: spans,
-            width: viewport.width,
-            height: viewport.height,
-            scale,
-          });
-        }
-
-        if (cancelled) return;
-        setPageData(allPageData);
-        setLoading(false);
-
-        // Run PII scan via Rust backend
-        setScanning(true);
-        const piiCount = await scanDocumentText(documentId, pageTexts);
-        console.log("[Qvault] PII scan complete:", piiCount, "entities found");
-
-        if (cancelled) return;
-        setScanning(false);
-
-        await reloadRedactions();
-        await loadDocument(documentId);
       } catch (e) {
-        console.error("[Qvault] Failed to load PDF:", e);
+        console.error("[Qvault] Failed to load document:", e);
         if (!cancelled) setPdfError(e instanceof Error ? e.message : String(e));
       } finally {
         if (!cancelled) {
@@ -188,9 +122,150 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode,
       }
     }
 
-    loadPdf();
+    async function loadDocxContent(isCancelled: boolean) {
+      // DOCX: extract text via Rust backend, then scan for PII
+      const pageTexts = await extractDocxText(documentId);
+      if (isCancelled) return;
+
+      const allPageData: PageData[] = [];
+      const pageWidth = 816; // ~8.5 inches at 96dpi
+      const lineHeight = 18;
+      const marginX = 40;
+      const fontSize = 13;
+
+      for (let pi = 0; pi < pageTexts.length; pi++) {
+        const text = pageTexts[pi] || "";
+        const lines = text.split("\n");
+        const spans: TextSpan[] = [];
+        let y = 30;
+
+        for (const line of lines) {
+          if (line.trim()) {
+            spans.push({
+              text: line,
+              x: marginX,
+              y,
+              width: Math.min(line.length * (fontSize * 0.6), pageWidth - marginX * 2),
+              height: lineHeight,
+              pdfX: 0, pdfY: 0, pdfWidth: 0, pdfHeight: 0,
+            });
+          }
+          y += lineHeight;
+        }
+
+        allPageData.push({
+          pageNum: pi + 1,
+          textSpans: spans,
+          width: pageWidth,
+          height: Math.max(y + 30, 400),
+          scale: 1,
+        });
+      }
+
+      if (isCancelled) return;
+      setPageData(allPageData);
+      setLoading(false);
+
+      // Always scan — text is extracted fresh each time
+      if (pageTexts.some((t) => t.length > 0)) {
+        setScanning(true);
+        const piiCount = await scanDocumentText(documentId, pageTexts);
+        console.log("[Qvault] DOCX PII scan complete:", piiCount, "entities found");
+        if (isCancelled) return;
+        setScanning(false);
+      }
+      await reloadRedactions();
+      await loadDocument(documentId);
+    }
+
+    async function loadPdfContent(isCancelled: boolean) {
+      const base64 = await getDocumentBytes(documentId);
+
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+
+      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+      if (isCancelled) return;
+      setPdfDoc(pdf);
+
+      const pageTexts: string[] = [];
+      const allPageData: PageData[] = [];
+      const scale = 1.5;
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale });
+        const textContent = await page.getTextContent();
+        const spans: TextSpan[] = [];
+        const pageTextParts: string[] = [];
+
+        for (const item of textContent.items) {
+          const ti = item as TextItem;
+          if (!ti.str) continue;
+
+          const tx = ti.transform;
+          const rawPdfX = tx[4];
+          const rawPdfY = tx[5];
+          const rawPdfHeight = ti.height;
+          const rawPdfWidth = ti.width;
+
+          const [vx1, vy1] = viewport.convertToViewportPoint(rawPdfX, rawPdfY + rawPdfHeight);
+          const [vx2, vy2] = viewport.convertToViewportPoint(rawPdfX + rawPdfWidth, rawPdfY);
+
+          const viewX = Math.min(vx1, vx2);
+          const viewY = Math.min(vy1, vy2);
+          const viewW = Math.abs(vx2 - vx1);
+          const viewH = Math.abs(vy2 - vy1);
+
+          const [cpX1, cpY1] = viewport.convertToPdfPoint(viewX, viewY);
+          const [cpX2, cpY2] = viewport.convertToPdfPoint(viewX + viewW, viewY + viewH);
+
+          const pdfX = Math.min(cpX1, cpX2);
+          const pdfY = Math.min(cpY1, cpY2);
+          const pdfWidth = Math.abs(cpX2 - cpX1);
+          const pdfHeight = Math.abs(cpY2 - cpY1);
+
+          spans.push({
+            text: ti.str,
+            x: viewX, y: viewY, width: viewW, height: viewH,
+            pdfX, pdfY, pdfWidth, pdfHeight,
+          });
+
+          pageTextParts.push(ti.str);
+        }
+
+        pageTexts.push(pageTextParts.join(""));
+
+        allPageData.push({
+          pageNum: i,
+          textSpans: spans,
+          width: viewport.width,
+          height: viewport.height,
+          scale,
+        });
+      }
+
+      if (isCancelled) return;
+      setPageData(allPageData);
+      setLoading(false);
+
+      setScanning(true);
+      const piiCount = await scanDocumentText(documentId, pageTexts);
+      console.log("[Qvault] PII scan complete:", piiCount, "entities found");
+
+      if (isCancelled) return;
+      setScanning(false);
+
+      await reloadRedactions();
+      await loadDocument(documentId);
+    }
+
+    loadContent();
     return () => { cancelled = true; };
-  }, [documentId]);
+  }, [documentId, doc?.file_type]);
 
   // Expose PDF-coordinate rects for export
   useEffect(() => {
@@ -205,7 +280,7 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode,
         const pageRedactions = approved.filter((r) => r.page === pageIdx);
         const mapped = mapRedactionsToRects(pd.textSpans, pageRedactions);
 
-        for (const { rects: spanRects } of mapped) {
+        for (const { redaction, rects: spanRects } of mapped) {
           for (const span of spanRects) {
             rects.push({
               page: pageIdx,
@@ -213,6 +288,8 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode,
               y: span.pdfY,
               width: span.pdfWidth,
               height: span.pdfHeight,
+              replacement: redaction.replacement || undefined,
+              category: redaction.category,
             });
           }
         }
@@ -220,6 +297,86 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode,
       return rects;
     });
   }, [pageData, redactions, onRectsReady]);
+
+  // Expose flat page renderer: renders each page to canvas with redaction overlays baked in
+  useEffect(() => {
+    if (!pdfDoc || pageData.length === 0) return;
+
+    onFlatPagesReady(async (): Promise<PageImageData[]> => {
+      const renderScale = 2.0; // 2x for high quality
+      const approved = redactions.filter((r) => r.status === "approved");
+      const mode = localStorage.getItem("qvault_redaction_style") || "black_bar";
+      const results: PageImageData[] = [];
+
+      for (let pageIdx = 0; pageIdx < pageData.length; pageIdx++) {
+        const pd = pageData[pageIdx];
+        const page = await pdfDoc.getPage(pd.pageNum);
+        const viewport = page.getViewport({ scale: renderScale });
+
+        // Render PDF page to offscreen canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Draw redaction overlays on top
+        const pageRedactions = approved.filter((r) => r.page === pageIdx);
+        const mapped = mapRedactionsToRects(pd.textSpans, pageRedactions);
+        const scaleFactor = renderScale / pd.scale;
+
+        for (const { redaction, rects } of mapped) {
+          for (const rect of rects) {
+            const rx = rect.x * scaleFactor;
+            const ry = rect.y * scaleFactor;
+            const rw = rect.width * scaleFactor;
+            const rh = rect.height * scaleFactor;
+
+            if (mode === "text_replace") {
+              // White rectangle + gray label
+              ctx.fillStyle = "#ffffff";
+              ctx.fillRect(rx, ry, rw, rh);
+              ctx.fillStyle = "#666666";
+              const label = redaction.replacement || `[${redaction.category}]`;
+              const fontSize = Math.min(rh * 0.85, 14 * scaleFactor);
+              ctx.font = `${fontSize}px Helvetica, Arial, sans-serif`;
+              ctx.fillText(label, rx + 1, ry + rh - 2, rw);
+            } else {
+              // Solid black bar
+              ctx.fillStyle = "#000000";
+              ctx.fillRect(rx, ry, rw, rh);
+            }
+          }
+        }
+
+        // Export as JPEG
+        const blob = await new Promise<Blob>((resolve) =>
+          canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92)
+        );
+        const arrayBuf = await blob.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuf);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const jpegBase64 = btoa(binary);
+
+        // Get original page dimensions in PDF points
+        const origViewport = page.getViewport({ scale: 1.0 });
+
+        results.push({
+          jpegBase64,
+          width: canvas.width,
+          height: canvas.height,
+          pageWidth: origViewport.width,
+          pageHeight: origViewport.height,
+        });
+      }
+
+      return results;
+    });
+  }, [pdfDoc, pageData, redactions, onFlatPagesReady]);
 
   // Handle manual redaction from text selection
   const handleManualRedaction = useCallback(
@@ -274,7 +431,9 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode,
     );
   }
 
-  if (!doc || !pdfDoc) return null;
+  if (!doc) return null;
+  const isDocx = doc.file_type === "docx";
+  if (!isDocx && !pdfDoc) return null;
 
   return (
     <div className="p-6 overflow-auto">
@@ -293,27 +452,98 @@ export default function DocumentViewer({ documentId, onRectsReady, advancedMode,
             </span>
           )}
           <span className="text-sm text-gray-500">
-            {t('viewer.pageInfo', { count: pdfDoc.numPages, piiCount: doc.pii_count })}
+            {t('viewer.pageInfo', { count: isDocx ? pageData.length : pdfDoc?.numPages ?? 0, piiCount: doc.pii_count })}
           </span>
         </div>
       </div>
 
       <div className="space-y-6 flex flex-col items-center">
-        {pageData.map((pd, pageIdx) => (
-          <PdfPage
-            key={pd.pageNum}
-            pageNum={pd.pageNum}
-            pdfDoc={pdfDoc}
-            pageData={pd}
-            pageIdx={pageIdx}
-            redactions={redactions}
-            selectedId={selectedId}
-            onSelectRedaction={setSelectedId}
-            advancedMode={advancedMode}
-            onManualRedaction={handleManualRedaction}
-          />
-        ))}
+        {pageData.map((pd, pageIdx) =>
+          isDocx ? (
+            <DocxPage
+              key={pd.pageNum}
+              pageData={pd}
+              pageIdx={pageIdx}
+              redactions={redactions}
+              selectedId={selectedId}
+              onSelectRedaction={setSelectedId}
+            />
+          ) : (
+            <PdfPage
+              key={pd.pageNum}
+              pageNum={pd.pageNum}
+              pdfDoc={pdfDoc!}
+              pageData={pd}
+              pageIdx={pageIdx}
+              redactions={redactions}
+              selectedId={selectedId}
+              onSelectRedaction={setSelectedId}
+              advancedMode={advancedMode}
+              onManualRedaction={handleManualRedaction}
+            />
+          )
+        )}
       </div>
+    </div>
+  );
+}
+
+/** Renders a DOCX page as text with PII highlight overlays */
+function DocxPage({
+  pageData: pd,
+  pageIdx,
+  redactions,
+  selectedId,
+  onSelectRedaction,
+}: {
+  pageData: PageData;
+  pageIdx: number;
+  redactions: Redaction[];
+  selectedId: string | null;
+  onSelectRedaction: (id: string) => void;
+}) {
+  const pageRedactions = redactions.filter((r) => r.page === pageIdx);
+  const mapped = mapRedactionsToRects(pd.textSpans, pageRedactions);
+
+  return (
+    <div
+      className="relative bg-white shadow-lg border border-gray-200 p-8 font-serif text-sm leading-relaxed"
+      style={{ width: pd.width, minHeight: pd.height }}
+    >
+      {/* Text content */}
+      {pd.textSpans.map((span, i) => (
+        <div key={i} className="whitespace-pre-wrap text-gray-900" style={{ minHeight: span.height }}>
+          {span.text}
+        </div>
+      ))}
+
+      {/* Redaction overlays (positioned over the text flow) */}
+      {mapped.map(({ redaction, rects }) =>
+        rects.map((rect, ri) => {
+          const color = PII_COLORS[redaction.category] || "#6B7280";
+          const isSelected = redaction.id === selectedId;
+          const isApproved = redaction.status === "approved";
+
+          return (
+            <div
+              key={`${redaction.id}-${ri}`}
+              onClick={() => onSelectRedaction(redaction.id)}
+              className="absolute cursor-pointer transition-all"
+              style={{
+                left: rect.x,
+                top: rect.y,
+                width: rect.width,
+                height: rect.height,
+                backgroundColor: isApproved ? `${color}55` : `${color}30`,
+                border: isSelected ? `2px solid ${color}` : `1px solid ${color}80`,
+                borderRadius: 2,
+                zIndex: isSelected ? 10 : 1,
+              }}
+              title={`${redaction.category}: ${redaction.original_text}`}
+            />
+          );
+        })
+      )}
     </div>
   );
 }

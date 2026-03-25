@@ -7,7 +7,7 @@ import { useLicense } from "../hooks/useCredits";
 import LicenseStatus from "./CreditBalance";
 
 interface Props {
-  onDocumentReady: (docId: string) => void;
+  onDocumentReady: (docId: string, fileType?: string) => void;
 }
 
 export default function QueueDashboard({ onDocumentReady }: Props) {
@@ -18,9 +18,10 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
 
   const handleFile = useCallback(
     async (filePath: string) => {
+      const ext = filePath.split(".").pop()?.toLowerCase() || "pdf";
       const docId = await upload(filePath, 0);
       if (docId) {
-        onDocumentReady(docId);
+        onDocumentReady(docId, ext);
       }
     },
     [upload, onDocumentReady]

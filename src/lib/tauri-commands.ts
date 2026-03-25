@@ -45,6 +45,10 @@ export async function getDocumentText(id: string, page: number): Promise<string>
   return invoke("get_document_text", { id, page });
 }
 
+export async function extractDocxText(id: string): Promise<string[]> {
+  return invoke("extract_docx_text", { id });
+}
+
 export async function getDocumentBytes(id: string): Promise<string> {
   return invoke("get_document_bytes", { id });
 }
@@ -67,10 +71,37 @@ export interface RedactionRect {
   y: number;
   width: number;
   height: number;
+  replacement?: string;
+  category?: string;
 }
 
-export async function exportClean(id: string, redactionRects: RedactionRect[]): Promise<string> {
-  return invoke("export_clean", { id, redactionRects });
+export type RedactionModeType = "black_bar" | "text_replace";
+
+export async function exportClean(
+  id: string,
+  redactionRects: RedactionRect[],
+  redactionMode?: RedactionModeType,
+): Promise<string> {
+  return invoke("export_clean", { id, redactionRects, redactionMode });
+}
+
+export interface PageImageData {
+  jpegBase64: string;
+  width: number;
+  height: number;
+  pageWidth: number;
+  pageHeight: number;
+}
+
+export async function exportCleanFlat(
+  id: string,
+  pages: PageImageData[],
+): Promise<string> {
+  return invoke("export_clean_flat", { id, pages });
+}
+
+export async function openFile(path: string): Promise<void> {
+  return invoke("open_file", { path });
 }
 
 export async function deleteDocument(id: string): Promise<void> {

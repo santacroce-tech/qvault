@@ -8,9 +8,17 @@ export default function Settings() {
   const { t } = useTranslation();
   const [jurisdiction, setJurisdiction] = useState("global");
   const [sensitivity, setSensitivity] = useState(50);
+  const [redactionStyle, setRedactionStyle] = useState(() =>
+    localStorage.getItem("qvault_redaction_style") || "black_bar"
+  );
+
+  const handleRedactionStyleChange = (value: string) => {
+    setRedactionStyle(value);
+    localStorage.setItem("qvault_redaction_style", value);
+  };
 
   return (
-    <div className="flex-1 p-6 bg-content">
+    <div className="flex-1 p-6 bg-content overflow-auto">
       <div className="max-w-lg mx-auto">
         <h2 className="text-xl font-bold text-gray-900 mb-6">{t('settings.title')}</h2>
 
@@ -71,6 +79,25 @@ export default function Settings() {
                 <span>{t('settings.fewerDetections')}</span>
                 <span>{t('settings.moreDetections')}</span>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('settings.redactionStyle')}
+              </label>
+              <select
+                value={redactionStyle}
+                onChange={(e) => handleRedactionStyleChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="black_bar">{t('settings.redactionBlackBar')}</option>
+                <option value="text_replace">{t('settings.redactionTextReplace')}</option>
+              </select>
+              <p className="text-xs text-gray-400 mt-1">
+                {redactionStyle === "text_replace"
+                  ? t('settings.redactionTextReplaceDesc')
+                  : t('settings.redactionBlackBarDesc')}
+              </p>
             </div>
           </div>
         </section>

@@ -54,6 +54,7 @@
     "status": "Status",
     "actions": "Actions",
     "open": "Open",
+    "viewClean": "View Clean",
     "delete": "Delete"
   },
   "entities": {
@@ -94,6 +95,11 @@
     "sensitivity": "Sensitivity: {{value}}%",
     "fewerDetections": "Fewer detections",
     "moreDetections": "More detections",
+    "redactionStyle": "Redaction Style",
+    "redactionBlackBar": "Black bars",
+    "redactionTextReplace": "Text replacement",
+    "redactionBlackBarDesc": "Covers PII with solid black rectangles",
+    "redactionTextReplaceDesc": "Replaces PII with category labels like [NAME], [EMAIL]",
     "dataRetention": "Data Retention",
     "dataRetentionDesc": "All documents are stored encrypted on your device. No data ever leaves your computer.",
     "clearAll": "Clear All Documents"

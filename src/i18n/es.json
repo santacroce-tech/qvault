@@ -54,6 +54,7 @@
     "status": "Estado",
     "actions": "Acciones",
     "open": "Abrir",
+    "viewClean": "Ver Limpio",
     "delete": "Eliminar"
   },
   "entities": {
@@ -94,6 +95,11 @@
     "sensitivity": "Sensibilidad: {{value}}%",
     "fewerDetections": "Menos detecciones",
     "moreDetections": "M\u00e1s detecciones",
+    "redactionStyle": "Estilo de Redacci\u00f3n",
+    "redactionBlackBar": "Barras negras",
+    "redactionTextReplace": "Reemplazo de texto",
+    "redactionBlackBarDesc": "Cubre los datos con rect\u00e1ngulos negros s\u00f3lidos",
+    "redactionTextReplaceDesc": "Reemplaza los datos con etiquetas como [NOMBRE], [EMAIL]",
     "dataRetention": "Retenci\u00f3n de Datos",
     "dataRetentionDesc": "Todos los documentos se almacenan cifrados en tu dispositivo. Ning\u00fan dato sale de tu computadora.",
     "clearAll": "Eliminar Todos los Documentos"

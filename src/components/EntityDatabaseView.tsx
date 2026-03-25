@@ -6,7 +6,7 @@ import { PII_COLORS, piiCategoryLabel } from "../lib/types";
 import type { PiiCategory } from "../lib/types";
 
 interface Props {
-  onOpenDocument: (docId: string) => void;
+  onOpenDocument: (docId: string, fileType?: string) => void;
 }
 
 type SortField = "text" | "category" | "occurrences" | "documents";
@@ -274,7 +274,7 @@ export default function EntityDatabaseView({ onOpenDocument }: Props) {
                 <div
                   key={doc.id}
                   className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
-                  onClick={() => onOpenDocument(doc.id)}
+                  onClick={() => onOpenDocument(doc.id, doc.file_type)}
                 >
                   <div>
                     <span className="text-sm font-medium text-gray-900">{doc.filename}</span>
