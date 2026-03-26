@@ -49,6 +49,12 @@
       "deb": {
         "depends": ["libwebkit2gtk-4.1-0", "libjavascriptcoregtk-4.1-0"]
       }
+    },
+    "iOS": {
+      "minimumSystemVersion": "14.0"
+    },
+    "android": {
+      "minSdkVersion": 24
     }
   },
   "plugins": {}

@@ -12,9 +12,8 @@ const LICENSE_SERVER_URL: &str = "https://api.qvault.tech";
 
 /// Generate a stable machine ID from hostname + OS info
 fn get_machine_id() -> String {
-    let host = hostname::get()
-        .map(|h| h.to_string_lossy().to_string())
-        .unwrap_or_else(|_| "unknown".to_string());
+    // TODO: hostname dependency removed for mobile compatibility
+    let host = "qvault-device".to_string();
     let raw = format!("qvault-{}-{}", host, std::env::consts::OS);
     let hash = ring::digest::digest(&ring::digest::SHA256, raw.as_bytes());
     hex::encode(&hash.as_ref()[..16]) // 32-char hex string

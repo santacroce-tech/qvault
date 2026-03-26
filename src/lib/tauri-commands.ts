@@ -13,6 +13,11 @@ export async function uploadDocument(filePath: string, pageCount: number): Promi
   return invoke("upload_document", { filePath, pageCount });
 }
 
+/** Upload a document from raw bytes (base64-encoded). Used as mobile fallback when native file dialog is unavailable. */
+export async function uploadDocumentBytes(filename: string, data: string): Promise<string> {
+  return invoke("upload_document_bytes", { filename, data });
+}
+
 export async function scanDocumentText(id: string, pages: string[]): Promise<number> {
   return invoke("scan_document_text", { id, pages });
 }

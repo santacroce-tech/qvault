@@ -8,35 +8,14 @@ use crate::storage::database::DocumentRow;
 use crate::storage::encryption;
 use crate::AppState;
 
-/// Upload a document: check license, encrypt + store. Does NOT extract text or scan for PII.
-/// The frontend will extract text via PDF.js and call scan_document_text.
-#[tauri::command]
-pub async fn upload_document(
-    file_path: String,
+/// Shared logic for processing an uploaded document: validate, encrypt, store in DB.
+/// `source` is the path to the file on disk (original or temp file from bytes upload).
+fn process_upload(
+    source: &Path,
+    filename: &str,
     page_count: i32,
-    state: State<'_, AppState>,
+    state: &AppState,
 ) -> Result<String, String> {
-    // Check license (yearly license = unlimited documents)
-    // In debug/dev builds, skip the license check so you can test freely
-    #[cfg(not(debug_assertions))]
-    {
-        let licensed = state
-            .db
-            .is_licensed()
-            .map_err(|e| format!("License check failed: {}", e))?;
-
-        if !licensed {
-            return Err("No active license. Please activate a yearly license to use Qvault.".to_string());
-        }
-    }
-
-    let source = Path::new(&file_path);
-    let filename = source
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or("unknown")
-        .to_string();
-
     let ext = source
         .extension()
         .and_then(|e| e.to_str())
@@ -68,7 +47,7 @@ pub async fn upload_document(
         .db
         .insert_document(
             &doc_id,
-            &filename,
+            filename,
             &ext,
             &file_hash,
             page_count,
@@ -84,6 +63,71 @@ pub async fn upload_document(
     );
 
     Ok(doc_id)
+}
+
+/// Check the license. Returns Ok(()) if licensed or in debug mode, Err otherwise.
+fn check_license_guard(state: &AppState) -> Result<(), String> {
+    #[cfg(not(debug_assertions))]
+    {
+        let licensed = state
+            .db
+            .is_licensed()
+            .map_err(|e| format!("License check failed: {}", e))?;
+
+        if !licensed {
+            return Err("No active license. Please activate a yearly license to use Qvault.".to_string());
+        }
+    }
+    let _ = state; // suppress unused warning in debug builds
+    Ok(())
+}
+
+/// Upload a document: check license, encrypt + store. Does NOT extract text or scan for PII.
+/// The frontend will extract text via PDF.js and call scan_document_text.
+#[tauri::command]
+pub async fn upload_document(
+    file_path: String,
+    page_count: i32,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    check_license_guard(&state)?;
+
+    let source = Path::new(&file_path);
+    let filename = source
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("unknown")
+        .to_string();
+
+    process_upload(source, &filename, page_count, &state)
+}
+
+/// Upload a document from raw bytes (base64-encoded).
+/// Used as a mobile fallback when native file dialogs are unavailable.
+#[tauri::command]
+pub async fn upload_document_bytes(
+    filename: String,
+    data: String,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    check_license_guard(&state)?;
+
+    use base64::Engine;
+    let file_bytes = base64::engine::general_purpose::STANDARD
+        .decode(&data)
+        .map_err(|e| format!("Failed to decode base64 data: {}", e))?;
+
+    // Write to a temp file in the storage dir so encryption can read from disk
+    let tmp_path = state.storage_dir.join(format!("upload_{}", filename));
+    std::fs::write(&tmp_path, &file_bytes)
+        .map_err(|e| format!("Failed to write temp file: {}", e))?;
+
+    let result = process_upload(&tmp_path, &filename, 0, &state);
+
+    // Clean up temp file
+    let _ = std::fs::remove_file(&tmp_path);
+
+    result
 }
 
 /// Receive text extracted by PDF.js on the frontend, run PII detection, store results.
@@ -372,6 +416,7 @@ pub struct RedactionRect {
     pub category: Option<String>,
 }
 
+// TODO: On mobile, return path for share sheet integration
 #[tauri::command]
 pub async fn export_clean(
     id: String,
@@ -446,6 +491,7 @@ pub struct PageImageData {
     pub page_height: f64,
 }
 
+// TODO: On mobile, return path for share sheet integration
 #[tauri::command]
 pub async fn export_clean_flat(
     id: String,

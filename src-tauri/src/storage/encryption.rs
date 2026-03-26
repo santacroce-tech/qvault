@@ -19,10 +19,8 @@ fn derive_key(seed: &str) -> [u8; 32] {
 fn machine_seed() -> String {
     // Use a combination of factors for the seed
     // In production, this would use machine-uid crate + OS keychain
-    let hostname = hostname::get()
-        .map(|h| h.to_string_lossy().to_string())
-        .unwrap_or_else(|_| "qvault-default".to_string());
-    format!("qvault-encryption-{}", hostname)
+    // TODO: encryption is being rewritten on another branch
+    format!("qvault-encryption-{}", "qvault-device-default")
 }
 
 pub fn encrypt_file(source: &Path, dest: &Path) -> Result<(), String> {
