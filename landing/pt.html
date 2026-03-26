@@ -583,6 +583,7 @@
         <li><a href="#features">Recursos</a></li>
         <li><a href="#how-it-works">Como Funciona</a></li>
         <li><a href="#license">Licen&ccedil;a</a></li>
+        <li><a href="#faq">FAQ</a></li>
         <li><a href="architecture.html">Arquitetura</a></li>
       </ul>
       <div class="nav-lang">
@@ -728,6 +729,50 @@
           O SOFTWARE &Eacute; FORNECIDO "COMO EST&Aacute;", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA OU IMPL&Iacute;CITA. Consulte a
           <a href="https://opensource.org/licenses/MIT" style="color:var(--blue-accent);text-decoration:underline;">Licen&ccedil;a MIT</a> para mais detalhes.
         </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="how-it-works" id="faq">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Solu&ccedil;&atilde;o de Problemas e Perguntas Frequentes</h2>
+        <p class="section-subtitle">Solu&ccedil;&otilde;es para problemas de instala&ccedil;&atilde;o no macOS e Windows.</p>
+      </div>
+
+      <div style="max-width:760px;margin:0 auto;">
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">macOS: &ldquo;Qvault est&aacute; danificado&rdquo; ou &ldquo;n&atilde;o pode ser verificado em busca de software malicioso&rdquo;</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">O Qvault ainda n&atilde;o est&aacute; assinado com um certificado Apple Developer. O macOS Gatekeeper bloqueia apps n&atilde;o assinados. Para resolver:</p>
+          <ol style="font-size:0.95rem;color:var(--gray-600);line-height:1.8;margin:12px 0 0 20px;">
+            <li>Abra <strong>Ajustes do Sistema &gt; Privacidade e Seguran&ccedil;a</strong></li>
+            <li>Role at&eacute; a se&ccedil;&atilde;o de Seguran&ccedil;a &mdash; voc&ecirc; ver&aacute; uma mensagem sobre o Qvault bloqueado</li>
+            <li>Clique em <strong>Abrir Mesmo Assim</strong> e confirme</li>
+          </ol>
+          <p style="font-size:0.9rem;color:var(--gray-500);margin-top:12px;">Alternativamente, execute no Terminal: <code style="background:var(--gray-100);padding:2px 8px;border-radius:4px;font-size:0.85rem;">xattr -cr /Applications/Qvault.app</code></p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">macOS: &ldquo;De um desenvolvedor n&atilde;o identificado&rdquo;</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Clique com o bot&atilde;o direito (ou Control-clique) no &iacute;cone do app e selecione <strong>Abrir</strong> no menu de contexto. Clique em <strong>Abrir</strong> no di&aacute;logo. Voc&ecirc; s&oacute; precisa fazer isso uma vez.</p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">Windows: &ldquo;O Windows protegeu seu PC&rdquo; (SmartScreen)</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">O Windows SmartScreen pode bloquear o instalador porque n&atilde;o possui certificado de assinatura de c&oacute;digo EV. Para continuar:</p>
+          <ol style="font-size:0.95rem;color:var(--gray-600);line-height:1.8;margin:12px 0 0 20px;">
+            <li>Clique em <strong>Mais informa&ccedil;&otilde;es</strong></li>
+            <li>Clique em <strong>Executar mesmo assim</strong></li>
+          </ol>
+          <p style="font-size:0.9rem;color:var(--gray-500);margin-top:12px;">&Eacute; um aviso &uacute;nico. O Windows n&atilde;o bloquear&aacute; o app novamente ap&oacute;s a primeira execu&ccedil;&atilde;o.</p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">Windows: O antiv&iacute;rus marca o instalador</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Alguns antiv&iacute;rus podem marcar instaladores n&atilde;o assinados como suspeitos. &Eacute; um falso positivo. Voc&ecirc; pode adicionar uma exce&ccedil;&atilde;o para o Qvault nas configura&ccedil;&otilde;es do antiv&iacute;rus, ou desativar temporariamente a prote&ccedil;&atilde;o em tempo real durante a instala&ccedil;&atilde;o.</p>
+        </div>
       </div>
     </div>
   </section>

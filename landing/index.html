@@ -648,6 +648,7 @@
         <li><a href="#features">Features</a></li>
         <li><a href="#how-it-works">How It Works</a></li>
         <li><a href="#license">License</a></li>
+        <li><a href="#faq">FAQ</a></li>
         <li><a href="architecture.html">Architecture</a></li>
       </ul>
       <div class="nav-lang">
@@ -796,6 +797,50 @@
           THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. See the
           <a href="https://opensource.org/licenses/MIT" style="color:var(--blue-accent);text-decoration:underline;">MIT License</a> for details.
         </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="how-it-works" id="faq">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Troubleshooting &amp; Common Questions</h2>
+        <p class="section-subtitle">Solutions for installation issues on macOS and Windows.</p>
+      </div>
+
+      <div style="max-width:760px;margin:0 auto;">
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">macOS: &ldquo;Qvault is damaged&rdquo; or &ldquo;can&rsquo;t be checked for malicious software&rdquo;</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Qvault is not yet signed with an Apple Developer certificate. macOS Gatekeeper blocks unsigned apps by default. To fix this:</p>
+          <ol style="font-size:0.95rem;color:var(--gray-600);line-height:1.8;margin:12px 0 0 20px;">
+            <li>Open <strong>System Settings &gt; Privacy &amp; Security</strong></li>
+            <li>Scroll to the Security section &mdash; you&rsquo;ll see a message about Qvault being blocked</li>
+            <li>Click <strong>Open Anyway</strong> and confirm</li>
+          </ol>
+          <p style="font-size:0.9rem;color:var(--gray-500);margin-top:12px;">Alternatively, run in Terminal: <code style="background:var(--gray-100);padding:2px 8px;border-radius:4px;font-size:0.85rem;">xattr -cr /Applications/Qvault.app</code></p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">macOS: &ldquo;From an unidentified developer&rdquo;</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Right-click (or Control-click) the app icon and select <strong>Open</strong> from the context menu. Click <strong>Open</strong> in the dialog. You only need to do this once &mdash; macOS will remember your choice.</p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">Windows: &ldquo;Windows protected your PC&rdquo; (SmartScreen)</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Windows SmartScreen may block the installer because it is not signed with an EV code signing certificate. To proceed:</p>
+          <ol style="font-size:0.95rem;color:var(--gray-600);line-height:1.8;margin:12px 0 0 20px;">
+            <li>Click <strong>More info</strong> on the SmartScreen dialog</li>
+            <li>Click <strong>Run anyway</strong></li>
+          </ol>
+          <p style="font-size:0.9rem;color:var(--gray-500);margin-top:12px;">This is a one-time prompt. Windows will not block the app again after the first launch.</p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">Windows: Antivirus flags the installer</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Some antivirus software may flag unsigned installers as suspicious. This is a false positive. You can add an exception for Qvault in your antivirus settings, or temporarily disable real-time protection during installation.</p>
+        </div>
       </div>
     </div>
   </section>
