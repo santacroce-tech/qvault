@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { exportClean, exportCleanFlat, openFile } from "../lib/tauri-commands";
 import type { RedactionRect, PageImageData } from "../lib/tauri-commands";
@@ -15,6 +15,8 @@ interface Props {
   onToggleAdvanced: () => void;
   redactionsHook: UseRedactionsReturn;
   onExportSuccess?: (outputPath: string) => void;
+  /** When true, renders as a mobile slide-up bottom sheet */
+  mobile?: boolean;
 }
 
 export default function RedactionSidebar({
@@ -26,6 +28,7 @@ export default function RedactionSidebar({
   onToggleAdvanced,
   redactionsHook,
   onExportSuccess,
+  mobile,
 }: Props) {
   const { t } = useTranslation();
   const {
@@ -40,6 +43,23 @@ export default function RedactionSidebar({
   const [exportError, setExportError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+
+  // Mobile bottom sheet state
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const dragStartY = useRef(0);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  const handleDragStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+    dragStartY.current = clientY;
+  }, []);
+
+  const handleDragEnd = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    const clientY = "changedTouches" in e ? e.changedTouches[0].clientY : e.clientY;
+    const delta = clientY - dragStartY.current;
+    if (delta < -30) setSheetOpen(true);
+    if (delta > 30) setSheetOpen(false);
+  }, []);
 
   if (loading) {
     return (
@@ -99,7 +119,8 @@ export default function RedactionSidebar({
     }
   };
 
-  return (
+  // Inner content shared between mobile and desktop
+  const content = (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
@@ -258,6 +279,34 @@ export default function RedactionSidebar({
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+
+  if (!mobile) return content;
+
+  // Mobile: slide-up bottom sheet
+  return (
+    <div
+      ref={sheetRef}
+      className={`fixed bottom-16 left-0 right-0 z-30 bg-white rounded-t-2xl shadow-2xl border-t border-gray-200 transition-transform duration-300 ease-out ${
+        sheetOpen ? "translate-y-0" : "translate-y-[calc(100%-3rem)]"
+      }`}
+      style={{ maxHeight: "60vh" }}
+    >
+      {/* Drag handle */}
+      <div
+        className="flex items-center justify-center py-2 cursor-grab active:cursor-grabbing"
+        onTouchStart={handleDragStart}
+        onTouchEnd={handleDragEnd}
+        onMouseDown={handleDragStart}
+        onMouseUp={handleDragEnd}
+        onClick={() => setSheetOpen((v) => !v)}
+      >
+        <div className="w-10 h-1 rounded-full bg-gray-300" />
+      </div>
+      <div className="overflow-auto" style={{ maxHeight: "calc(60vh - 2rem)" }}>
+        {content}
       </div>
     </div>
   );

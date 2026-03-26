@@ -50,6 +50,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::document::upload_document,
+            commands::document::upload_document_bytes,
             commands::document::scan_document_text,
             commands::document::add_manual_redaction,
             commands::document::get_document,

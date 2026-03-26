@@ -144,12 +144,12 @@ https://api.qvault.tech/admin?key=YOUR_ADMIN_KEY
 
 ## Deployment
 
-The server is deployed as a Docker container, reverse-proxied by nginx at `api.qvault.tech`.
+The server is deployed on `91.98.47.97` as a Docker container, reverse-proxied by nginx at `api.qvault.tech`.
 
 ### Updating
 
 ```bash
-ssh root@YOUR_SERVER_IP
+ssh -i ~/.ssh/id_epitetus root@91.98.47.97
 
 # Sync code
 cd /opt/qvault-api

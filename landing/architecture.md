@@ -25,7 +25,7 @@ Qvault is built on **Tauri v2**, a framework that pairs a Rust backend with a li
 The backend is written entirely in Rust, and this choice is central to Qvault's performance story. Rust provides:
 
 - **Memory safety without garbage collection.** There are no pause-the-world GC cycles interrupting document processing. Memory is freed deterministically, which matters when scanning documents with thousands of text spans.
-- **Zero-cost abstractions.** The regex engine and PDF parser operate at native speed. There's no interpreter overhead, no JIT warmup.
+- **Zero-cost abstractions.** The regex engine, encryption routines, and PDF parser all operate at native speed. There's no interpreter overhead, no JIT warmup.
 - **Fearless concurrency.** Tauri's async runtime (Tokio) handles IPC commands concurrently. Multiple documents can be processed in parallel without data races.
 
 The frontend is React 18 with TypeScript and Tailwind CSS, rendered inside the native webview. The two layers communicate through Tauri's IPC bridge — a type-safe, serialized message-passing system that connects JavaScript function calls to Rust command handlers.
@@ -116,6 +116,16 @@ Qvault supports two document formats, each with its own extraction engine:
 **PDF extraction** uses `lopdf`, a pure-Rust PDF library. It parses the PDF's internal object tree and extracts text content per page, preserving page boundaries. On the frontend, PDF.js (Mozilla's JavaScript PDF renderer) independently extracts text spans with precise coordinate data — position, width, and height for every word on every page. This dual extraction gives Qvault both the raw text (for scanning) and the spatial layout (for overlay rendering and export).
 
 **DOCX extraction** treats the file as what it actually is: a ZIP archive containing XML. Qvault opens the archive, locates `word/document.xml`, and parses it with `quick-xml`. It walks the XML tree, collecting text from `<w:t>` elements and inserting newlines at `<w:p>` paragraph boundaries. The result is clean, structured text ready for scanning.
+
+### Encryption at Rest
+
+Every document that enters Qvault is encrypted before it touches the disk. The encryption scheme uses **AES-256-GCM** (Galois/Counter Mode), which provides both confidentiality and authentication in a single pass.
+
+The encryption key is derived from a SHA-256 hash of a machine-bound seed: `qvault-encryption-{hostname}`. This means the encrypted files can only be decrypted on the machine that created them. There's no master password to forget, no key file to lose, and no key server to compromise.
+
+Each file is encrypted with a fresh 96-bit random nonce generated from the OS's cryptographic random number generator. The file format is simple: 12 bytes of nonce, followed by the ciphertext with an appended 16-byte authentication tag. The authentication tag ensures that any tampering with the encrypted file — even a single flipped bit — is detected during decryption.
+
+This is not a "nice to have" feature. If someone gains access to a lawyer's laptop, Qvault's documents are encrypted with a key that exists only in memory during runtime. The files on disk are opaque binary blobs.
 
 ### Storage
 
@@ -217,6 +227,8 @@ Qvault's security model is simple: **trust the machine, distrust the network.**
 
 The application assumes that the user's device is a trusted environment — it's their laptop, their file system, their responsibility to secure physical access. Within that trusted perimeter, Qvault adds defense-in-depth:
 
+- **Encryption at rest** ensures that even if the file system is compromised, document content is protected by AES-256-GCM.
+- **Machine-bound keys** prevent encrypted files from being decrypted on another device.
 - **Audit logging** records every action for compliance review.
 - **No network surface** eliminates an entire class of attacks — MITM, data exfiltration, API key leakage, server breaches.
 
