@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture — How Qvault Processes Documents Locally</title>
+  <meta name="description" content="A deep dive into Qvault's local-first architecture: dual-layer PII detection and why your documents never leave your machine.">
+  <link rel="canonical" href="https://qvault.tech/architecture.html" />
+  <style>
+    :root {
+      --navy: #0F1B2D;
+      --navy-light: #1A2B45;
+      --blue-accent: #3B82F6;
+      --blue-hover: #2563EB;
+      --blue-light: #DBEAFE;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-800: #1F2937;
+      --gray-900: #111827;
+      --white: #FFFFFF;
+      --green: #10B981;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--gray-800); line-height: 1.7; background: var(--white); -webkit-font-smoothing: antialiased; }
+
+    /* Navigation */
+    nav { background: var(--navy); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    nav a.logo { color: white; text-decoration: none; font-size: 1.25rem; font-weight: 700; }
+    nav a.back { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; }
+    nav a.back:hover { color: white; }
+
+    /* Hero banner */
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white;
+      padding: 4rem 2rem 3rem;
+      text-align: center;
+    }
+    .hero h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2; }
+    .hero .subtitle { font-size: 1.1rem; color: rgba(255,255,255,0.7); max-width: 640px; margin: 0 auto; }
+
+    /* Article */
+    article { max-width: 780px; margin: 0 auto; padding: 3rem 2rem 4rem; }
+    article h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; color: var(--gray-900); font-weight: 700; border-bottom: 2px solid var(--blue-accent); padding-bottom: 0.4rem; }
+    article h3 { font-size: 1.15rem; margin: 1.75rem 0 0.75rem; color: var(--gray-900); font-weight: 600; }
+    article p { margin-bottom: 1rem; color: var(--gray-600); }
+    article ul, article ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+    article li { margin-bottom: 0.5rem; color: var(--gray-600); }
+    article strong { color: var(--gray-800); }
+    article a { color: var(--blue-accent); text-decoration: none; }
+    article a:hover { text-decoration: underline; }
+
+    /* Callout boxes */
+    .callout {
+      background: var(--blue-light);
+      border-left: 4px solid var(--blue-accent);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+    }
+    .callout p { color: var(--gray-700); margin-bottom: 0; }
+    .callout strong { color: var(--navy); }
+
+    .callout-dark {
+      background: var(--gray-50);
+      border-left: 4px solid var(--gray-400);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+    }
+    .callout-dark p { color: var(--gray-600); margin-bottom: 0; font-size: 0.95rem; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+    th { background: var(--navy); color: white; padding: 0.75rem 1rem; text-align: left; font-weight: 600; }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--gray-200); color: var(--gray-600); }
+    tr:hover td { background: var(--gray-50); }
+
+    /* Diagram boxes */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+    .pipeline-step {
+      background: var(--navy);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      min-width: 130px;
+    }
+    .pipeline-arrow {
+      font-size: 1.5rem;
+      color: var(--blue-accent);
+      padding: 0 0.5rem;
+    }
+
+    /* Stats grid */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .stat-card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .stat-card .number { font-size: 1.75rem; font-weight: 800; color: var(--blue-accent); }
+    .stat-card .label { font-size: 0.85rem; color: var(--gray-500); margin-top: 0.25rem; }
+
+    /* Footer */
+    footer { background: var(--navy); color: rgba(255,255,255,0.5); text-align: center; padding: 2rem; font-size: 0.85rem; }
+    footer a { color: rgba(255,255,255,0.5); text-decoration: underline; }
+
+    /* TOC */
+    .toc {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+    }
+    .toc h3 { margin: 0 0 0.75rem; color: var(--gray-900); font-size: 1rem; }
+    .toc ol { padding-left: 1.25rem; margin-bottom: 0; }
+    .toc li { margin-bottom: 0.35rem; }
+    .toc a { color: var(--blue-accent); text-decoration: none; font-size: 0.95rem; }
+    .toc a:hover { text-decoration: underline; }
+
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 1.75rem; }
+      article { padding: 2rem 1.25rem 3rem; }
+      .pipeline { flex-direction: column; }
+      .pipeline-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">Qvault</a>
+    <a href="index.html" class="back">&larr; Back to home</a>
+  </nav>
+
+  <div class="hero">
+    <h1>The Architecture Behind Qvault</h1>
+    <p class="subtitle">Why your documents never leave your machine &mdash; a deep dive into local-first PII detection and redaction.</p>
+  </div>
+
+  <article>
+
+    <div class="toc">
+      <h3>Contents</h3>
+      <ol>
+        <li><a href="#local-first">The Local-First Architecture</a></li>
+        <li><a href="#detection">Dual-Layer PII Detection Engine</a></li>
+        <li><a href="#pipeline">Document Processing Pipeline</a></li>
+        <li><a href="#rendering">Frontend Rendering Pipeline</a></li>
+        <li><a href="#performance">Performance Characteristics</a></li>
+        <li><a href="#what-we-dont-do">What Qvault Does NOT Do</a></li>
+        <li><a href="#platforms">Cross-Platform Distribution</a></li>
+        <li><a href="#jurisdictions">Jurisdictional Coverage</a></li>
+        <li><a href="#trust">The Trust Model</a></li>
+      </ol>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="number">0</div>
+        <div class="label">Bytes sent to cloud</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">5</div>
+        <div class="label">Jurisdictions covered</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">18</div>
+        <div class="label">IPC commands</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">&lt;100ms</div>
+        <div class="label">Typical scan time</div>
+      </div>
+    </div>
+
+    <p>Legal professionals handle some of the most sensitive information in existence: Social Security numbers, financial records, personal addresses, medical data, and confidential business details. Every day, law firms process thousands of documents containing personally identifiable information (PII) that, if exposed, could harm clients and violate regulations like GDPR, CCPA, and LGPD.</p>
+
+    <p>Most document processing tools require uploading files to a cloud server. For a law firm, that means client data &mdash; privileged, confidential, protected by attorney-client privilege &mdash; leaves the machine and travels across the internet to be processed on someone else's infrastructure.</p>
+
+    <div class="callout">
+      <p><strong>Qvault takes a fundamentally different approach.</strong> Every byte of every document stays on your computer. There is no cloud processing, no data upload, no server-side analysis. The entire PII detection and redaction pipeline runs locally, inside a native desktop application built with Rust.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="local-first">The Local-First Architecture</h2>
+
+    <p>Qvault is built on <strong>Tauri v2</strong>, a framework that pairs a Rust backend with a lightweight web frontend. Unlike Electron (which bundles an entire Chromium browser), Tauri uses the operating system's native webview &mdash; WebKit on macOS, WebView2 on Windows, WebKitGTK on Linux. The result is a binary that's a fraction of the size of an Electron app, with lower memory usage and faster startup times.</p>
+
+    <h3>Why Rust?</h3>
+    <ul>
+      <li><strong>Memory safety without garbage collection.</strong> No pause-the-world GC cycles interrupting document processing. Memory is freed deterministically.</li>
+      <li><strong>Zero-cost abstractions.</strong> The regex engine and PDF parser operate at native speed. No interpreter overhead, no JIT warmup.</li>
+      <li><strong>Fearless concurrency.</strong> Tauri's async runtime (Tokio) handles IPC commands concurrently. Multiple documents can be processed in parallel without data races.</li>
+    </ul>
+
+    <p>The frontend is <strong>React 18</strong> with TypeScript and Tailwind CSS, rendered inside the native webview. The two layers communicate through Tauri's IPC bridge &mdash; a type-safe, serialized message-passing system that connects JavaScript function calls to Rust command handlers.</p>
+
+    <h3>The IPC Bridge</h3>
+    <p>Qvault exposes 18 IPC commands that the frontend can invoke. These are not REST endpoints or WebSocket messages &mdash; they're direct function calls serialized through Tauri's command system, with no network stack involved.</p>
+    <ul>
+      <li><strong>Document management:</strong> Upload, retrieve, delete, and reset operations</li>
+      <li><strong>PII scanning:</strong> Text extraction and dual-layer detection pipeline</li>
+      <li><strong>Redaction review:</strong> Individual approval/rejection and bulk operations</li>
+      <li><strong>Entity tracking:</strong> Cross-document PII knowledge base queries</li>
+      <li><strong>Export:</strong> Coordinate-mapped PDF redaction with black-box rendering</li>
+      <li><strong>License management:</strong> Activation and validation (the <em>only</em> network calls in the entire app)</li>
+    </ul>
+
+    <div class="callout-dark">
+      <p>Every command runs in the same process as the application. There's no HTTP overhead, no serialization to JSON over a wire, no latency from network hops. A scan command completes in single-digit milliseconds locally.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="detection">Dual-Layer PII Detection Engine</h2>
+
+    <p>The core of Qvault is its PII detection pipeline, which runs two complementary scanners in sequence.</p>
+
+    <h3>Layer 1: Pattern-Based Regex Scanner</h3>
+    <p>The first layer uses compiled regular expressions to detect structured PII &mdash; data that follows a known format. The scanner contains patterns organized across five jurisdictions:</p>
+
+    <p><strong>Global patterns</strong> cover universally formatted data: email addresses, credit card numbers (Visa, Mastercard, Amex, Diners Club with Luhn-compatible digit groups), IBAN numbers, IPv4 addresses, URLs, monetary amounts (multi-currency: USD, EUR, GBP, BRL), dates, and phone numbers.</p>
+
+    <p><strong>Regional patterns</strong> include US Social Security Numbers and EINs, EU VAT identification numbers, Brazilian CPF and CNPJ tax IDs, and German Steuernummer formats.</p>
+
+    <p>Every regex pattern is compiled once at initialization and reused. Rust's <code>regex</code> crate compiles patterns to a highly optimized finite automaton &mdash; there's no backtracking, no catastrophic regex performance. Each match is assigned a confidence score of <strong>0.95</strong>.</p>
+
+    <p>The scanner implements <strong>overlap prevention</strong>: when a high-priority pattern matches a region of text, lower-priority patterns skip that region entirely.</p>
+
+    <h3>Layer 2: Heuristic Context Scanner</h3>
+    <p>Structured patterns only catch PII that follows a predictable format. But some of the most sensitive information in legal documents &mdash; <strong>people's names and company names</strong> &mdash; doesn't follow any fixed pattern.</p>
+
+    <p>The heuristic scanner runs six detection passes:</p>
+    <ol>
+      <li><strong>Company names with legal suffixes.</strong> Capitalized word sequences followed by entity types (LLC, Inc, Corp, GmbH, SA, SARL, and 11 others).</li>
+      <li><strong>Names from distribution tables.</strong> Shareholder/ownership tables formatted as "Entity Name &mdash; XX.XXXX%".</li>
+      <li><strong>Names from entity descriptions.</strong> Context clues like "...of Meridian Partners, a Delaware limited liability company..."</li>
+      <li><strong>Person names with titles.</strong> Capitalized name sequences followed by roles (Manager, Director, Officer). Supports international name connectors: de, da, do, van, von, del, di, el, la, le.</li>
+      <li><strong>Person names in distribution contexts.</strong> Individual names in percentage-distribution tables.</li>
+      <li><strong>General capitalized sequences.</strong> Consecutive capitalized words evaluated with contextual signals (nearby terms like "Member", "Shareholder", "signed by").</li>
+    </ol>
+
+    <p>To avoid false positives, the scanner maintains <strong>25 stop phrases</strong> and <strong>71 stop words</strong> covering common legal terminology. Confidence scores range from 0.75 to 0.92 depending on contextual evidence.</p>
+
+    <div class="callout">
+      <p><strong>Why two layers?</strong> Regex alone can't detect names. Machine learning is slow and often requires cloud inference. Qvault's dual-layer approach combines the precision of pattern matching with the flexibility of contextual analysis &mdash; all running locally, all in milliseconds.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="pipeline">Document Processing Pipeline</h2>
+
+    <div class="pipeline">
+      <div class="pipeline-step">Upload</div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step">Store</div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step">Extract Text</div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step">Scan PII</div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step">Review</div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step">Export</div>
+    </div>
+
+    <h3>Extraction</h3>
+    <p><strong>PDF extraction</strong> uses <code>lopdf</code>, a pure-Rust PDF library that parses the PDF's internal object tree and extracts text per page. On the frontend, PDF.js independently extracts text spans with precise coordinate data &mdash; position, width, and height for every word. This dual extraction provides both raw text (for scanning) and spatial layout (for overlay rendering and export).</p>
+
+    <p><strong>DOCX extraction</strong> treats the file as what it is: a ZIP archive containing XML. Qvault opens the archive, locates <code>word/document.xml</code>, and parses it with <code>quick-xml</code>, collecting text from paragraph and run elements.</p>
+
+    <h3>Storage</h3>
+    <p>All metadata lives in a local <strong>SQLite database</strong> running in WAL (Write-Ahead Logging) mode for concurrent read/write performance. The schema consists of seven tables tracking documents, redactions, entities, page text, licenses, audit logs, and credits.</p>
+
+    <p>The <strong>entities table</strong> is noteworthy: when Qvault detects a name in one document, it normalizes and stores that entity. When processing subsequent documents, the system has a growing knowledge base of known PII. This cross-document intelligence means detection accuracy improves over time without any cloud-based learning.</p>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="rendering">Frontend Rendering Pipeline</h2>
+
+    <p>Rendering a PDF with redaction overlays in real time is a non-trivial challenge. Qvault's DocumentViewer manages a multi-layer rendering stack:</p>
+
+    <ol>
+      <li><strong>PDF canvas layer.</strong> PDF.js renders each page to an HTML5 canvas at 1.5x viewport scale for crisp text on high-DPI displays.</li>
+      <li><strong>Text span extraction.</strong> Every text fragment is extracted with position data in both PDF and viewport coordinate systems.</li>
+      <li><strong>Redaction overlay layer.</strong> PII detections are mapped from character offsets to spatial coordinates. Color-coded overlays indicate PII category and review status.</li>
+      <li><strong>Selection layer.</strong> In advanced mode, users can select arbitrary text to create manual redactions with a popup interface.</li>
+      <li><strong>Export coordinate mapping.</strong> Viewport coordinates are translated back to PDF space. The Rust backend injects black rectangle operators into the PDF's content streams &mdash; permanently redacting the selected regions.</li>
+    </ol>
+
+    <p>This entire pipeline runs locally. The PDF never leaves the app. The coordinates never leave the app. The redacted export is written directly to the local filesystem.</p>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="performance">Performance Characteristics</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Factor</th>
+          <th>How</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Compiled regex</strong></td>
+          <td>Deterministic finite automata &mdash; linear-time matching, no backtracking. A 50&ndash;100 page document scans in under 100ms.</td>
+        </tr>
+        <tr>
+          <td><strong>Single-process IPC</strong></td>
+          <td>Tauri commands are in-process function calls. Serialization overhead is microseconds, not milliseconds.</td>
+        </tr>
+        <tr>
+          <td><strong>SQLite WAL mode</strong></td>
+          <td>Concurrent readers and writers. The frontend queries redaction data while the backend processes new pages.</td>
+        </tr>
+        <tr>
+          <td><strong>Streaming processing</strong></td>
+          <td>Pages scanned individually, results stored incrementally. Users see detections in real time.</td>
+        </tr>
+        <tr>
+          <td><strong>Native webview</strong></td>
+          <td>~15&ndash;20 MB installed size (vs 150+ MB for Electron). Sub-second startup.</td>
+        </tr>
+        <tr>
+          <td><strong>Zero network latency</strong></td>
+          <td>No upload, no download, no waiting. Processing is purely CPU-bound, measured in milliseconds.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="what-we-dont-do">What Qvault Does NOT Do</h2>
+
+    <p>Understanding what Qvault avoids is as important as understanding what it does:</p>
+
+    <ul>
+      <li><strong>No cloud uploads.</strong> Documents are never transmitted. The only network calls are license activation and validation &mdash; sending zero document data.</li>
+      <li><strong>No telemetry.</strong> No usage tracking, no analytics, no crash reporting that includes document content.</li>
+      <li><strong>No third-party processing.</strong> No OpenAI API, no AWS Textract, no Google Cloud Vision. Every algorithm runs locally.</li>
+      <li><strong>No external model downloads.</strong> Pure compiled code &mdash; regex patterns and heuristic rules. No model weights, no inference servers.</li>
+      <li><strong>No temporary cloud storage.</strong> The data physically cannot leave because the processing code has no network capability.</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="platforms">Cross-Platform Distribution</h2>
+
+    <p>Qvault runs natively on macOS (Apple Silicon and Intel), Windows, and Linux:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Formats</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>macOS</strong></td>
+          <td>.dmg</td>
+          <td>Separate builds for Apple Silicon (ARM64) and Intel (x86_64)</td>
+        </tr>
+        <tr>
+          <td><strong>Windows</strong></td>
+          <td>.exe, .msi</td>
+          <td>NSIS installer with multi-language support (EN/ES/PT)</td>
+        </tr>
+        <tr>
+          <td><strong>Linux</strong></td>
+          <td>.deb, .AppImage</td>
+          <td>Debian/Ubuntu packages and universal AppImage</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>All builds are produced by a single GitHub Actions workflow using a matrix strategy &mdash; four parallel jobs compile the Rust backend and bundle the frontend for each target.</p>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="jurisdictions">Jurisdictional Coverage</h2>
+
+    <p>Legal work is increasingly international. A firm in Madrid might handle documents containing US Social Security Numbers, Brazilian CPFs, and German tax IDs &mdash; all in the same case.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Jurisdiction</th>
+          <th>PII Types Detected</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Global</strong></td>
+          <td>Email, credit cards, IBAN, IP addresses, URLs, monetary amounts, dates, phone numbers</td>
+        </tr>
+        <tr>
+          <td><strong>United States</strong></td>
+          <td>Social Security Numbers (SSN), Employer Identification Numbers (EIN)</td>
+        </tr>
+        <tr>
+          <td><strong>European Union</strong></td>
+          <td>VAT identification numbers (multi-country format)</td>
+        </tr>
+        <tr>
+          <td><strong>Brazil</strong></td>
+          <td>CPF (individual tax ID), CNPJ (corporate tax ID)</td>
+        </tr>
+        <tr>
+          <td><strong>Germany</strong></td>
+          <td>Steuernummer (tax identification number)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Combined with the heuristic scanner's ability to detect names and company entities regardless of language, Qvault provides broad coverage for international legal practices.</p>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="trust">The Trust Model</h2>
+
+    <p>Qvault's security model is simple: <strong>trust the machine, distrust the network.</strong></p>
+
+    <ul>
+      <li><strong>Audit logging</strong> records every action for compliance review.</li>
+      <li><strong>No network surface</strong> eliminates MITM attacks, data exfiltration, API key leakage, and server breaches as threat vectors.</li>
+    </ul>
+
+    <div class="callout">
+      <p><strong>For legal professionals operating under strict confidentiality obligations, this model provides something cloud tools fundamentally cannot: certainty that client data never left the building.</strong></p>
+    </div>
+
+    <p style="margin-top: 2.5rem; text-align: center; color: var(--gray-500); font-size: 0.95rem;">
+      Qvault is developed by <a href="https://santacroce.es" style="color: var(--blue-accent);">Santacroce SL</a>, Madrid, Spain.<br>
+      Learn more at <a href="https://qvault.tech" style="color: var(--blue-accent);">qvault.tech</a>.
+    </p>
+
+  </article>
+
+  <footer>
+    <p>&copy; 2026 Santacroce SL. All rights reserved. &middot; <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms of Service</a> &middot; <a href="license-agreement.html">EULA</a></p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Qvault</title>
+  <style>
+    :root {
+      --navy: #0F1B2D;
+      --blue-accent: #3B82F6;
+      --gray-50: #F9FAFB;
+      --gray-200: #E5E7EB;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-800: #1F2937;
+      --gray-900: #111827;
+      --white: #FFFFFF;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--gray-800); line-height: 1.7; background: var(--white); }
+    nav { background: var(--navy); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    nav a.logo { color: white; text-decoration: none; font-size: 1.25rem; font-weight: 700; }
+    nav a.back { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; }
+    nav a.back:hover { color: white; }
+    main { max-width: 800px; margin: 0 auto; padding: 3rem 2rem 4rem; }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; color: var(--gray-900); }
+    .date { color: var(--gray-500); font-size: 0.9rem; margin-bottom: 2rem; }
+    h2 { font-size: 1.25rem; margin: 2rem 0 0.75rem; color: var(--gray-900); }
+    h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--gray-800); }
+    p, li { margin-bottom: 0.75rem; color: var(--gray-600); }
+    ul { padding-left: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--gray-200); }
+    th { color: var(--gray-900); font-weight: 600; background: var(--gray-50); }
+    td { color: var(--gray-600); }
+    .highlight { background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 1.25rem; margin: 1.5rem 0; }
+    .highlight strong { color: var(--blue-accent); }
+    .disclaimer { margin-top: 3rem; padding: 1.25rem; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; font-size: 0.85rem; color: var(--gray-500); }
+    footer { background: var(--navy); color: rgba(255,255,255,0.5); text-align: center; padding: 2rem; font-size: 0.85rem; }
+    footer a { color: rgba(255,255,255,0.5); text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">Qvault</a>
+    <a href="index.html" class="back">&larr; Back to home</a>
+  </nav>
+
+  <main>
+    <h1>Privacy Policy</h1>
+    <p class="date">Last updated: March 19, 2026</p>
+
+    <div class="highlight">
+      <strong>Key Principle:</strong> Qvault processes all documents locally on your device. No document content, text, or detected PII ever leaves your computer. We are committed to privacy by design.
+    </div>
+
+    <h2>1. Data Controller</h2>
+    <p>The data controller responsible for your personal data is:</p>
+    <p>Santacroce SL<br>CIF: B13886775<br>Madrid, Spain<br>Website: <a href="https://qvault.tech">qvault.tech</a></p>
+
+    <h2>2. Data We Collect</h2>
+
+    <h3>2.1 Data We DO NOT Collect</h3>
+    <ul>
+      <li>Document content or text</li>
+      <li>Detected PII or redaction results</li>
+      <li>File names or file metadata</li>
+      <li>Any information processed by the desktop application</li>
+    </ul>
+
+    <h3>2.2 Data We Do Collect</h3>
+    <table>
+      <thead>
+        <tr><th>Data</th><th>Purpose</th><th>Legal Basis</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Email address</td><td>Deliver license key after purchase</td><td>Contract performance (Art. 6(1)(b) GDPR)</td></tr>
+        <tr><td>License key</td><td>Software activation and validation</td><td>Contract performance (Art. 6(1)(b) GDPR)</td></tr>
+        <tr><td>Machine ID (hashed)</td><td>Enforce per-device licensing</td><td>Legitimate interest (Art. 6(1)(f) GDPR)</td></tr>
+        <tr><td>IP address (server logs)</td><td>Security and abuse prevention</td><td>Legitimate interest (Art. 6(1)(f) GDPR)</td></tr>
+        <tr><td>Payment information</td><td>Process purchase (via Stripe)</td><td>Contract performance (Art. 6(1)(b) GDPR)</td></tr>
+      </tbody>
+    </table>
+
+    <p>The Machine ID is a one-way cryptographic hash derived from your device's hostname and operating system. It cannot be used to identify you personally or to reconstruct your computer's hostname.</p>
+
+    <h2>3. How We Use Your Data</h2>
+    <ul>
+      <li>To deliver and activate your software license</li>
+      <li>To validate that your license is active on application startup</li>
+      <li>To process payments securely through our payment processor</li>
+      <li>To communicate with you about your purchase or account (e.g., license expiry reminders)</li>
+      <li>To prevent fraud and abuse of the licensing system</li>
+    </ul>
+
+    <h2>4. Third-Party Processors</h2>
+    <table>
+      <thead>
+        <tr><th>Processor</th><th>Purpose</th><th>Location</th><th>Safeguards</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Stripe, Inc.</td><td>Payment processing</td><td>United States</td><td>EU-US Data Privacy Framework; Standard Contractual Clauses</td></tr>
+      </tbody>
+    </table>
+    <p>We do not sell, rent, or share your personal data with any other third parties.</p>
+
+    <h2>5. Data Retention</h2>
+    <ul>
+      <li><strong>License and activation data:</strong> Retained for the duration of your license plus 1 year after expiry.</li>
+      <li><strong>Purchase records:</strong> Retained for 7 years in compliance with Spanish tax regulations.</li>
+      <li><strong>Server logs (IP addresses):</strong> Automatically deleted after 90 days.</li>
+      <li><strong>Email address:</strong> Retained until license expiry plus 1 year, or until you request deletion.</li>
+    </ul>
+
+    <h2>6. Cookies</h2>
+    <p>Our website (qvault.tech) uses minimal cookies:</p>
+    <ul>
+      <li><strong>Cookie consent preference:</strong> Stores your cookie consent choice (necessary, always active).</li>
+      <li><strong>Language preference:</strong> Remembers your selected language (necessary, always active).</li>
+    </ul>
+    <p>We do not use analytics tracking cookies or advertising cookies. If this changes in the future, we will update this policy and request your consent through our cookie consent banner.</p>
+
+    <h2>7. Your Rights Under GDPR</h2>
+    <p>As a data subject in the European Union, you have the following rights:</p>
+    <ul>
+      <li><strong>Right of Access (Art. 15):</strong> Request a copy of the personal data we hold about you.</li>
+      <li><strong>Right to Rectification (Art. 16):</strong> Request correction of inaccurate personal data.</li>
+      <li><strong>Right to Erasure (Art. 17):</strong> Request deletion of your personal data ("right to be forgotten").</li>
+      <li><strong>Right to Data Portability (Art. 20):</strong> Receive your data in a structured, commonly used format.</li>
+      <li><strong>Right to Restriction (Art. 18):</strong> Request restriction of processing of your data.</li>
+      <li><strong>Right to Object (Art. 21):</strong> Object to processing based on legitimate interests.</li>
+      <li><strong>Right to Lodge a Complaint:</strong> You may file a complaint with the Spanish Data Protection Agency (Agencia Espa&ntilde;ola de Protecci&oacute;n de Datos, AEPD) at <a href="https://www.aepd.es">www.aepd.es</a>.</li>
+    </ul>
+    <p>To exercise any of these rights, please contact us using the details in Section 1. We will respond within 30 days.</p>
+
+    <h2>8. Security</h2>
+    <p>We implement appropriate technical and organizational measures to protect your personal data, including:</p>
+    <ul>
+      <li>Encrypted communications (HTTPS/TLS) for all server interactions</li>
+      <li>Hashed machine identifiers (no raw device data stored)</li>
+      <li>Access controls on administrative systems</li>
+      <li>Regular security reviews</li>
+    </ul>
+
+    <h2>9. Children's Privacy</h2>
+    <p>Qvault is a professional tool designed for legal professionals. We do not knowingly collect data from individuals under the age of 16. If we become aware that we have inadvertently collected such data, we will delete it promptly.</p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. Material changes will be communicated via our website or by email. Continued use of the Software after changes constitutes acceptance of the updated policy.</p>
+
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong> This document is provided for informational purposes and should not be considered legal advice. We recommend consulting with a qualified legal professional for your specific circumstances.
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Qvault. All rights reserved. A product by <a href="https://santacroce.es">Santacroce SL</a></p>
+  </footer>
+</body>
+</html>

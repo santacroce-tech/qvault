@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qvault — Automatic PII Detection & Redaction for Legal Professionals</title>
+  <meta name="description" content="Qvault detects and redacts sensitive information from legal documents locally. No data ever leaves your computer.">
+  <link rel="alternate" hreflang="en" href="index.html" />
+  <link rel="alternate" hreflang="es" href="es.html" />
+  <link rel="alternate" hreflang="pt" href="pt.html" />
+  <style>
+    :root {
+      --navy: #0F1B2D;
+      --navy-light: #1A2B45;
+      --blue-accent: #3B82F6;
+      --blue-hover: #2563EB;
+      --blue-light: #DBEAFE;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-800: #1F2937;
+      --gray-900: #111827;
+      --white: #FFFFFF;
+      --green: #10B981;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--gray-800);
+      line-height: 1.6;
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fade-in animation */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(15, 27, 45, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo span {
+      color: var(--blue-accent);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--white);
+    }
+
+    /* Sections */
+    section {
+      padding: 100px 24px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--blue-accent);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      font-size: 1.125rem;
+      color: var(--gray-500);
+      max-width: 640px;
+      margin: 0 auto 60px;
+      text-align: center;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 160px 24px 100px;
+      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-light) 60%, var(--gray-50) 100%);
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--blue-accent);
+      margin-bottom: 32px;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 3.75rem);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.6);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 64px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: var(--blue-accent);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s, transform 0.15s;
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+
+    /* Screenshot Placeholders */
+    .screenshots {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .screenshot-img {
+      width: 340px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      object-fit: cover;
+    }
+
+    /* Download Section */
+    .download-section {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white;
+      padding: 80px 0;
+      text-align: center;
+    }
+
+    .download-section h2 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .download-section .subtitle {
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 2.5rem;
+      font-size: 1.1rem;
+    }
+
+    .download-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--blue-accent);
+      color: white;
+      padding: 16px 40px;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+      margin-bottom: 1.5rem;
+    }
+
+    .download-primary:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    .download-primary svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .download-alt {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .download-alt a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 0.95rem;
+      padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .download-alt a:hover {
+      color: white;
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .download-alt a.active-os {
+      display: none;
+    }
+
+    .download-version {
+      margin-top: 2rem;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.85rem;
+    }
+
+    /* Features */
+    .features {
+      background: var(--gray-50);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .feature-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 32px;
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+
+    .feature-card:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--blue-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 0.95rem;
+      color: var(--gray-500);
+      line-height: 1.6;
+    }
+
+    /* How It Works */
+    .how-it-works {
+      background: var(--white);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 40px;
+      left: calc(16.66% + 24px);
+      right: calc(16.66% + 24px);
+      height: 2px;
+      background: var(--gray-200);
+    }
+
+    .step {
+      text-align: center;
+    }
+
+    .step-number {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--white);
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 0.95rem;
+      color: var(--gray-500);
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    /* Pricing */
+    .pricing {
+      background: var(--gray-50);
+    }
+
+    .pricing-card {
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--white);
+      border: 2px solid var(--blue-accent);
+      border-radius: 18px;
+      padding: 48px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(59, 130, 246, 0.1);
+    }
+
+    .pricing-card .plan-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--blue-accent);
+      margin-bottom: 8px;
+    }
+
+    .pricing-card .price {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--gray-900);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .pricing-card .price-period {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      margin-bottom: 32px;
+    }
+
+    .pricing-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 40px;
+    }
+
+    .pricing-features li {
+      padding: 10px 0;
+      font-size: 0.95rem;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pricing-features li::before {
+      content: '';
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.1);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%2310B981' d='M16.707 5.293a1 1 0 0 1 0 1.414l-8 8a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L8 12.586l7.293-7.293a1 1 0 0 1 1.414 0z'/%3E%3C/svg%3E");
+      background-size: 14px;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .btn-pricing {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 16px;
+      background: var(--blue-accent);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-pricing:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--navy);
+      padding: 48px 24px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-copy {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .nav-lang { display: flex; gap: 4px; margin-left: 16px; }
+    .nav-lang a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 4px; transition: color 0.2s, background 0.2s; }
+    .nav-lang a:hover, .nav-lang a.active { color: white; background: rgba(255,255,255,0.1); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .steps::before {
+        display: none;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      section {
+        padding: 72px 20px;
+      }
+
+      .hero {
+        padding: 120px 20px 72px;
+      }
+
+      .hero h1 {
+        font-size: 2.25rem;
+      }
+
+      .hero p {
+        font-size: 1.05rem;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-title {
+        font-size: 1.75rem;
+      }
+
+      .screenshot-img {
+        width: 100%;
+        height: auto;
+      }
+
+      .pricing-card {
+        padding: 32px 24px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo"><span>Q</span>vault</a>
+      <ul class="nav-links">
+        <li><a href="#download">Download</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#license">License</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+      </ul>
+      <div class="nav-lang">
+        <a href="index.html" class="active">EN</a>
+        <a href="es.html">ES</a>
+        <a href="pt.html">PT</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">100% Local Processing</div>
+      <h1>Protect Client Privacy. Automatically.</h1>
+      <p>Qvault detects and redacts sensitive information from legal documents &mdash; names, SSNs, addresses, financial data &mdash; all without your data ever leaving your computer.</p>
+      <div class="hero-buttons">
+        <a href="#download" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Qvault
+        </a>
+        <a href="#license" class="btn-secondary">View License</a>
+      </div>
+      <div class="screenshots fade-in">
+        <img src="screenshots/upload-view.png" alt="Qvault Upload View" class="screenshot-img" loading="lazy">
+        <img src="screenshots/review-view.png" alt="Qvault Review View with PII Highlighted" class="screenshot-img" loading="lazy">
+        <img src="screenshots/entity-view.png" alt="Qvault Entity Database View" class="screenshot-img" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section class="download-section" id="download">
+    <div class="container">
+      <h2>Download Qvault</h2>
+      <p class="subtitle">Available for macOS, Windows, and Linux</p>
+
+      <div>
+        <a id="download-primary" href="#" class="download-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span id="download-label">Download for macOS</span>
+        </a>
+      </div>
+
+      <div class="download-alt">
+        <a href="/releases/" id="dl-mac" data-os="macos">macOS (.dmg)</a>
+        <a href="/releases/" id="dl-win" data-os="windows">Windows (.exe)</a>
+        <a href="/releases/" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
+      </div>
+
+      <p class="download-version">v0.1.0 &middot; MIT License &middot; Free &amp; Open Source</p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything you need to protect sensitive data</h2>
+        <p class="section-subtitle">Purpose-built for legal professionals who handle confidential client information every day.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128269;</div>
+          <h3>Intelligent Detection</h3>
+          <p>Regex and heuristic analysis detects names, companies, SSNs, credit cards, addresses, dates, and more across your documents.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128274;</div>
+          <h3>Local Processing</h3>
+          <p>Zero data transmission. Everything runs on your machine. Your clients' data never touches the cloud.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128200;</div>
+          <h3>Cross-Document Intelligence</h3>
+          <p>Entity database tracks all sensitive data across documents. Know exactly what PII exists in your practice.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128196;</div>
+          <h3>PDF &amp; DOCX Support</h3>
+          <p>Works with the most common legal document formats right out of the box.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#10003;</div>
+          <h3>Export Clean Versions</h3>
+          <p>One click to produce redacted documents with black-box redactions ready for filing or sharing.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">&#128209;</div>
+          <h3>Audit Trail</h3>
+          <p>Every action logged for compliance. Know who reviewed what and when.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">How It Works</div>
+        <h2 class="section-title">Three steps to protected documents</h2>
+        <p class="section-subtitle">From upload to redacted export in minutes, not hours.</p>
+      </div>
+      <div class="steps">
+        <div class="step fade-in">
+          <div class="step-number">1</div>
+          <h3>Upload</h3>
+          <p>Drag and drop your PDF or DOCX. Qvault instantly begins scanning for sensitive information.</p>
+        </div>
+        <div class="step fade-in">
+          <div class="step-number">2</div>
+          <h3>Review</h3>
+          <p>See all detected PII highlighted with color coding. Approve, reject, or edit each redaction.</p>
+        </div>
+        <div class="step fade-in">
+          <div class="step-number">3</div>
+          <h3>Export</h3>
+          <p>Download the clean version with all approved redactions applied. Ready for filing.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- License -->
+  <section class="pricing" id="license">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">License</div>
+        <h2 class="section-title">Free &amp; Open Source</h2>
+        <p class="section-subtitle">Qvault is released under the MIT License. Use it freely with no restrictions.</p>
+      </div>
+      <div class="pricing-card fade-in">
+        <div class="plan-name">MIT License</div>
+        <div class="price" style="font-size:2.5rem;">Free</div>
+        <div class="price-period">forever</div>
+        <ul class="pricing-features">
+          <li>Unlimited documents</li>
+          <li>All PII detection patterns</li>
+          <li>Cross-document entity tracking</li>
+          <li>Full source code available</li>
+          <li>Community support</li>
+        </ul>
+        <p style="font-size:0.85rem;color:var(--gray-500);margin-top:16px;line-height:1.5;">
+          THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. See the
+          <a href="https://opensource.org/licenses/MIT" style="color:var(--blue-accent);text-decoration:underline;">MIT License</a> for details.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="how-it-works" id="faq">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Troubleshooting &amp; Common Questions</h2>
+        <p class="section-subtitle">Solutions for installation issues on macOS and Windows.</p>
+      </div>
+
+      <div style="max-width:760px;margin:0 auto;">
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">macOS: &ldquo;Qvault is damaged&rdquo; or &ldquo;can&rsquo;t be checked for malicious software&rdquo;</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Qvault is not yet signed with an Apple Developer certificate. macOS Gatekeeper blocks unsigned apps by default. To fix this:</p>
+          <ol style="font-size:0.95rem;color:var(--gray-600);line-height:1.8;margin:12px 0 0 20px;">
+            <li>Open <strong>System Settings &gt; Privacy &amp; Security</strong></li>
+            <li>Scroll to the Security section &mdash; you&rsquo;ll see a message about Qvault being blocked</li>
+            <li>Click <strong>Open Anyway</strong> and confirm</li>
+          </ol>
+          <p style="font-size:0.9rem;color:var(--gray-500);margin-top:12px;">Alternatively, run in Terminal: <code style="background:var(--gray-100);padding:2px 8px;border-radius:4px;font-size:0.85rem;">xattr -cr /Applications/Qvault.app</code></p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">macOS: &ldquo;From an unidentified developer&rdquo;</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Right-click (or Control-click) the app icon and select <strong>Open</strong> from the context menu. Click <strong>Open</strong> in the dialog. You only need to do this once &mdash; macOS will remember your choice.</p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">Windows: &ldquo;Windows protected your PC&rdquo; (SmartScreen)</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Windows SmartScreen may block the installer because it is not signed with an EV code signing certificate. To proceed:</p>
+          <ol style="font-size:0.95rem;color:var(--gray-600);line-height:1.8;margin:12px 0 0 20px;">
+            <li>Click <strong>More info</strong> on the SmartScreen dialog</li>
+            <li>Click <strong>Run anyway</strong></li>
+          </ol>
+          <p style="font-size:0.9rem;color:var(--gray-500);margin-top:12px;">This is a one-time prompt. Windows will not block the app again after the first launch.</p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">Windows: Antivirus flags the installer</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Some antivirus software may flag unsigned installers as suspicious. This is a false positive. You can add an exception for Qvault in your antivirus settings, or temporarily disable real-time protection during installation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-copy">&copy; 2026 Qvault. All rights reserved. A product by <a href="https://santacroce.es" style="color:rgba(255,255,255,0.5);text-decoration:underline;">Santacroce SL</a></div>
+      <ul class="footer-links">
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms of Service</a></li>
+        <li><a href="license-agreement.html">EULA</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- GDPR Cookie Consent Banner -->
+  <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1F2937;color:white;padding:1rem 2rem;z-index:9999;font-size:0.9rem;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <p style="margin:0;flex:1;min-width:200px;">We use essential cookies to ensure the website functions properly. See our <a href="privacy.html" style="color:#93C5FD;text-decoration:underline;">Privacy Policy</a>.</p>
+      <div style="display:flex;gap:0.5rem;">
+        <button onclick="acceptCookies('all')" style="padding:0.5rem 1rem;background:#3B82F6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;">Accept All</button>
+        <button onclick="acceptCookies('necessary')" style="padding:0.5rem 1rem;background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;cursor:pointer;font-size:0.85rem;">Necessary Only</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll Animations + Stripe + Cookies -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Scroll animations
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.15,
+        rootMargin: '0px 0px -40px 0px'
+      });
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+      // OS detection for download section
+      (function() {
+        const ua = navigator.userAgent;
+        let os = 'linux';
+        if (ua.includes('Mac')) os = 'macos';
+        else if (ua.includes('Win')) os = 'windows';
+
+        const labels = { macos: 'Download for macOS', windows: 'Download for Windows', linux: 'Download for Linux' };
+        const primary = document.getElementById('download-primary');
+        const label = document.getElementById('download-label');
+        if (primary && label) {
+          label.textContent = labels[os];
+          primary.href = '/releases/';
+        }
+
+        // Hide current OS from alt links
+        const altLink = document.getElementById('dl-' + (os === 'macos' ? 'mac' : os === 'windows' ? 'win' : 'linux'));
+        if (altLink) altLink.classList.add('active-os');
+      })();
+
+      // Cookie banner
+      if (!document.cookie.includes('qvault_consent=')) {
+        document.getElementById('cookie-banner').style.display = 'block';
+      }
+    });
+
+    function acceptCookies(level) {
+      document.cookie = 'qvault_consent=' + level + ';max-age=31536000;path=/;SameSite=Lax';
+      document.getElementById('cookie-banner').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
