@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Architecture — How Qvault Processes Documents Locally</title>
-  <meta name="description" content="A deep dive into Qvault's local-first architecture: dual-layer PII detection, AES-256-GCM encryption, and why your documents never leave your machine.">
+  <meta name="description" content="A deep dive into Qvault's local-first architecture: dual-layer PII detection and why your documents never leave your machine.">
   <link rel="canonical" href="https://qvault.tech/architecture.html" />
   <style>
     :root {
@@ -213,7 +213,7 @@
     <h3>Why Rust?</h3>
     <ul>
       <li><strong>Memory safety without garbage collection.</strong> No pause-the-world GC cycles interrupting document processing. Memory is freed deterministically.</li>
-      <li><strong>Zero-cost abstractions.</strong> The regex engine, encryption routines, and PDF parser all operate at native speed. No interpreter overhead, no JIT warmup.</li>
+      <li><strong>Zero-cost abstractions.</strong> The regex engine and PDF parser operate at native speed. No interpreter overhead, no JIT warmup.</li>
       <li><strong>Fearless concurrency.</strong> Tauri's async runtime (Tokio) handles IPC commands concurrently. Multiple documents can be processed in parallel without data races.</li>
     </ul>
 
@@ -275,7 +275,7 @@
     <div class="pipeline">
       <div class="pipeline-step">Upload</div>
       <div class="pipeline-arrow">&rarr;</div>
-      <div class="pipeline-step">Encrypt</div>
+      <div class="pipeline-step">Store</div>
       <div class="pipeline-arrow">&rarr;</div>
       <div class="pipeline-step">Extract Text</div>
       <div class="pipeline-arrow">&rarr;</div>
@@ -290,20 +290,6 @@
     <p><strong>PDF extraction</strong> uses <code>lopdf</code>, a pure-Rust PDF library that parses the PDF's internal object tree and extracts text per page. On the frontend, PDF.js independently extracts text spans with precise coordinate data &mdash; position, width, and height for every word. This dual extraction provides both raw text (for scanning) and spatial layout (for overlay rendering and export).</p>
 
     <p><strong>DOCX extraction</strong> treats the file as what it is: a ZIP archive containing XML. Qvault opens the archive, locates <code>word/document.xml</code>, and parses it with <code>quick-xml</code>, collecting text from paragraph and run elements.</p>
-
-    <h3>Encryption at Rest</h3>
-    <p>Every document that enters Qvault is encrypted before it touches the disk. The scheme uses <strong>AES-256-GCM</strong> (Galois/Counter Mode), providing both confidentiality and authentication in a single pass.</p>
-
-    <ul>
-      <li><strong>Key derivation:</strong> SHA-256 of a machine-bound seed ensures encrypted files can only be decrypted on the machine that created them.</li>
-      <li><strong>Fresh nonces:</strong> Each file gets a random 96-bit nonce from the OS cryptographic RNG.</li>
-      <li><strong>Authentication tag:</strong> A 16-byte GCM tag detects any tampering &mdash; even a single flipped bit.</li>
-      <li><strong>File format:</strong> 12-byte nonce + ciphertext + 16-byte auth tag. Simple, auditable, standard.</li>
-    </ul>
-
-    <div class="callout-dark">
-      <p>There's no master password to forget, no key file to lose, and no key server to compromise. If someone gains access to a lawyer's laptop, Qvault's documents are encrypted with a key that exists only in memory during runtime.</p>
-    </div>
 
     <h3>Storage</h3>
     <p>All metadata lives in a local <strong>SQLite database</strong> running in WAL (Write-Ahead Logging) mode for concurrent read/write performance. The schema consists of seven tables tracking documents, redactions, entities, page text, licenses, audit logs, and credits.</p>
@@ -454,8 +440,6 @@
     <p>Qvault's security model is simple: <strong>trust the machine, distrust the network.</strong></p>
 
     <ul>
-      <li><strong>Encryption at rest</strong> ensures that even if the file system is compromised, document content is protected by AES-256-GCM.</li>
-      <li><strong>Machine-bound keys</strong> prevent encrypted files from being decrypted on another device.</li>
       <li><strong>Audit logging</strong> records every action for compliance review.</li>
       <li><strong>No network surface</strong> eliminates MITM attacks, data exfiltration, API key leakage, and server breaches as threat vectors.</li>
     </ul>

@@ -3,7 +3,7 @@ name = "qvault"
 version = "0.1.0"
 description = "Detect and redact PII from documents"
 authors = ["Qvault"]
-license = "UNLICENSED"
+license = "MIT"
 edition = "2021"
 rust-version = "1.77.2"
 
@@ -28,11 +28,9 @@ regex = "1"
 lopdf = "0.32"
 quick-xml = "0.31"
 zip = "0.6"
-aes-gcm = "0.10"
 ring = "0.17"
 uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
-rand = "0.8"
 hex = "0.4"
 hostname = "0.4"
 base64 = "0.22"
