@@ -582,7 +582,7 @@
         <li><a href="#download">Baixar</a></li>
         <li><a href="#features">Recursos</a></li>
         <li><a href="#how-it-works">Como Funciona</a></li>
-        <li><a href="#pricing">Pre&ccedil;os</a></li>
+        <li><a href="#license">Licen&ccedil;a</a></li>
         <li><a href="architecture.html">Arquitetura</a></li>
       </ul>
       <div class="nav-lang">
@@ -604,7 +604,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Baixar Qvault
         </a>
-        <a href="#pricing" class="btn-secondary">Ver Pre&ccedil;os</a>
+        <a href="#license" class="btn-secondary">Ver Licen&ccedil;a</a>
       </div>
       <div class="screenshots fade-in">
         <img src="screenshots/upload-view.png" alt="Qvault Tela de Upload" class="screenshot-img" loading="lazy">
@@ -630,7 +630,7 @@
         <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-win" data-os="windows">Windows (.exe)</a>
         <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
       </div>
-      <p class="download-version">v0.1.0 &middot; Requer chave de licen&ccedil;a &middot; <a href="#pricing" style="color:rgba(255,255,255,0.5);text-decoration:underline;">Comprar aqui</a></p>
+      <p class="download-version">v0.1.0 &middot; Licen&ccedil;a MIT &middot; Gratuito e C&oacute;digo Aberto</p>
     </div>
   </section>
 
@@ -705,26 +705,29 @@
     </div>
   </section>
 
-  <!-- Pre&ccedil;os -->
-  <section class="pricing" id="pricing">
+  <!-- Licen&ccedil;a -->
+  <section class="pricing" id="license">
     <div class="container">
       <div style="text-align:center">
-        <div class="section-label">Pre&ccedil;os</div>
-        <h2 class="section-title">Pre&ccedil;os simples e transparentes</h2>
-        <p class="section-subtitle">Um plano. Tudo incluso. Sem cobran&ccedil;a por documento.</p>
+        <div class="section-label">Licen&ccedil;a</div>
+        <h2 class="section-title">Gratuito e C&oacute;digo Aberto</h2>
+        <p class="section-subtitle">Qvault &eacute; distribu&iacute;do sob a Licen&ccedil;a MIT. Use livremente sem restri&ccedil;&otilde;es.</p>
       </div>
       <div class="pricing-card fade-in">
-        <div class="plan-name">Profissional</div>
-        <div class="price">$299</div>
-        <div class="price-period">por ano</div>
+        <div class="plan-name">Licen&ccedil;a MIT</div>
+        <div class="price" style="font-size:2.5rem;">Gr&aacute;tis</div>
+        <div class="price-period">para sempre</div>
         <ul class="pricing-features">
           <li>Documentos ilimitados</li>
           <li>Todos os padr&otilde;es de detec&ccedil;&atilde;o de PII</li>
           <li>Rastreamento de entidades entre documentos</li>
-          <li>Suporte priorit&aacute;rio</li>
-          <li>Atualiza&ccedil;&otilde;es gratuitas</li>
+          <li>C&oacute;digo fonte completo dispon&iacute;vel</li>
+          <li>Suporte comunit&aacute;rio</li>
         </ul>
-        <button class="btn-pricing" id="buy-btn" style="border:none;cursor:pointer;font-family:inherit;">Comprar — $299/ano</button>
+        <p style="font-size:0.85rem;color:var(--gray-500);margin-top:16px;line-height:1.5;">
+          O SOFTWARE &Eacute; FORNECIDO "COMO EST&Aacute;", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA OU IMPL&Iacute;CITA. Consulte a
+          <a href="https://opensource.org/licenses/MIT" style="color:var(--blue-accent);text-decoration:underline;">Licen&ccedil;a MIT</a> para mais detalhes.
+        </p>
       </div>
     </div>
   </section>
@@ -783,31 +786,6 @@
         const altLink = document.getElementById(altId);
         if (altLink) altLink.classList.add('active-os');
       })();
-
-      const buyBtn = document.getElementById('buy-btn');
-      if (buyBtn) {
-        buyBtn.addEventListener('click', async () => {
-          buyBtn.textContent = 'Redirecionando...';
-          buyBtn.disabled = true;
-          try {
-            const res = await fetch('https://api.qvault.tech/api/stripe/create-checkout-session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ locale: 'pt' })
-            });
-            const data = await res.json();
-            if (data.url) {
-              window.location.href = data.url;
-            } else {
-              buyBtn.textContent = 'Comprar \u2014 $299/ano';
-              buyBtn.disabled = false;
-            }
-          } catch (e) {
-            buyBtn.textContent = 'Comprar \u2014 $299/ano';
-            buyBtn.disabled = false;
-          }
-        });
-      }
 
       if (!document.cookie.includes('qvault_consent=')) {
         document.getElementById('cookie-banner').style.display = 'block';
