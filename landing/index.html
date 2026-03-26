@@ -694,9 +694,11 @@
       </div>
 
       <div class="download-alt">
-        <a href="/releases/" id="dl-mac" data-os="macos">macOS (.dmg)</a>
-        <a href="/releases/" id="dl-win" data-os="windows">Windows (.exe)</a>
-        <a href="/releases/" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
+        <a href="/releases/Qvault_0.2.0_aarch64.dmg" id="dl-mac" data-os="macos">macOS Apple Silicon (.dmg)</a>
+        <a href="/releases/Qvault_0.2.0_x64.dmg" id="dl-mac-intel" data-os="macos">macOS Intel (.dmg)</a>
+        <a href="/releases/Qvault_0.2.0_x64-setup.exe" id="dl-win" data-os="windows">Windows (.exe)</a>
+        <a href="/releases/qvault_0.2.0_amd64.deb" id="dl-linux" data-os="linux">Linux (.deb)</a>
+        <a href="/releases/qvault_0.2.0_amd64.AppImage" id="dl-linux-appimage" data-os="linux">Linux (.AppImage)</a>
       </div>
 
       <p class="download-version">v0.2.0 &middot; MIT License &middot; Free &amp; Open Source</p>
@@ -894,16 +896,17 @@
         else if (ua.includes('Win')) os = 'windows';
 
         const labels = { macos: 'Download for macOS', windows: 'Download for Windows', linux: 'Download for Linux' };
+        const urls = {
+          macos: '/releases/Qvault_0.2.0_aarch64.dmg',
+          windows: '/releases/Qvault_0.2.0_x64-setup.exe',
+          linux: '/releases/qvault_0.2.0_amd64.deb'
+        };
         const primary = document.getElementById('download-primary');
         const label = document.getElementById('download-label');
         if (primary && label) {
           label.textContent = labels[os];
-          primary.href = '/releases/';
+          primary.href = urls[os];
         }
-
-        // Hide current OS from alt links
-        const altLink = document.getElementById('dl-' + (os === 'macos' ? 'mac' : os === 'windows' ? 'win' : 'linux'));
-        if (altLink) altLink.classList.add('active-os');
       })();
 
       // Cookie banner

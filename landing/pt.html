@@ -627,9 +627,11 @@
         </a>
       </div>
       <div class="download-alt">
-        <a href="/releases/" id="dl-mac" data-os="macos">macOS (.dmg)</a>
-        <a href="/releases/" id="dl-win" data-os="windows">Windows (.exe)</a>
-        <a href="/releases/" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
+        <a href="/releases/Qvault_0.2.0_aarch64.dmg" id="dl-mac" data-os="macos">macOS Apple Silicon (.dmg)</a>
+        <a href="/releases/Qvault_0.2.0_x64.dmg" id="dl-mac-intel" data-os="macos">macOS Intel (.dmg)</a>
+        <a href="/releases/Qvault_0.2.0_x64-setup.exe" id="dl-win" data-os="windows">Windows (.exe)</a>
+        <a href="/releases/qvault_0.2.0_amd64.deb" id="dl-linux" data-os="linux">Linux (.deb)</a>
+        <a href="/releases/qvault_0.2.0_amd64.AppImage" id="dl-linux-appimage" data-os="linux">Linux (.AppImage)</a>
       </div>
       <p class="download-version">v0.2.0 &middot; Licen&ccedil;a MIT &middot; Gratuito e C&oacute;digo Aberto</p>
     </div>
@@ -824,9 +826,10 @@
         if (ua.includes('Mac')) os = 'macos';
         else if (ua.includes('Win')) os = 'windows';
         const labels = { macos: 'Baixar para macOS', windows: 'Baixar para Windows', linux: 'Baixar para Linux' };
+        const urls = { macos: '/releases/Qvault_0.2.0_aarch64.dmg', windows: '/releases/Qvault_0.2.0_x64-setup.exe', linux: '/releases/qvault_0.2.0_amd64.deb' };
         const primary = document.getElementById('download-primary');
         const label = document.getElementById('download-label');
-        if (primary && label) { label.textContent = labels[os]; primary.href = '/releases/'; }
+        if (primary && label) { label.textContent = labels[os]; primary.href = urls[os]; }
         const altId = os === 'macos' ? 'dl-mac' : os === 'windows' ? 'dl-win' : 'dl-linux';
         const altLink = document.getElementById(altId);
         if (altLink) altLink.classList.add('active-os');
