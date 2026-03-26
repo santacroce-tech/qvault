@@ -39,7 +39,7 @@
       "nsis": {
         "installMode": "currentUser",
         "displayLanguageSelector": true,
-        "languages": ["English", "Spanish", "PortugueseBrazilian"]
+        "languages": ["English", "Spanish", "PortugueseBR"]
       }
     },
     "macOS": {
