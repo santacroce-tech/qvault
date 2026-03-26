@@ -626,9 +626,9 @@
         </a>
       </div>
       <div class="download-alt">
-        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-mac" data-os="macos">macOS (.dmg)</a>
-        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-win" data-os="windows">Windows (.exe)</a>
-        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
+        <a href="/releases/" id="dl-mac" data-os="macos">macOS (.dmg)</a>
+        <a href="/releases/" id="dl-win" data-os="windows">Windows (.exe)</a>
+        <a href="/releases/" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
       </div>
       <p class="download-version">v0.1.0 &middot; Licencia MIT &middot; Gratuito y C&oacute;digo Abierto</p>
     </div>
@@ -781,7 +781,7 @@
         const labels = { macos: 'Descargar para macOS', windows: 'Descargar para Windows', linux: 'Descargar para Linux' };
         const primary = document.getElementById('download-primary');
         const label = document.getElementById('download-label');
-        if (primary && label) { label.textContent = labels[os]; primary.href = 'https://github.com/santacroce-tech/qvault/releases/latest'; }
+        if (primary && label) { label.textContent = labels[os]; primary.href = '/releases/'; }
         const altId = os === 'macos' ? 'dl-mac' : os === 'windows' ? 'dl-win' : 'dl-linux';
         const altLink = document.getElementById(altId);
         if (altLink) altLink.classList.add('active-os');

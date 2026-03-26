@@ -107,9 +107,11 @@ jobs:
           args: ${{ matrix.args }}
 
   deploy:
-    name: Deploy Landing Page
+    name: Deploy Website & Releases
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -121,6 +123,19 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 91.98.47.97 >> ~/.ssh/known_hosts
 
-      - name: Deploy to server
+      - name: Download release artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-files
+          gh release download "${{ github.ref_name }}" --dir release-files --pattern '*.dmg' --pattern '*.exe' --pattern '*.msi' --pattern '*.deb' --pattern '*.AppImage' || true
+          ls -la release-files/
+
+      - name: Deploy landing page
         run: |
           scp -i ~/.ssh/deploy_key -r landing/* root@91.98.47.97:/var/www/qvault.tech/
+
+      - name: Deploy release artifacts
+        run: |
+          ssh -i ~/.ssh/deploy_key root@91.98.47.97 'mkdir -p /var/www/qvault.tech/releases'
+          scp -i ~/.ssh/deploy_key release-files/* root@91.98.47.97:/var/www/qvault.tech/releases/
