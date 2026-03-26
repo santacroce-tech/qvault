@@ -693,9 +693,9 @@
       </div>
 
       <div class="download-alt">
-        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-mac" data-os="macos">macOS (.dmg)</a>
-        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-win" data-os="windows">Windows (.exe)</a>
-        <a href="https://github.com/santacroce-tech/qvault/releases/latest" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
+        <a href="/releases/" id="dl-mac" data-os="macos">macOS (.dmg)</a>
+        <a href="/releases/" id="dl-win" data-os="windows">Windows (.exe)</a>
+        <a href="/releases/" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
       </div>
 
       <p class="download-version">v0.1.0 &middot; MIT License &middot; Free &amp; Open Source</p>
@@ -853,7 +853,7 @@
         const label = document.getElementById('download-label');
         if (primary && label) {
           label.textContent = labels[os];
-          primary.href = 'https://github.com/santacroce-tech/qvault/releases/latest';
+          primary.href = '/releases/';
         }
 
         // Hide current OS from alt links
