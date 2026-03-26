@@ -6,10 +6,6 @@
 // Mock invoke — returns demo data for each command
 export async function invoke(cmd: string, args?: any): Promise<any> {
   switch (cmd) {
-    case "check_license":
-      return true;
-    case "validate_license_online":
-      return true;
     case "get_history":
       return [
         {

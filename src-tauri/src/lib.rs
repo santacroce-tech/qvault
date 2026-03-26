@@ -70,11 +70,6 @@ pub fn run() {
             commands::redaction::bulk_approve,
             commands::history::get_history,
             commands::history::search_history,
-            commands::license::get_license,
-            commands::license::activate_license,
-            commands::license::deactivate_license,
-            commands::license::check_license,
-            commands::license::validate_license_online,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

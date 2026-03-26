@@ -41,8 +41,6 @@ The commands cover the full document lifecycle:
 - **Redaction review:** Individual approval/rejection and bulk operations
 - **Entity tracking:** Cross-document PII knowledge base queries
 - **Export:** Coordinate-mapped PDF redaction with black-box rendering
-- **License management:** Activation and validation (the *only* network calls in the entire app)
-
 Every command runs in the same process as the application. There's no HTTP overhead, no serialization to JSON over a wire, no latency from network hops. A scan command that might take 200ms over a REST API completes in single-digit milliseconds locally.
 
 ---
@@ -125,7 +123,6 @@ All metadata lives in a local **SQLite database** running in WAL (Write-Ahead Lo
 - **redactions** — Individual PII findings with character offsets, category, confidence score, detection layer, and review status
 - **entities** — Cross-document PII knowledge base with normalized text and indexed lookups
 - **document_pages** — Full page text (raw and cleaned versions) for reconstruction
-- **license** — Subscription state with offline grace period tracking
 - **audit_log** — Every action recorded for compliance: uploads, scans, approvals, exports
 - **credits** — Legacy table from early development
 
@@ -173,7 +170,7 @@ Qvault is designed to feel instant. Here's what makes that possible:
 
 Understanding what Qvault explicitly avoids is as important as understanding what it does:
 
-- **No cloud uploads.** Documents are never transmitted. The only network calls are license activation and periodic license validation — and these send zero document data. Just a license key and machine ID.
+- **No cloud uploads.** Documents are never transmitted. There are zero network calls in the entire application.
 - **No telemetry.** There is no usage tracking, no analytics, no crash reporting that includes document content.
 - **No third-party processing.** There is no OpenAI API call, no AWS Textract, no Google Cloud Vision. Every detection algorithm runs locally.
 - **No external model downloads.** The detection engine is pure compiled code — regex patterns and heuristic rules. There are no model weights to download, no inference servers to spin up.

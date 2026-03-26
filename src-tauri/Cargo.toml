@@ -33,5 +33,4 @@ uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 hex = "0.4"
 base64 = "0.22"
-reqwest = { version = "0.12", features = ["json"] }
 tauri-plugin-opener = "2"

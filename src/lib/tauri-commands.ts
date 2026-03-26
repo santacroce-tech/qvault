@@ -2,7 +2,6 @@ import { invoke } from "@tauri-apps/api/core";
 import type {
   Document,
   Redaction,
-  LicenseInfo,
   EntityRow,
   EntitySummary,
   DocumentPage,
@@ -131,27 +130,6 @@ export async function bulkApprove(
   category?: string
 ): Promise<void> {
   return invoke("bulk_approve", { documentId, category });
-}
-
-// License
-export async function getLicense(): Promise<LicenseInfo | null> {
-  return invoke("get_license");
-}
-
-export async function activateLicense(licenseKey: string): Promise<LicenseInfo> {
-  return invoke("activate_license", { licenseKey });
-}
-
-export async function deactivateLicense(): Promise<void> {
-  return invoke("deactivate_license");
-}
-
-export async function checkLicense(): Promise<boolean> {
-  return invoke("check_license");
-}
-
-export async function validateLicenseOnline(): Promise<boolean> {
-  return invoke("validate_license_online");
 }
 
 // History

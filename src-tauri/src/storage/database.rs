@@ -81,28 +81,6 @@ impl Database {
                 UNIQUE(document_id, page_number)
             );
 
-            -- License: yearly subscription (replaces old credits table)
-            CREATE TABLE IF NOT EXISTS license (
-                id TEXT PRIMARY KEY,
-                license_key TEXT NOT NULL,
-                machine_id TEXT NOT NULL,
-                activated_at TEXT NOT NULL,
-                expires_at TEXT NOT NULL,
-                last_validated_at TEXT,
-                plan TEXT NOT NULL DEFAULT 'yearly',
-                status TEXT NOT NULL DEFAULT 'active'
-            );
-
-            -- Keep credits table for backward compat migration, but it's no longer used
-            CREATE TABLE IF NOT EXISTS credits (
-                id TEXT PRIMARY KEY,
-                license_key TEXT,
-                balance INTEGER NOT NULL DEFAULT 3,
-                free_remaining INTEGER NOT NULL DEFAULT 3,
-                free_month TEXT NOT NULL,
-                last_synced_at TEXT
-            );
-
             CREATE TABLE IF NOT EXISTS audit_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id TEXT,
@@ -439,93 +417,6 @@ impl Database {
         rows.collect()
     }
 
-    // ─── License ───
-
-    pub fn get_license(&self) -> Result<Option<LicenseRow>> {
-        let conn = self.conn.lock().unwrap();
-        let mut stmt = conn.prepare(
-            "SELECT id, license_key, machine_id, activated_at, expires_at, last_validated_at, plan, status FROM license LIMIT 1"
-        )?;
-
-        let mut rows = stmt.query_map([], |row| {
-            Ok(LicenseRow {
-                id: row.get(0)?,
-                license_key: row.get(1)?,
-                machine_id: row.get(2)?,
-                activated_at: row.get(3)?,
-                expires_at: row.get(4)?,
-                last_validated_at: row.get(5)?,
-                plan: row.get(6)?,
-                status: row.get(7)?,
-            })
-        })?;
-
-        match rows.next() {
-            Some(row) => Ok(Some(row?)),
-            None => Ok(None),
-        }
-    }
-
-    pub fn activate_license(&self, license_key: &str, machine_id: &str, expires_at: &str) -> Result<()> {
-        let conn = self.conn.lock().unwrap();
-        let now = chrono::Utc::now().to_rfc3339();
-        let id = uuid::Uuid::new_v4().to_string();
-
-        // Remove any existing license
-        conn.execute("DELETE FROM license", [])?;
-
-        conn.execute(
-            "INSERT INTO license (id, license_key, machine_id, activated_at, expires_at, last_validated_at, plan, status)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?4, 'yearly', 'active')",
-            params![id, license_key, machine_id, now, expires_at],
-        )?;
-        Ok(())
-    }
-
-    pub fn update_license_validation(&self, expires_at: &str) -> Result<()> {
-        let conn = self.conn.lock().unwrap();
-        let now = chrono::Utc::now().to_rfc3339();
-        conn.execute(
-            "UPDATE license SET last_validated_at = ?1, expires_at = ?2 WHERE status = 'active'",
-            params![now, expires_at],
-        )?;
-        Ok(())
-    }
-
-    pub fn deactivate_license(&self) -> Result<()> {
-        let conn = self.conn.lock().unwrap();
-        conn.execute("DELETE FROM license", [])?;
-        Ok(())
-    }
-
-    pub fn is_licensed(&self) -> Result<bool> {
-        let license = self.get_license()?;
-        match license {
-            Some(lic) => {
-                if lic.status != "active" {
-                    return Ok(false);
-                }
-                // Check expiry
-                let now = chrono::Utc::now().to_rfc3339();
-                if lic.expires_at <= now {
-                    return Ok(false);
-                }
-                // Check offline grace period (7 days)
-                if let Some(last_validated) = &lic.last_validated_at {
-                    if let Ok(validated_time) = chrono::DateTime::parse_from_rfc3339(last_validated) {
-                        let grace_deadline = validated_time + chrono::Duration::days(7);
-                        let now_time = chrono::Utc::now();
-                        if now_time > grace_deadline {
-                            return Ok(false); // Offline too long
-                        }
-                    }
-                }
-                Ok(true)
-            }
-            None => Ok(false),
-        }
-    }
-
     // ─── History ───
 
     pub fn get_history(&self, offset: i64, limit: i64) -> Result<Vec<DocumentRow>> {
@@ -668,14 +559,3 @@ pub struct DocumentPageRow {
     pub created_at: String,
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct LicenseRow {
-    pub id: String,
-    pub license_key: String,
-    pub machine_id: String,
-    pub activated_at: String,
-    pub expires_at: String,
-    pub last_validated_at: Option<String>,
-    pub plan: String,
-    pub status: String,
-}

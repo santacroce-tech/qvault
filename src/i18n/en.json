@@ -10,8 +10,6 @@
     "title": "Qvault",
     "subtitle": "Detect and redact PII from your documents. Everything stays on your computer.",
     "processing": "Processing document...",
-    "licenseRequired": "License required",
-    "licenseRequiredDetail": "Activate a yearly license in Settings to start processing documents",
     "dropPrompt": "Drop a PDF or DOCX here, or click to browse",
     "supportedFormats": "Supported: PDF (text-based), DOCX"
   },
@@ -83,7 +81,6 @@
   },
   "settings": {
     "title": "Settings",
-    "licenseCredits": "License & Credits",
     "language": "Language",
     "detection": "Detection",
     "jurisdiction": "Jurisdiction",
@@ -103,27 +100,6 @@
     "dataRetention": "Data Retention",
     "dataRetentionDesc": "All documents are stored encrypted on your device. No data ever leaves your computer.",
     "clearAll": "Clear All Documents"
-  },
-  "license": {
-    "title": "License",
-    "active": "Active",
-    "plan": "Plan",
-    "planDetail": "Yearly — Unlimited Documents",
-    "key": "Key",
-    "expires": "Expires",
-    "daysLeft": "{{date}} ({{days}} days left)",
-    "deactivate": "Deactivate License",
-    "activateTitle": "Activate License",
-    "activateDesc": "A yearly license gives you unlimited document processing.",
-    "placeholder": "QVLT-XXXX-XXXX-XXXX",
-    "activate": "Activate",
-    "activating": "...",
-    "success": "License activated successfully!",
-    "defaultError": "Invalid license key."
-  },
-  "credit": {
-    "licensed": "Licensed — Unlimited documents",
-    "noLicense": "No active license. Please activate a yearly license in Settings to process documents."
   },
   "toast": {
     "exportComplete": "Export Complete"

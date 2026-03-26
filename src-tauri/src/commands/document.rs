@@ -65,24 +65,7 @@ fn process_upload(
     Ok(doc_id)
 }
 
-/// Check the license. Returns Ok(()) if licensed or in debug mode, Err otherwise.
-fn check_license_guard(state: &AppState) -> Result<(), String> {
-    #[cfg(not(debug_assertions))]
-    {
-        let licensed = state
-            .db
-            .is_licensed()
-            .map_err(|e| format!("License check failed: {}", e))?;
-
-        if !licensed {
-            return Err("No active license. Please activate a yearly license to use Qvault.".to_string());
-        }
-    }
-    let _ = state; // suppress unused warning in debug builds
-    Ok(())
-}
-
-/// Upload a document: check license, encrypt + store. Does NOT extract text or scan for PII.
+/// Upload a document: encrypt + store. Does NOT extract text or scan for PII.
 /// The frontend will extract text via PDF.js and call scan_document_text.
 #[tauri::command]
 pub async fn upload_document(
@@ -90,8 +73,6 @@ pub async fn upload_document(
     page_count: i32,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    check_license_guard(&state)?;
-
     let source = Path::new(&file_path);
     let filename = source
         .file_name()
@@ -110,8 +91,6 @@ pub async fn upload_document_bytes(
     data: String,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    check_license_guard(&state)?;
-
     use base64::Engine;
     let file_bytes = base64::engine::general_purpose::STANDARD
         .decode(&data)

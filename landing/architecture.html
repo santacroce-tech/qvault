@@ -227,7 +227,6 @@
       <li><strong>Redaction review:</strong> Individual approval/rejection and bulk operations</li>
       <li><strong>Entity tracking:</strong> Cross-document PII knowledge base queries</li>
       <li><strong>Export:</strong> Coordinate-mapped PDF redaction with black-box rendering</li>
-      <li><strong>License management:</strong> Activation and validation (the <em>only</em> network calls in the entire app)</li>
     </ul>
 
     <div class="callout-dark">
@@ -292,7 +291,7 @@
     <p><strong>DOCX extraction</strong> treats the file as what it is: a ZIP archive containing XML. Qvault opens the archive, locates <code>word/document.xml</code>, and parses it with <code>quick-xml</code>, collecting text from paragraph and run elements.</p>
 
     <h3>Storage</h3>
-    <p>All metadata lives in a local <strong>SQLite database</strong> running in WAL (Write-Ahead Logging) mode for concurrent read/write performance. The schema consists of seven tables tracking documents, redactions, entities, page text, licenses, audit logs, and credits.</p>
+    <p>All metadata lives in a local <strong>SQLite database</strong> running in WAL (Write-Ahead Logging) mode for concurrent read/write performance. The schema tracks documents, redactions, entities, page text, audit logs, and credits.</p>
 
     <p>The <strong>entities table</strong> is noteworthy: when Qvault detects a name in one document, it normalizes and stores that entity. When processing subsequent documents, the system has a growing knowledge base of known PII. This cross-document intelligence means detection accuracy improves over time without any cloud-based learning.</p>
 
@@ -355,7 +354,7 @@
     <p>Understanding what Qvault avoids is as important as understanding what it does:</p>
 
     <ul>
-      <li><strong>No cloud uploads.</strong> Documents are never transmitted. The only network calls are license activation and validation &mdash; sending zero document data.</li>
+      <li><strong>No cloud uploads.</strong> Documents are never transmitted. There are zero network calls in the entire application.</li>
       <li><strong>No telemetry.</strong> No usage tracking, no analytics, no crash reporting that includes document content.</li>
       <li><strong>No third-party processing.</strong> No OpenAI API, no AWS Textract, no Google Cloud Vision. Every algorithm runs locally.</li>
       <li><strong>No external model downloads.</strong> Pure compiled code &mdash; regex patterns and heuristic rules. No model weights, no inference servers.</li>
@@ -456,7 +455,7 @@
   </article>
 
   <footer>
-    <p>&copy; 2026 Santacroce SL. All rights reserved. &middot; <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms of Service</a> &middot; <a href="license-agreement.html">EULA</a></p>
+    <p>&copy; 2026 Santacroce SL. All rights reserved. &middot; <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms of Service</a></p>
   </footer>
 </body>
 </html>

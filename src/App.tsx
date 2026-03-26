@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useSyncExternalStore } from "react";
+import { useState, useRef, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 import QueueDashboard from "./components/QueueDashboard";
 import DocumentViewer from "./components/DocumentViewer";
@@ -7,7 +7,6 @@ import HistoryView from "./components/HistoryView";
 import EntityDatabaseView from "./components/EntityDatabaseView";
 import Settings from "./components/Settings";
 import type { RedactionRect, PageImageData } from "./lib/tauri-commands";
-import { validateLicenseOnline } from "./lib/tauri-commands";
 import { useRedactions } from "./hooks/useRedactions";
 
 type View = "upload" | "review" | "history" | "entities" | "settings";
@@ -41,19 +40,6 @@ function App() {
 
   // Shared redactions state — both DocumentViewer and RedactionSidebar use this
   const redactionsHook = useRedactions(activeDocumentId);
-
-  // Validate license with server on every app startup
-  // In dev mode the backend returns Ok(true) immediately, so this is a no-op
-  useEffect(() => {
-    validateLicenseOnline().catch((e) => {
-      // Suppress noisy warnings in dev — backend already skips server call
-      if ((window as any).__TAURI_INTERNALS__) {
-        console.debug("License validation skipped (dev mode):", e);
-      } else {
-        console.warn("License validation failed:", e);
-      }
-    });
-  }, []);
 
   const handleDocumentReady = (docId: string, fileType?: string) => {
     setActiveDocumentId(docId);
