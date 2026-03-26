@@ -200,7 +200,7 @@ fn test_germany_tax_id_detection() {
 
 #[test]
 fn test_full_pipeline_us() {
-    let entities = pipeline::run_pipeline(TEST_TEXT_US, 0, &["global", "us", "eu"]);
+    let entities = pipeline::run_pipeline_no_llm(TEST_TEXT_US, 0, &["global", "us", "eu"]);
 
     println!("\n=== Full Pipeline Results (US Text) ===");
     for e in &entities {
@@ -216,7 +216,7 @@ fn test_full_pipeline_us() {
 
 #[test]
 fn test_full_pipeline_brazil() {
-    let entities = pipeline::run_pipeline(TEST_TEXT_BR, 0, &["global", "br"]);
+    let entities = pipeline::run_pipeline_no_llm(TEST_TEXT_BR, 0, &["global", "br"]);
 
     println!("\n=== Full Pipeline Results (Brazil Text) ===");
     for e in &entities {
@@ -233,7 +233,7 @@ fn test_full_pipeline_brazil() {
 fn test_no_false_positives_on_clean_text() {
     let clean_text = "The quick brown fox jumps over the lazy dog. This is a normal sentence with no personal information. The year 2024 was eventful.";
 
-    let entities = pipeline::run_pipeline(clean_text, 0, &["global", "us", "eu", "br", "de"]);
+    let entities = pipeline::run_pipeline_no_llm(clean_text, 0, &["global", "us", "eu", "br", "de"]);
 
     println!("\n=== Clean Text Results ===");
     for e in &entities {
@@ -251,7 +251,7 @@ fn test_no_false_positives_on_clean_text() {
 fn test_overlap_resolution() {
     // Text where multiple patterns might match the same region
     let text = "Contact SSN: 123-45-6789 or EIN: 12-3456789";
-    let entities = pipeline::run_pipeline(text, 0, &["global", "us"]);
+    let entities = pipeline::run_pipeline_no_llm(text, 0, &["global", "us"]);
 
     // Verify no overlapping entities
     let mut sorted = entities.clone();
@@ -267,7 +267,7 @@ fn test_overlap_resolution() {
 
 #[test]
 fn test_entity_has_valid_replacement() {
-    let entities = pipeline::run_pipeline(TEST_TEXT_US, 0, &["global", "us"]);
+    let entities = pipeline::run_pipeline_no_llm(TEST_TEXT_US, 0, &["global", "us"]);
 
     for e in &entities {
         assert!(!e.replacement.is_empty(),
@@ -279,7 +279,7 @@ fn test_entity_has_valid_replacement() {
 
 #[test]
 fn test_confidence_values() {
-    let entities = pipeline::run_pipeline(TEST_TEXT_US, 0, &["global", "us"]);
+    let entities = pipeline::run_pipeline_no_llm(TEST_TEXT_US, 0, &["global", "us"]);
 
     for e in &entities {
         assert!(e.confidence > 0.0 && e.confidence <= 1.0,
@@ -314,7 +314,7 @@ Gustavo Lima Caldeira de Andrada, Shareholder"#;
 
 #[test]
 fn test_legal_contract_names() {
-    let entities = pipeline::run_pipeline(LEGAL_CONTRACT_PAGE4, 3, &["global", "us", "eu", "br", "de"]);
+    let entities = pipeline::run_pipeline_no_llm(LEGAL_CONTRACT_PAGE4, 3, &["global", "us", "eu", "br", "de"]);
 
     println!("\n=== Legal Contract Page 4 (Signatures) ===");
     for e in &entities {
@@ -341,7 +341,7 @@ fn test_legal_contract_names() {
 
 #[test]
 fn test_legal_contract_dates_and_money() {
-    let entities = pipeline::run_pipeline(LEGAL_CONTRACT_PAGE2, 1, &["global", "us", "eu", "br", "de"]);
+    let entities = pipeline::run_pipeline_no_llm(LEGAL_CONTRACT_PAGE2, 1, &["global", "us", "eu", "br", "de"]);
 
     println!("\n=== Legal Contract Page 2 (Body) ===");
     for e in &entities {
@@ -400,7 +400,7 @@ CS MANAGEMENT GROUP LLC
 
 Roberto Santacroce Martins, Shareholder"#;
 
-    let entities = pipeline::run_pipeline(text, 0, &["global", "us", "eu", "br", "de"]);
+    let entities = pipeline::run_pipeline_no_llm(text, 0, &["global", "us", "eu", "br", "de"]);
 
     println!("\n=== Company Name Detection Test ===");
     for e in &entities {

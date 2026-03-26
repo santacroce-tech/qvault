@@ -137,7 +137,18 @@ pub async fn scan_document_text(
             .insert_document_page(&id, page_num as i32, text)
             .map_err(|e| format!("Failed to store page text: {}", e))?;
 
-        // Run PII pipeline
+        // Run PII pipeline (with optional LLM layer)
+        #[cfg(feature = "llm")]
+        let entities = {
+            let mut llm_guard = if state.llm_state.is_enabled() {
+                state.llm_state.runtime.lock().ok()
+            } else {
+                None
+            };
+            let llm_runtime = llm_guard.as_mut().and_then(|g| g.as_mut());
+            pipeline::run_pipeline(text, page_num as u32, &jurisdictions, llm_runtime)
+        };
+        #[cfg(not(feature = "llm"))]
         let entities = pipeline::run_pipeline(text, page_num as u32, &jurisdictions);
 
         // Build cleaned text by applying redactions

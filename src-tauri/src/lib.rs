@@ -4,13 +4,16 @@ pub mod commands;
 pub mod document;
 pub mod pipeline;
 pub mod storage;
+pub mod llm;
 
 use std::path::PathBuf;
+use std::sync::Arc;
 use storage::database::Database;
 
 pub struct AppState {
     pub db: Database,
     pub storage_dir: PathBuf,
+    pub llm_state: Arc<llm::LlmState>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -44,6 +47,7 @@ pub fn run() {
             app.manage(AppState {
                 db,
                 storage_dir: app_data,
+                llm_state: Arc::new(llm::LlmState::new()),
             });
 
             Ok(())
@@ -70,6 +74,10 @@ pub fn run() {
             commands::redaction::bulk_approve,
             commands::history::get_history,
             commands::history::search_history,
+            commands::llm::llm_status,
+            commands::llm::llm_download_model,
+            commands::llm::llm_load_model,
+            commands::llm::llm_set_enabled,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

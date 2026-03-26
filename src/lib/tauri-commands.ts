@@ -132,6 +132,31 @@ export async function bulkApprove(
   return invoke("bulk_approve", { documentId, category });
 }
 
+// LLM
+export interface LlmStatus {
+  available: boolean;
+  enabled: boolean;
+  downloading: boolean;
+  downloadProgress: number;
+  loaded: boolean;
+}
+
+export async function getLlmStatus(): Promise<LlmStatus> {
+  return invoke("llm_status");
+}
+
+export async function downloadLlmModel(): Promise<void> {
+  return invoke("llm_download_model");
+}
+
+export async function loadLlmModel(): Promise<void> {
+  return invoke("llm_load_model");
+}
+
+export async function setLlmEnabled(enabled: boolean): Promise<void> {
+  return invoke("llm_set_enabled", { enabled });
+}
+
 // History
 export async function getHistory(
   offset: number,
