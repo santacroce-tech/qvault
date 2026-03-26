@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import CreditBalance from "./CreditBalance";
-import LicenseActivation from "./LicenseActivation";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Settings() {
@@ -21,15 +19,6 @@ export default function Settings() {
     <div className="flex-1 p-6 bg-content overflow-auto">
       <div className="max-w-lg mx-auto">
         <h2 className="text-xl font-bold text-gray-900 mb-6">{t('settings.title')}</h2>
-
-        {/* Credits & License */}
-        <section className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">
-            {t('settings.licenseCredits')}
-          </h3>
-          <CreditBalance />
-          <LicenseActivation />
-        </section>
 
         {/* Language */}
         <section className="mb-8">
