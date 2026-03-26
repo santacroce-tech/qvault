@@ -364,7 +364,7 @@
     <!-- ═══════════════════════════════════════ -->
     <h2 id="platforms">Cross-Platform Distribution</h2>
 
-    <p>Qvault runs natively on macOS (Apple Silicon and Intel), Windows, and Linux:</p>
+    <p>Qvault runs natively on macOS (Apple Silicon and Intel), Windows, Linux, iOS, and Android:</p>
 
     <table>
       <thead>
@@ -390,10 +390,33 @@
           <td>.deb, .AppImage</td>
           <td>Debian/Ubuntu packages and universal AppImage</td>
         </tr>
+        <tr>
+          <td><strong>iOS</strong></td>
+          <td>.ipa</td>
+          <td>iPhone, iPad &mdash; touch-optimized UI with bottom tab navigation</td>
+        </tr>
+        <tr>
+          <td><strong>Android</strong></td>
+          <td>.apk</td>
+          <td>Phones and tablets &mdash; responsive layout with document picker</td>
+        </tr>
       </tbody>
     </table>
 
-    <p>All builds are produced by a single GitHub Actions workflow using a matrix strategy &mdash; four parallel jobs compile the Rust backend and bundle the frontend for each target.</p>
+    <p>All desktop builds are produced by a single GitHub Actions workflow using a matrix strategy. Mobile builds use Tauri v2's native iOS (Xcode) and Android (Gradle) toolchains, sharing the same Rust backend and React frontend.</p>
+
+    <!-- ═══════════════════════════════════════ -->
+    <h2 id="enterprise">Enterprise Integration</h2>
+
+    <p>For organizations requiring enhanced PII detection beyond regex and heuristic analysis, Qvault offers enterprise integration options:</p>
+
+    <ul>
+      <li><strong>MCP Pipeline Integration.</strong> Connect Qvault to a Model Context Protocol (MCP) pipeline for LLM-powered PII detection. The MCP server can run alongside Qvault, enabling AI-assisted entity recognition while maintaining data locality.</li>
+      <li><strong>Private LLM Deployments.</strong> Deploy a local language model (e.g., Llama, Mistral) on your own infrastructure. Qvault connects to your private endpoint &mdash; no data leaves your network. Ideal for firms with strict compliance requirements who want AI-level accuracy.</li>
+      <li><strong>Custom Pattern Libraries.</strong> Enterprise customers can define jurisdiction-specific or industry-specific PII patterns beyond the built-in global/US/EU/BR/DE coverage.</li>
+    </ul>
+
+    <p>Enterprise integration is available through Santacroce SL. Contact <a href="mailto:info@santacroce.es" style="color: var(--blue-accent);">info@santacroce.es</a> to discuss your requirements.</p>
 
     <!-- ═══════════════════════════════════════ -->
     <h2 id="jurisdictions">Jurisdictional Coverage</h2>
