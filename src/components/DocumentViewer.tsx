@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { listen } from "@tauri-apps/api/event";
 import * as pdfjsLib from "pdfjs-dist";
 import type { PDFDocumentProxy, TextItem } from "pdfjs-dist/types/src/display/api";
 import { useDocument } from "../hooks/useDocument";
@@ -88,7 +89,25 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
   const [pageData, setPageData] = useState<PageData[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState<{ page: number; totalPages: number; llmActive: boolean } | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
+
+  // Listen for scan progress events from the backend
+  useEffect(() => {
+    const unlisten = listen<{ documentId: string; page: number; totalPages: number; llmActive: boolean }>(
+      "scan-progress",
+      (event) => {
+        if (event.payload.documentId === documentId) {
+          setScanProgress({
+            page: event.payload.page,
+            totalPages: event.payload.totalPages,
+            llmActive: event.payload.llmActive,
+          });
+        }
+      }
+    );
+    return () => { unlisten.then((fn) => fn()); };
+  }, [documentId]);
 
   // Load document metadata
   useEffect(() => {
@@ -117,7 +136,7 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
       } finally {
         if (!cancelled) {
           setLoading(false);
-          setScanning(false);
+          setScanning(false); setScanProgress(null);
         }
       }
     }
@@ -172,7 +191,7 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
         const piiCount = await scanDocumentText(documentId, pageTexts);
         console.log("[Qvault] DOCX PII scan complete:", piiCount, "entities found");
         if (isCancelled) return;
-        setScanning(false);
+        setScanning(false); setScanProgress(null);
       }
       await reloadRedactions();
       await loadDocument(documentId);
@@ -257,7 +276,7 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
       console.log("[Qvault] PII scan complete:", piiCount, "entities found");
 
       if (isCancelled) return;
-      setScanning(false);
+      setScanning(false); setScanProgress(null);
 
       await reloadRedactions();
       await loadDocument(documentId);
@@ -443,7 +462,9 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
           {scanning && (
             <span className="text-sm text-amber-600 flex items-center gap-1.5">
               <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-              {t('viewer.scanning')}
+              {scanProgress
+                ? `${t('viewer.scanning')} (${scanProgress.page + 1}/${scanProgress.totalPages}${scanProgress.llmActive ? " · AI" : ""})`
+                : t('viewer.scanning')}
             </span>
           )}
           {advancedMode && (

@@ -80,6 +80,8 @@ pub async fn llm_load_model(
             let runtime = model_manager::load_model(&storage_dir)?;
             *llm_state.runtime.lock().unwrap() = Some(runtime);
             llm_state.set_enabled(true);
+            llm_state.touch();
+            llm_state.start_idle_timer();
             Ok(())
         })
         .await
