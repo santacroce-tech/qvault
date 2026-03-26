@@ -429,3 +429,78 @@ Roberto Santacroce Martins, Shareholder"#;
     assert!(names.iter().any(|n| n.contains("Roberto Santacroce Martins")),
         "Should detect 'Roberto Santacroce Martins' as a name, found: {:?}", names);
 }
+
+// ===================== Brazilian Contract Tests =====================
+
+const BR_CONTRACT_TEXT: &str = r#"ELEVADORES ZENIT LTDA, com sede na Cidade de São Paulo, Estado de São Paulo, na Rua Rishin
+Matsuda, 562, Vila Santa Catarina, CEP 04371-000, inscrita no Cadastro Nacional de Pessoas
+Jurídicas (CNPJ) sob n° 61.520.011/0001-97, representada por Giuliano Ferrari, doravante designada
+simplesmente "CONTRATANTE".
+A CONTRATADA é Bravado Tecnologia da Informação EIRELI, com sede em São Paulo, na
+Alameda Santos, número 211 CJ 1209. Inscrita no CNPJ (MF) sob n° 35.661.121/0001-69, neste ato
+representada por seu sócio Guilherme Barile."#;
+
+#[test]
+fn test_br_contract_cep() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    let addresses: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::Address)
+        .map(|e| e.text.as_str())
+        .collect();
+    println!("  Addresses: {:?}", addresses);
+    assert!(addresses.iter().any(|a| a.contains("04371-000")),
+        "Should detect CEP 04371-000, found: {:?}", addresses);
+}
+
+#[test]
+fn test_br_contract_cnpj() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    let tax_ids: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::TaxId)
+        .map(|e| e.text.as_str())
+        .collect();
+    println!("  Tax IDs: {:?}", tax_ids);
+    assert!(tax_ids.contains(&"61.520.011/0001-97"), "Should detect CNPJ 61.520.011/0001-97");
+    assert!(tax_ids.contains(&"35.661.121/0001-69"), "Should detect CNPJ 35.661.121/0001-69");
+}
+
+#[test]
+fn test_br_contract_companies() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    let companies: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::CompanyName)
+        .map(|e| e.text.as_str())
+        .collect();
+    println!("  Companies: {:?}", companies);
+    assert!(companies.iter().any(|c| c.contains("ZENIT") && c.contains("LTDA")),
+        "Should detect 'ELEVADORES ZENIT LTDA', found: {:?}", companies);
+    assert!(companies.iter().any(|c| c.contains("Bravado") && c.contains("EIRELI")),
+        "Should detect 'Bravado Tecnologia da Informação EIRELI', found: {:?}", companies);
+}
+
+#[test]
+fn test_br_contract_person_names() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    let names: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::PersonName)
+        .map(|e| e.text.as_str())
+        .collect();
+    println!("  Names: {:?}", names);
+    assert!(names.iter().any(|n| n.contains("Giuliano Ferrari")),
+        "Should detect 'Giuliano Ferrari', found: {:?}", names);
+    assert!(names.iter().any(|n| n.contains("Guilherme Barile")),
+        "Should detect 'Guilherme Barile', found: {:?}", names);
+}
+
+#[test]
+fn test_br_contract_full_pipeline() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    println!("\n=== Brazilian Contract Full Detection ===");
+    for e in &entities {
+        println!("  [{:?}] '{}' (confidence: {:.0}%, layer: {}, pos: {}-{})",
+            e.category, e.text, e.confidence * 100.0, e.layer, e.start, e.end);
+    }
+    // Should find at minimum: 2 CNPJ, 1 CEP, 2 companies, 2 person names = 7+
+    assert!(entities.len() >= 7,
+        "Expected at least 7 entities from BR contract, found {}", entities.len());
+}
