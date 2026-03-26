@@ -469,6 +469,149 @@
       transform: translateY(-1px);
     }
 
+    /* Demo Section */
+    .demo-section { background: var(--white); }
+    .demo-downloads { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+    .demo-download-card { flex: 1; min-width: 260px; max-width: 360px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 14px; padding: 28px; text-align: center; transition: box-shadow 0.25s, transform 0.25s; }
+    .demo-download-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); transform: translateY(-2px); }
+    .demo-download-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+    .demo-download-card p { font-size: 0.9rem; color: var(--gray-500); margin-bottom: 16px; line-height: 1.5; }
+    .demo-download-card .btn-demo { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.15s; }
+    .btn-demo-original { background: var(--navy); color: var(--white); }
+    .btn-demo-original:hover { background: var(--navy-light); transform: translateY(-1px); }
+    .btn-demo-clean { background: var(--green); color: var(--white); }
+    .btn-demo-clean:hover { background: #059669; transform: translateY(-1px); }
+    .demo-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--gray-200); }
+    .demo-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .demo-table thead { background: var(--navy); color: white; }
+    .demo-table th { padding: 14px 16px; text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .demo-table td { padding: 12px 16px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); }
+    .demo-table tbody tr:hover { background: var(--gray-50); }
+    .demo-table tbody tr:last-child td { border-bottom: none; }
+    .pii-badge { display: inline-block; padding: 2px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; }
+    .pii-person { background: #FEF3C7; color: #92400E; }
+    .pii-org { background: #E0E7FF; color: #3730A3; }
+    .pii-email { background: #DBEAFE; color: #1E40AF; }
+    .pii-phone { background: #D1FAE5; color: #065F46; }
+    .pii-address { background: #FCE7F3; color: #9D174D; }
+    .pii-ssn { background: #FEE2E2; color: #991B1B; }
+    .pii-financial { background: #FED7AA; color: #9A3412; }
+    .pii-date { background: #E5E7EB; color: #374151; }
+    .pii-credit { background: #FEE2E2; color: #991B1B; }
+    .pii-ein { background: #FED7AA; color: #9A3412; }
+    .pii-bank { background: #FED7AA; color: #9A3412; }
+    .demo-summary { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+    .demo-stat { background: var(--gray-50); border-radius: 10px; padding: 16px 24px; text-align: center; }
+    .demo-stat .num { font-size: 1.75rem; font-weight: 800; color: var(--navy); }
+    .demo-stat .label { font-size: 0.8rem; color: var(--gray-500); font-weight: 500; }
+    @media (max-width: 640px) { .demo-download-card { min-width: 100%; } }
+
+    /* Enterprise Services */
+    .enterprise-services {
+      background: linear-gradient(135deg, #0F1B2D 0%, #162240 50%, #1A2B45 100%);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .enterprise-services::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .enterprise-services .section-label {
+      color: rgba(59, 130, 246, 0.8);
+    }
+
+    .enterprise-services .section-title {
+      color: white;
+    }
+
+    .enterprise-services .section-subtitle {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .enterprise-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+
+    .enterprise-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 32px;
+      transition: background 0.25s, border-color 0.25s;
+    }
+
+    .enterprise-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .enterprise-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .enterprise-card p {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.7;
+    }
+
+    .enterprise-cta {
+      text-align: center;
+      padding-top: 16px;
+    }
+
+    .enterprise-cta p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.95rem;
+      margin-top: 16px;
+    }
+
+    .btn-enterprise {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      background: var(--blue-accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-enterprise:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 900px) {
+      .enterprise-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* Footer */
     footer {
       background: var(--navy);
@@ -582,6 +725,8 @@
         <li><a href="#download">Descargar</a></li>
         <li><a href="#features">Funciones</a></li>
         <li><a href="#how-it-works">C&oacute;mo Funciona</a></li>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#enterprise">Empresarial</a></li>
         <li><a href="#license">Licencia</a></li>
         <li><a href="#faq">FAQ</a></li>
         <li><a href="architecture.html">Arquitectura</a></li>
@@ -713,6 +858,115 @@
     </div>
   </section>
 
+  <!-- Demo -->
+  <section class="demo-section" id="demo">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">V&eacute;alo en Acci&oacute;n</div>
+        <h2 class="section-title">Lo que Qvault detecta en un contrato real</h2>
+        <p class="section-subtitle">Procesamos un Acuerdo de Servicios Profesionales de 3 p&aacute;ginas con Qvault. Estos son los resultados &mdash; 25 entidades PII encontradas y redactadas en menos de 2 segundos.</p>
+      </div>
+      <div class="demo-downloads">
+        <div class="demo-download-card fade-in">
+          <div style="font-size:2rem;margin-bottom:12px;">&#128196;</div>
+          <h3>Contrato Original</h3>
+          <p>Un acuerdo de servicios profesionales de 3 p&aacute;ginas con nombres, SSN, cuentas bancarias, emails, tarjetas de cr&eacute;dito y m&aacute;s.</p>
+          <a href="demo.pdf" class="btn-demo btn-demo-original" download>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Descargar Original
+          </a>
+        </div>
+        <div class="demo-download-card fade-in">
+          <div style="font-size:2rem;margin-bottom:12px;">&#9989;</div>
+          <h3>Resultado Redactado</h3>
+          <p>El mismo contrato tras el procesamiento de Qvault &mdash; todos los datos sensibles reemplazados con etiquetas de categor&iacute;a.</p>
+          <a href="demo-cleaned.pdf" class="btn-demo btn-demo-clean" download>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Descargar Redactado
+          </a>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:24px;">
+        <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);">PII Extra&iacute;do &mdash; Resultados de un Solo An&aacute;lisis</h3>
+        <p style="font-size:0.95rem;color:var(--gray-500);">Cada dato sensible que Qvault encontr&oacute; en el contrato de ejemplo:</p>
+      </div>
+      <div class="demo-table-wrap fade-in">
+        <table class="demo-table">
+          <thead><tr><th>Categor&iacute;a</th><th>Texto Original</th><th>Redactado Como</th><th>P&aacute;g.</th><th>Detecci&oacute;n</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pii-badge pii-person">Nombre</span></td><td>Maria Santos</td><td>[NOMBRE]</td><td>1, 2, 3</td><td>Heur&iacute;stica</td></tr>
+            <tr><td><span class="pii-badge pii-person">Nombre</span></td><td>James Richardson</td><td>[NOMBRE]</td><td>1, 3</td><td>Heur&iacute;stica</td></tr>
+            <tr><td><span class="pii-badge pii-person">Nombre</span></td><td>Elena Kowalski</td><td>[NOMBRE]</td><td>1, 3</td><td>Heur&iacute;stica</td></tr>
+            <tr><td><span class="pii-badge pii-person">Nombre</span></td><td>Roberto Fernandes</td><td>[NOMBRE]</td><td>1, 3</td><td>Heur&iacute;stica</td></tr>
+            <tr><td><span class="pii-badge pii-org">Organizaci&oacute;n</span></td><td>Meridian Consulting Group LLC</td><td>[ORGANIZACI&Oacute;N]</td><td>1, 2, 3</td><td>Heur&iacute;stica</td></tr>
+            <tr><td><span class="pii-badge pii-org">Organizaci&oacute;n</span></td><td>Atlas Digital Solutions Inc</td><td>[ORGANIZACI&Oacute;N]</td><td>1, 3</td><td>Heur&iacute;stica</td></tr>
+            <tr><td><span class="pii-badge pii-email">Email</span></td><td>maria.santos@meridian-consulting.com</td><td>[EMAIL]</td><td>1</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-email">Email</span></td><td>j.richardson@atlas-digital.com</td><td>[EMAIL]</td><td>1</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-email">Email</span></td><td>elena.kowalski@meridian-consulting.com</td><td>[EMAIL]</td><td>1</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-email">Email</span></td><td>r.fernandes@atlas-digital.com</td><td>[EMAIL]</td><td>1</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-phone">Tel&eacute;fono</span></td><td>(415) 555-0187</td><td>[TEL&Eacute;FONO]</td><td>1</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-phone">Tel&eacute;fono</span></td><td>(212) 555-0234</td><td>[TEL&Eacute;FONO]</td><td>1</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-address">Direcci&oacute;n</span></td><td>1420 Market Street, Suite 200, San Francisco, CA 94103</td><td>[DIRECCI&Oacute;N]</td><td>1</td><td>Heur&iacute;stica</td></tr>
+            <tr><td><span class="pii-badge pii-address">Direcci&oacute;n</span></td><td>350 Fifth Avenue, Floor 12, New York, NY 10118</td><td>[DIRECCI&Oacute;N]</td><td>1</td><td>Heur&iacute;stica</td></tr>
+            <tr><td><span class="pii-badge pii-ssn">SSN</span></td><td>412-68-9103</td><td>[SSN]</td><td>2</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-ein">EIN</span></td><td>82-4751093</td><td>[EIN]</td><td>2</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-credit">Tarjeta</span></td><td>4532-8901-2345-6789</td><td>[TARJETA]</td><td>2</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-bank">Cuenta Bancaria</span></td><td>7823401956</td><td>[CUENTA]</td><td>2</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-financial">Financiero</span></td><td>$150,000.00</td><td>[FINANCIERO]</td><td>1</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-financial">Financiero</span></td><td>$85,000.00</td><td>[FINANCIERO]</td><td>1</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-financial">Financiero</span></td><td>$50,000.00</td><td>[FINANCIERO]</td><td>2</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-financial">Financiero</span></td><td>$15,000.00</td><td>[FINANCIERO]</td><td>2</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-date">Fecha</span></td><td>June 15, 2024</td><td>[FECHA]</td><td>1, 3</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-date">Fecha</span></td><td>December 31, 2025</td><td>[FECHA]</td><td>1</td><td>Regex</td></tr>
+            <tr><td><span class="pii-badge pii-date">Fecha</span></td><td>March 15, 1985</td><td>[FECHA]</td><td>2</td><td>Regex</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="demo-summary">
+        <div class="demo-stat fade-in"><div class="num">25</div><div class="label">Entidades PII</div></div>
+        <div class="demo-stat fade-in"><div class="num">11</div><div class="label">Categor&iacute;as</div></div>
+        <div class="demo-stat fade-in"><div class="num">3</div><div class="label">P&aacute;ginas Escaneadas</div></div>
+        <div class="demo-stat fade-in"><div class="num">&lt;2s</div><div class="label">Tiempo de Proceso</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Servicios Empresariales -->
+  <section class="enterprise-services" id="enterprise">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">Servicios Empresariales y Legales</div>
+        <h2 class="section-title">Despliegue privado de LLM para bufetes y empresas</h2>
+        <p class="section-subtitle">Vaya m&aacute;s all&aacute; del regex. Desplegamos modelos de IA privados en su infraestructura e integramos Qvault en su flujo de documentos &mdash; sin exposici&oacute;n de datos.</p>
+      </div>
+      <div class="enterprise-grid">
+        <div class="enterprise-card fade-in">
+          <h3>&#129302; LLM Privado</h3>
+          <p>Desplegamos y ajustamos modelos de lenguaje privados (Llama, Mistral y otros) en sus servidores o nube privada. Detecci&oacute;n de PII con IA que nunca env&iacute;a datos fuera de su red.</p>
+        </div>
+        <div class="enterprise-card fade-in">
+          <h3>&#128279; Integraci&oacute;n de Pipeline</h3>
+          <p>Integre Qvault en su flujo de gesti&oacute;n documental existente mediante MCP (Model Context Protocol). Escaneo y redacci&oacute;n autom&aacute;tica conforme los documentos fluyen por sus sistemas.</p>
+        </div>
+        <div class="enterprise-card fade-in">
+          <h3>&#9878;&#65039; Soluciones para Bufetes</h3>
+          <p>Dise&ntilde;ado para bufetes que manejan comunicaciones privilegiadas, descubrimiento y presentaciones regulatorias. Bibliotecas de patrones personalizadas para su jurisdicci&oacute;n y &aacute;rea de pr&aacute;ctica.</p>
+        </div>
+        <div class="enterprise-card fade-in">
+          <h3>&#128737;&#65039; Soberan&iacute;a Total de Datos</h3>
+          <p>Despliegue local o en nube privada. Los datos nunca salen de su infraestructura. Cumpla con RGPD, LGPD, HIPAA y los requisitos de colegios de abogados con confianza.</p>
+        </div>
+      </div>
+      <div class="enterprise-cta">
+        <a href="https://cal.com/santacroce" class="btn-enterprise" target="_blank" rel="noopener">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Agendar una Consulta
+        </a>
+        <p>Cont&aacute;ctenos en info@santacroce.es &mdash; dise&ntilde;aremos un despliegue adaptado a su organizaci&oacute;n.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- Licencia -->
   <section class="pricing" id="license">
     <div class="container">
@@ -742,19 +996,19 @@
         </div>
 
         <div class="pricing-card fade-in" style="flex:1;min-width:340px;border-color:var(--gray-200);box-shadow:0 4px 20px rgba(0,0,0,0.05);">
-          <div class="plan-name" style="color:var(--gray-700);">Empresarial</div>
+          <div class="plan-name" style="color:var(--gray-700);">Empresarial y Bufetes</div>
           <div class="price" style="font-size:2.5rem;">Personalizado</div>
-          <div class="price-period">adaptado a su organizacion</div>
+          <div class="price-period">adaptado a su bufete u organizaci&oacute;n</div>
           <ul class="pricing-features">
-            <li>Integracion de pipeline MCP para deteccion de PII con LLM</li>
-            <li>Despliegue privado de LLM (Llama, Mistral, etc.) en su infraestructura</li>
-            <li>Bibliotecas de patrones personalizadas por jurisdiccion e industria</li>
-            <li>Despliegue local &mdash; los datos nunca salen de su red</li>
-            <li>Soporte dedicado y SLA</li>
+            <li>Despliegue privado de LLM en su infraestructura</li>
+            <li>Qvault integrado en su pipeline documental (MCP)</li>
+            <li>Patrones PII personalizados para su jurisdicci&oacute;n</li>
+            <li>Local &mdash; los datos nunca salen de su red</li>
+            <li>Soporte dedicado, SLA e incorporaci&oacute;n</li>
           </ul>
-          <a href="mailto:info@santacroce.es" class="btn-pricing" style="background:var(--navy);">Contactenos</a>
+          <a href="#enterprise" class="btn-pricing" style="background:var(--navy);">M&aacute;s Informaci&oacute;n</a>
           <p style="font-size:0.85rem;color:var(--gray-500);margin-top:16px;line-height:1.5;">
-            Redaccion mejorada con IA y soberania total de datos. Hablemos de sus necesidades.
+            Redacci&oacute;n con IA y soberan&iacute;a total de datos. <a href="mailto:info@santacroce.es" style="color:var(--blue-accent);text-decoration:underline;">Cont&aacute;ctenos</a> para hablar de sus necesidades.
           </p>
         </div>
       </div>
