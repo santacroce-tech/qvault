@@ -170,7 +170,7 @@ export default function Settings() {
                 />
                 <span className="text-sm text-gray-700">
                   {llmStatus.loaded
-                    ? t('settings.aiModelLoaded')
+                    ? `${t('settings.aiModelLoaded')} (${llmStatus.device})`
                     : llmStatus.downloading
                     ? t('settings.aiModelDownloading')
                     : llmStatus.available

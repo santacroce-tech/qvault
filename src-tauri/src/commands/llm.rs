@@ -16,6 +16,8 @@ pub struct LlmStatus {
     pub download_progress: f64,
     /// Whether the model is loaded into memory and ready for inference.
     pub loaded: bool,
+    /// Compute device: "CPU", "CUDA GPU", "Metal GPU", or "N/A".
+    pub device: String,
 }
 
 #[tauri::command]
@@ -25,15 +27,26 @@ pub async fn llm_status(
     let llm = &state.llm_state;
     let progress = *llm.download_progress.lock().unwrap();
 
+    let (loaded, device) = {
+        #[cfg(feature = "llm")]
+        {
+            let guard = llm.runtime.lock().unwrap();
+            match guard.as_ref() {
+                Some(rt) => (true, model_manager::device_name(&rt.device).to_string()),
+                None => (false, "N/A".to_string()),
+            }
+        }
+        #[cfg(not(feature = "llm"))]
+        { (false, "N/A".to_string()) }
+    };
+
     Ok(LlmStatus {
         available: model_manager::is_model_available(&state.storage_dir),
         enabled: llm.is_enabled(),
         downloading: llm.is_downloading(),
         download_progress: progress,
-        #[cfg(feature = "llm")]
-        loaded: llm.is_model_loaded(),
-        #[cfg(not(feature = "llm"))]
-        loaded: false,
+        loaded,
+        device,
     })
 }
 

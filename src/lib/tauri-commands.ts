@@ -139,6 +139,7 @@ export interface LlmStatus {
   downloading: boolean;
   downloadProgress: number;
   loaded: boolean;
+  device: string;
 }
 
 export async function getLlmStatus(): Promise<LlmStatus> {

@@ -9,12 +9,14 @@ use heuristic_scanner::HeuristicScanner;
 
 /// Run the PII detection pipeline. Layers 1 (regex) and 2 (heuristic) always run.
 /// Layer 3 (LLM) runs only if an LlmRuntime is provided.
+/// `on_llm_progress` is called during LLM inference for real-time UI feedback.
 #[cfg(feature = "llm")]
 pub fn run_pipeline(
     text: &str,
     page: u32,
     jurisdictions: &[&str],
     llm_runtime: Option<&mut crate::llm::LlmRuntime>,
+    on_llm_progress: Option<&crate::llm::llm_scanner::ProgressFn>,
 ) -> Vec<PiiEntity> {
     let mut entities = run_layers_1_2(text, page, jurisdictions);
 
@@ -23,7 +25,7 @@ pub fn run_pipeline(
         let existing_ranges: Vec<(usize, usize)> = entities.iter()
             .map(|e| (e.start, e.end))
             .collect();
-        let mut llm_entities = crate::llm::llm_scanner::scan(runtime, text, page, &existing_ranges);
+        let mut llm_entities = crate::llm::llm_scanner::scan(runtime, text, page, &existing_ranges, on_llm_progress);
         entities.append(&mut llm_entities);
     }
 

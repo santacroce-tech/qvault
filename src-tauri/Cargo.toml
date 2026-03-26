@@ -45,3 +45,5 @@ futures-util = { version = "0.3", optional = true }
 [features]
 default = ["llm"]
 llm = ["dep:candle-core", "dep:candle-transformers", "dep:tokenizers", "dep:hf-hub", "dep:reqwest", "dep:sha2", "dep:futures-util"]
+cuda = ["llm", "candle-core/cuda", "candle-transformers/cuda"]
+metal = ["llm", "candle-core/metal", "candle-transformers/metal"]

@@ -83,6 +83,41 @@ pub fn download_model(
     result
 }
 
+/// Select the best available compute device: CUDA > Metal > CPU.
+#[cfg(feature = "llm")]
+fn best_device() -> candle_core::Device {
+    // Try CUDA first (NVIDIA GPU)
+    #[cfg(feature = "cuda")]
+    {
+        if let Ok(device) = candle_core::Device::new_cuda(0) {
+            log::info!("CUDA GPU detected, using GPU acceleration");
+            return device;
+        }
+    }
+
+    // Try Metal (Apple Silicon / macOS GPU)
+    #[cfg(feature = "metal")]
+    {
+        if let Ok(device) = candle_core::Device::new_metal(0) {
+            log::info!("Metal GPU detected, using GPU acceleration");
+            return device;
+        }
+    }
+
+    log::info!("No GPU available, using CPU");
+    candle_core::Device::Cpu
+}
+
+/// Return a human-readable string for the active device.
+#[cfg(feature = "llm")]
+pub fn device_name(device: &candle_core::Device) -> &'static str {
+    match device {
+        candle_core::Device::Cpu => "CPU",
+        candle_core::Device::Cuda(_) => "CUDA GPU",
+        candle_core::Device::Metal(_) => "Metal GPU",
+    }
+}
+
 /// Load the GGUF model and tokenizer into memory, returning an LlmRuntime.
 #[cfg(feature = "llm")]
 pub fn load_model(app_data: &Path) -> Result<super::LlmRuntime, String> {
@@ -100,7 +135,8 @@ pub fn load_model(app_data: &Path) -> Result<super::LlmRuntime, String> {
     }
 
     log::info!("Loading model from {:?}", mpath);
-    let device = candle_core::Device::Cpu;
+    let device = best_device();
+    log::info!("Using device: {:?}", device);
 
     let mut file = std::fs::File::open(&mpath)
         .map_err(|e| format!("Failed to open model file: {}", e))?;

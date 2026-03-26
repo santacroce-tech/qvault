@@ -7,7 +7,7 @@ use candle_core::Tensor;
 use candle_transformers::generation::{LogitsProcessor, Sampling};
 
 #[cfg(feature = "llm")]
-const SYSTEM_PROMPT: &str = r#"You are a PII detector for legal documents. Find personally identifiable information in the text below that is NOT already marked with [REDACTED ...] tags. Return ONLY a JSON array of objects with "text" (the exact substring from the document) and "category" (one of: PersonName, Email, PhoneNumber, Address, DateOfBirth, CompanyName, SocialSecurityNumber, BankAccount, CreditCard, MedicalRecordNumber). If no additional PII found, return []. Do not include any explanation, only the JSON array."#;
+const SYSTEM_PROMPT: &str = "Extract PII from the text. Return a JSON array: [{\"text\":\"exact match\",\"category\":\"PersonName|Email|PhoneNumber|Address|DateOfBirth|CompanyName|SocialSecurityNumber|BankAccount|CreditCard|MedicalRecordNumber\"}]. No explanation, only JSON. Return [] if none found.";
 
 #[cfg(feature = "llm")]
 /// Maximum characters per chunk (roughly ~1500 tokens for English).
@@ -16,17 +16,23 @@ const MAX_CHUNK_CHARS: usize = 6000;
 /// Overlap between chunks to avoid missing entities at boundaries.
 const CHUNK_OVERLAP: usize = 500;
 #[cfg(feature = "llm")]
-/// Max tokens to generate in the response.
-const MAX_RESPONSE_TOKENS: usize = 512;
+/// Max tokens to generate in the response (JSON arrays are compact).
+const MAX_RESPONSE_TOKENS: usize = 200;
+
+/// Progress callback type: (tokens_generated, phase_description)
+#[cfg(feature = "llm")]
+pub type ProgressFn = Box<dyn Fn(usize, &str) + Send>;
 
 /// Run LLM-based PII detection on a page of text.
 /// Returns additional PiiEntity values that do not overlap with `existing_ranges`.
+/// Calls `on_progress` during inference for real-time UI feedback.
 #[cfg(feature = "llm")]
 pub fn scan(
     runtime: &mut super::LlmRuntime,
     text: &str,
     page: u32,
     existing_ranges: &[(usize, usize)],
+    on_progress: Option<&ProgressFn>,
 ) -> Vec<PiiEntity> {
     if text.trim().is_empty() {
         return vec![];
@@ -35,8 +41,11 @@ pub fn scan(
     let chunks = chunk_text(text);
     let mut all_entities = Vec::new();
 
-    for chunk in &chunks {
-        match run_inference(runtime, &chunk.text) {
+    for (i, chunk) in chunks.iter().enumerate() {
+        if let Some(cb) = &on_progress {
+            cb(0, &format!("chunk {}/{}", i + 1, chunks.len()));
+        }
+        match run_inference(runtime, &chunk.text, on_progress) {
             Ok(response) => {
                 let parsed = parse_llm_response(&response);
                 for item in parsed {
@@ -99,21 +108,31 @@ fn chunk_text(text: &str) -> Vec<TextChunk> {
 }
 
 /// Run inference using the Qwen2 model with candle.
+/// Reports progress via callback during token generation.
 #[cfg(feature = "llm")]
 fn run_inference(
     runtime: &mut super::LlmRuntime,
     text: &str,
+    on_progress: Option<&ProgressFn>,
 ) -> Result<String, String> {
     let prompt = format!(
         "<|im_start|>system\n{}<|im_end|>\n<|im_start|>user\n{}<|im_end|>\n<|im_start|>assistant\n",
         SYSTEM_PROMPT, text
     );
 
+    if let Some(cb) = &on_progress {
+        cb(0, "tokenizing");
+    }
+
     let tokens = runtime
         .tokenizer
         .encode(prompt.as_str(), true)
         .map_err(|e| format!("Tokenization failed: {}", e))?;
     let input_ids = tokens.get_ids();
+
+    if let Some(cb) = &on_progress {
+        cb(0, &format!("processing {} prompt tokens", input_ids.len()));
+    }
 
     let input = Tensor::new(input_ids, &runtime.device)
         .map_err(|e| format!("Tensor creation failed: {}", e))?
@@ -127,6 +146,10 @@ fn run_inference(
     let logits = logits
         .squeeze(0)
         .map_err(|e| format!("Squeeze failed: {}", e))?;
+
+    if let Some(cb) = &on_progress {
+        cb(0, "generating");
+    }
 
     // Use greedy sampling (temperature=0) for deterministic JSON output
     let mut logits_processor = LogitsProcessor::from_sampling(42, Sampling::ArgMax);
@@ -142,10 +165,36 @@ fn run_inference(
         .unwrap_or(&0);
 
     let mut output_tokens = vec![next_token];
+    // Track output text for early-stop detection
+    let mut bracket_depth: i32 = 0;
+    let mut seen_open_bracket = false;
 
     for index in 0..MAX_RESPONSE_TOKENS {
         if next_token == eos_token {
             break;
+        }
+
+        // Report progress every 5 tokens to avoid overhead
+        if index % 5 == 0 {
+            if let Some(cb) = &on_progress {
+                cb(index + 1, "generating");
+            }
+        }
+
+        // Check for early stop: once we've seen `[` and then `]` at depth 0
+        if let Ok(piece) = runtime.tokenizer.decode(&[next_token], false) {
+            for ch in piece.chars() {
+                if ch == '[' {
+                    bracket_depth += 1;
+                    seen_open_bracket = true;
+                } else if ch == ']' {
+                    bracket_depth -= 1;
+                }
+            }
+            // Stop once we've completed the JSON array
+            if seen_open_bracket && bracket_depth <= 0 {
+                break;
+            }
         }
 
         let input = Tensor::new(&[next_token], &runtime.device)
@@ -165,6 +214,10 @@ fn run_inference(
             .sample(&logits)
             .map_err(|e| format!("Sampling failed: {}", e))?;
         output_tokens.push(next_token);
+    }
+
+    if let Some(cb) = &on_progress {
+        cb(output_tokens.len(), "done");
     }
 
     let output = runtime
@@ -280,13 +333,6 @@ fn map_to_entities(
             continue;
         }
 
-        // Determine confidence: lower if category was a fallback
-        let confidence = if item.category == "PersonName" && category == PiiCategory::PersonName {
-            0.70
-        } else {
-            0.70
-        };
-
         entities.push(PiiEntity {
             id: uuid::Uuid::new_v4().to_string(),
             text: item.text.clone(),
@@ -295,7 +341,7 @@ fn map_to_entities(
             page,
             category: category.clone(),
             layer: "llm".to_string(),
-            confidence,
+            confidence: 0.70,
             replacement: category.replacement_label().to_string(),
         });
     }

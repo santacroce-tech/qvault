@@ -163,7 +163,22 @@ pub async fn scan_document_text(
                 None
             };
             let llm_runtime = llm_guard.as_mut().and_then(|g| g.as_mut());
-            pipeline::run_pipeline(text, page_num as u32, &jurisdictions, llm_runtime)
+
+            // Build progress callback that emits Tauri events during LLM inference
+            let app_handle_clone = app_handle.clone();
+            let doc_id_clone = id.clone();
+            let page_idx = page_num;
+            let progress_cb: crate::llm::llm_scanner::ProgressFn = Box::new(move |tokens, phase| {
+                let _ = app_handle_clone.emit("llm-progress", serde_json::json!({
+                    "documentId": doc_id_clone,
+                    "page": page_idx,
+                    "tokensGenerated": tokens,
+                    "phase": phase,
+                }));
+            });
+            let on_progress = if llm_runtime.is_some() { Some(&progress_cb) } else { None };
+
+            pipeline::run_pipeline(text, page_num as u32, &jurisdictions, llm_runtime, on_progress)
         };
         #[cfg(not(feature = "llm"))]
         let entities = pipeline::run_pipeline(text, page_num as u32, &jurisdictions);

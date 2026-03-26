@@ -90,6 +90,7 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState<{ page: number; totalPages: number; llmActive: boolean } | null>(null);
+  const [llmProgress, setLlmProgress] = useState<{ phase: string; tokensGenerated: number } | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
   // Listen for scan progress events from the backend
@@ -102,6 +103,24 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
             page: event.payload.page,
             totalPages: event.payload.totalPages,
             llmActive: event.payload.llmActive,
+          });
+          // Reset LLM phase when a new page starts
+          setLlmProgress(null);
+        }
+      }
+    );
+    return () => { unlisten.then((fn) => fn()); };
+  }, [documentId]);
+
+  // Listen for granular LLM inference progress
+  useEffect(() => {
+    const unlisten = listen<{ documentId: string; page: number; tokensGenerated: number; phase: string }>(
+      "llm-progress",
+      (event) => {
+        if (event.payload.documentId === documentId) {
+          setLlmProgress({
+            phase: event.payload.phase,
+            tokensGenerated: event.payload.tokensGenerated,
           });
         }
       }
@@ -136,7 +155,7 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
       } finally {
         if (!cancelled) {
           setLoading(false);
-          setScanning(false); setScanProgress(null);
+          setScanning(false); setScanProgress(null); setLlmProgress(null);
         }
       }
     }
@@ -463,7 +482,21 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
             <span className="text-sm text-amber-600 flex items-center gap-1.5">
               <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
               {scanProgress
-                ? `${t('viewer.scanning')} (${scanProgress.page + 1}/${scanProgress.totalPages}${scanProgress.llmActive ? " · AI" : ""})`
+                ? (() => {
+                    const pageLabel = `${scanProgress.page + 1}/${scanProgress.totalPages}`;
+                    if (!scanProgress.llmActive || !llmProgress) {
+                      return `${t('viewer.scanning')} (${pageLabel}${scanProgress.llmActive ? " · AI" : ""})`;
+                    }
+                    const phase = llmProgress.phase;
+                    let detail = "";
+                    if (phase === "tokenizing") detail = "AI: tokenizing";
+                    else if (phase.startsWith("processing")) detail = `AI: ${phase}`;
+                    else if (phase === "generating") detail = `AI: generating (${llmProgress.tokensGenerated} tokens)`;
+                    else if (phase === "done") detail = "AI: done";
+                    else if (phase.startsWith("chunk")) detail = `AI: ${phase}`;
+                    else detail = `AI: ${phase}`;
+                    return `${t('viewer.scanning')} (${pageLabel} · ${detail})`;
+                  })()
                 : t('viewer.scanning')}
             </span>
           )}
