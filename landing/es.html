@@ -583,6 +583,7 @@
         <li><a href="#features">Funciones</a></li>
         <li><a href="#how-it-works">C&oacute;mo Funciona</a></li>
         <li><a href="#license">Licencia</a></li>
+        <li><a href="#faq">FAQ</a></li>
         <li><a href="architecture.html">Arquitectura</a></li>
       </ul>
       <div class="nav-lang">
@@ -630,7 +631,7 @@
         <a href="/releases/" id="dl-win" data-os="windows">Windows (.exe)</a>
         <a href="/releases/" id="dl-linux" data-os="linux">Linux (.AppImage / .deb)</a>
       </div>
-      <p class="download-version">v0.1.0 &middot; Licencia MIT &middot; Gratuito y C&oacute;digo Abierto</p>
+      <p class="download-version">v0.2.0 &middot; Licencia MIT &middot; Gratuito y C&oacute;digo Abierto</p>
     </div>
   </section>
 
@@ -728,6 +729,50 @@
           EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANT&Iacute;A DE NING&Uacute;N TIPO, EXPRESA O IMPL&Iacute;CITA. Consulte la
           <a href="https://opensource.org/licenses/MIT" style="color:var(--blue-accent);text-decoration:underline;">Licencia MIT</a> para m&aacute;s detalles.
         </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="how-it-works" id="faq">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Soluci&oacute;n de Problemas y Preguntas Frecuentes</h2>
+        <p class="section-subtitle">Soluciones para problemas de instalaci&oacute;n en macOS y Windows.</p>
+      </div>
+
+      <div style="max-width:760px;margin:0 auto;">
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">macOS: &ldquo;Qvault est&aacute; da&ntilde;ado&rdquo; o &ldquo;no se puede verificar en busca de software malicioso&rdquo;</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Qvault a&uacute;n no est&aacute; firmado con un certificado de Apple Developer. macOS Gatekeeper bloquea las apps sin firmar. Para solucionarlo:</p>
+          <ol style="font-size:0.95rem;color:var(--gray-600);line-height:1.8;margin:12px 0 0 20px;">
+            <li>Abra <strong>Ajustes del Sistema &gt; Privacidad y Seguridad</strong></li>
+            <li>Despl&aacute;cese hasta la secci&oacute;n de Seguridad &mdash; ver&aacute; un mensaje sobre Qvault bloqueado</li>
+            <li>Haga clic en <strong>Abrir de todos modos</strong> y confirme</li>
+          </ol>
+          <p style="font-size:0.9rem;color:var(--gray-500);margin-top:12px;">Alternativamente, ejecute en Terminal: <code style="background:var(--gray-100);padding:2px 8px;border-radius:4px;font-size:0.85rem;">xattr -cr /Applications/Qvault.app</code></p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">macOS: &ldquo;De un desarrollador no identificado&rdquo;</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Haga clic derecho (o Control-clic) en el icono de la app y seleccione <strong>Abrir</strong> en el men&uacute; contextual. Haga clic en <strong>Abrir</strong> en el di&aacute;logo. Solo necesita hacerlo una vez.</p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">Windows: &ldquo;Windows protegi&oacute; su PC&rdquo; (SmartScreen)</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Windows SmartScreen puede bloquear el instalador porque no tiene certificado de firma de c&oacute;digo EV. Para continuar:</p>
+          <ol style="font-size:0.95rem;color:var(--gray-600);line-height:1.8;margin:12px 0 0 20px;">
+            <li>Haga clic en <strong>M&aacute;s informaci&oacute;n</strong></li>
+            <li>Haga clic en <strong>Ejecutar de todas formas</strong></li>
+          </ol>
+          <p style="font-size:0.9rem;color:var(--gray-500);margin-top:12px;">Es un aviso &uacute;nico. Windows no volver&aacute; a bloquear la app despu&eacute;s del primer inicio.</p>
+        </div>
+
+        <div class="feature-card fade-in" style="margin-bottom:24px;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin-bottom:12px;">Windows: El antivirus marca el instalador</h3>
+          <p style="font-size:0.95rem;color:var(--gray-600);line-height:1.7;">Algunos antivirus pueden marcar instaladores sin firmar como sospechosos. Es un falso positivo. Puede a&ntilde;adir una excepci&oacute;n para Qvault en la configuraci&oacute;n de su antivirus, o desactivar temporalmente la protecci&oacute;n en tiempo real durante la instalaci&oacute;n.</p>
+        </div>
       </div>
     </div>
   </section>
