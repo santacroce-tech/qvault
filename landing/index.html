@@ -919,6 +919,7 @@
       <ul class="nav-links">
         <li><a href="#download">Download</a></li>
         <li><a href="#features">Features</a></li>
+        <li><a href="#detection-engine">AI Engine</a></li>
         <li><a href="#how-it-works">How It Works</a></li>
         <li><a href="#demo">Demo</a></li>
         <li><a href="#enterprise">Enterprise</a></li>
@@ -994,8 +995,8 @@
       <div class="features-grid">
         <div class="feature-card fade-in">
           <div class="feature-icon">&#128269;</div>
-          <h3>Intelligent Detection</h3>
-          <p>Regex and heuristic analysis detects names, companies, SSNs, credit cards, addresses, dates, and more across your documents.</p>
+          <h3>3-Layer AI Detection</h3>
+          <p>Regex patterns, heuristic analysis, and a local AI model work together to catch structured and contextual PII &mdash; even hidden in natural language.</p>
         </div>
         <div class="feature-card fade-in">
           <div class="feature-icon">&#128274;</div>
@@ -1027,6 +1028,46 @@
           <h3>Mobile &amp; Tablet Ready</h3>
           <p>Works on iPhone, iPad, and Android. Review and redact documents on the go with a touch-optimized interface.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Detection Engine -->
+  <section class="detection-engine" id="detection-engine" style="padding:80px 0;background:var(--gray-50);">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">Detection Engine</div>
+        <h2 class="section-title">Three layers of protection, zero data transmitted</h2>
+        <p class="section-subtitle">Each layer catches what the previous one misses. All processing happens locally on your device &mdash; including the AI model.</p>
+      </div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;max-width:960px;margin:40px auto 0;">
+        <div class="feature-card fade-in" style="flex:1;min-width:280px;border-left:4px solid var(--blue-accent);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="background:var(--blue-accent);color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">1</div>
+            <h3 style="margin:0;">Regex Patterns</h3>
+          </div>
+          <p style="color:var(--gray-600);font-size:0.95rem;margin-bottom:8px;">High-precision pattern matching for structured data: emails, phone numbers, SSNs, credit cards, IBANs, CNPJs, CEPs, dates, and monetary amounts.</p>
+          <div style="font-size:0.85rem;color:var(--gray-500);">Confidence: 95% &middot; Supports US, EU, BR, DE jurisdictions</div>
+        </div>
+        <div class="feature-card fade-in" style="flex:1;min-width:280px;border-left:4px solid var(--green);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="background:var(--green);color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">2</div>
+            <h3 style="margin:0;">Heuristic Analysis</h3>
+          </div>
+          <p style="color:var(--gray-600);font-size:0.95rem;margin-bottom:8px;">Context-aware detection of person names, company names (LLC, LTDA, EIRELI, GmbH), and addresses using capitalization patterns and legal role keywords.</p>
+          <div style="font-size:0.85rem;color:var(--gray-500);">Confidence: 75&ndash;92% &middot; Detects names after "representada por", titles, etc.</div>
+        </div>
+        <div class="feature-card fade-in" style="flex:1;min-width:280px;border-left:4px solid #8B5CF6;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="background:#8B5CF6;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">3</div>
+            <h3 style="margin:0;">Local AI Model <span style="background:#8B5CF6;color:white;font-size:0.7rem;padding:2px 8px;border-radius:12px;margin-left:8px;font-weight:600;">NEW</span></h3>
+          </div>
+          <p style="color:var(--gray-600);font-size:0.95rem;margin-bottom:8px;">A small language model (Qwen 2.5 0.5B) runs entirely on your device to catch contextual PII that patterns miss &mdash; like names and addresses hidden in natural language.</p>
+          <div style="font-size:0.85rem;color:var(--gray-500);">Confidence: 70% &middot; GPU accelerated (CUDA/Metal) &middot; ~400 MB download</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:32px;">
+        <p style="color:var(--gray-500);font-size:0.9rem;max-width:640px;margin:0 auto;">The AI model is optional and downloaded on first use. Qvault works perfectly with just Layers 1 &amp; 2 &mdash; Layer 3 adds deeper contextual understanding for documents with complex natural language.</p>
       </div>
     </div>
   </section>
@@ -1195,7 +1236,7 @@
           <div class="price-period">forever</div>
           <ul class="pricing-features">
             <li>Unlimited documents</li>
-            <li>All PII detection patterns</li>
+            <li>All PII detection patterns + local AI</li>
             <li>Cross-document entity tracking</li>
             <li>Full source code available</li>
             <li>Desktop, mobile &amp; tablet support</li>

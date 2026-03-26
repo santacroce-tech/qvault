@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Introducing Layer 3: Local AI for Contextual PII Detection &mdash; Qvault Blog</title>
+  <meta name="description" content="Qvault now includes a local AI model (Qwen 2.5) that catches PII hidden in natural language — names, addresses, and sensitive data that patterns alone miss. All processing stays on your device.">
+  <meta property="og:title" content="Introducing Layer 3: Local AI for Contextual PII Detection">
+  <meta property="og:description" content="A small language model runs entirely on your device to catch PII that regex and heuristic analysis miss. Zero data transmitted.">
+  <meta property="og:type" content="article">
+  <style>
+    :root {
+      --navy: #0F1B2D;
+      --navy-light: #1A2B45;
+      --blue-accent: #3B82F6;
+      --blue-hover: #2563EB;
+      --blue-light: #DBEAFE;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-800: #1F2937;
+      --gray-900: #111827;
+      --white: #FFFFFF;
+      --green: #10B981;
+      --purple: #8B5CF6;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--gray-800);
+      line-height: 1.7;
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    nav {
+      background: var(--navy);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--blue-accent); }
+    .nav-back {
+      color: var(--gray-400);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .nav-back:hover { color: var(--white); }
+
+    .article {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      font-size: 0.9rem;
+      color: var(--gray-500);
+    }
+    .article-tag {
+      background: var(--blue-light);
+      color: var(--blue-accent);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--gray-900);
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .article-lead {
+      font-size: 1.15rem;
+      color: var(--gray-600);
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin: 48px 0 16px;
+      letter-spacing: -0.01em;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin: 32px 0 12px;
+    }
+
+    p { margin-bottom: 16px; }
+
+    .layer-card {
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 16px 0;
+      background: var(--gray-50);
+    }
+    .layer-card h3 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .layer-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .layer-card p { margin-bottom: 8px; color: var(--gray-600); }
+    .layer-meta { font-size: 0.85rem; color: var(--gray-500); }
+
+    .highlight-box {
+      border-left: 4px solid var(--blue-accent);
+      background: var(--blue-light);
+      padding: 20px 24px;
+      border-radius: 0 8px 8px 0;
+      margin: 24px 0;
+    }
+    .highlight-box p { margin-bottom: 0; color: var(--gray-700); }
+
+    .pipeline-diagram {
+      background: var(--navy);
+      color: white;
+      border-radius: 12px;
+      padding: 32px;
+      margin: 32px 0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+    .pipeline-diagram .dim { color: var(--gray-400); }
+    .pipeline-diagram .blue { color: #60A5FA; }
+    .pipeline-diagram .green { color: #34D399; }
+    .pipeline-diagram .purple { color: #A78BFA; }
+    .pipeline-diagram .yellow { color: #FBBF24; }
+
+    code {
+      background: var(--gray-100);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.9em;
+      color: var(--gray-700);
+    }
+
+    ul, ol {
+      margin: 0 0 16px 24px;
+    }
+    li { margin-bottom: 8px; }
+
+    .cta-box {
+      text-align: center;
+      padding: 40px;
+      background: var(--gray-50);
+      border-radius: 16px;
+      margin: 48px 0 0;
+    }
+    .cta-box h2 { margin-top: 0; }
+    .btn-cta {
+      display: inline-block;
+      background: var(--blue-accent);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-top: 16px;
+    }
+    .btn-cta:hover { background: var(--blue-hover); }
+
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--gray-500);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--blue-accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">Q<span>vault</span></a>
+    <a href="../index.html" class="nav-back">&larr; Back to Qvault</a>
+  </div>
+</nav>
+
+<article class="article">
+
+  <div class="article-meta">
+    <span class="article-tag">Product Update</span>
+    <span>March 26, 2026</span>
+  </div>
+
+  <h1>Introducing Layer 3: Local AI for Contextual PII Detection</h1>
+
+  <p class="article-lead">
+    Qvault's detection engine now includes a small language model that runs entirely on your device. It catches sensitive information hidden in natural language that patterns alone can't find &mdash; and it never transmits a single byte of your data.
+  </p>
+
+  <h2>The Problem: PII That Patterns Miss</h2>
+
+  <p>
+    Regex and heuristic analysis are excellent at catching structured PII: email addresses, phone numbers, SSNs, CNPJs, credit card numbers. They work because these entities follow predictable formats.
+  </p>
+
+  <p>
+    But legal documents often contain sensitive information expressed in natural language. Consider this sentence from a real Brazilian hosting contract:
+  </p>
+
+  <div class="highlight-box">
+    <p><em>"...representada por seu s&oacute;cio Guilherme Barile."</em></p>
+  </div>
+
+  <p>
+    There's no email, no ID number, no pattern to match &mdash; just a person's name in context. A regex will never find it. A heuristic scanner might catch it if it recognizes "representada por" as a trigger, but what about less common phrasings? What about "my neighbor John lives on Oak Street"?
+  </p>
+
+  <p>
+    This is where a language model excels. It understands context, not just patterns.
+  </p>
+
+  <h2>How the 3-Layer Pipeline Works</h2>
+
+  <p>Each layer builds on the previous one. Entities found by earlier layers are excluded from later passes to prevent duplicates.</p>
+
+  <div class="pipeline-diagram">
+    <span class="dim">Document text (per page)</span><br>
+    &nbsp;&nbsp;<span class="dim">&rarr;</span> <span class="blue">Layer 1: Regex</span> <span class="dim">(emails, SSNs, phones, dates, amounts...)</span> <span class="yellow">95% confidence</span><br>
+    &nbsp;&nbsp;<span class="dim">&rarr;</span> <span class="green">Layer 2: Heuristic</span> <span class="dim">(names, companies, addresses by context)</span> <span class="yellow">75&ndash;92% confidence</span><br>
+    &nbsp;&nbsp;<span class="dim">&rarr;</span> <span class="purple">Layer 3: LLM</span> <span class="dim">(contextual PII regex/heuristic missed)</span> <span class="yellow">70% confidence</span><br>
+    &nbsp;&nbsp;<span class="dim">&rarr;</span> Combined, deduplicated, sorted by position
+  </div>
+
+  <div class="layer-card">
+    <h3><span class="layer-num" style="background:var(--blue-accent);">1</span> Regex Patterns</h3>
+    <p>High-precision pattern matching for structured data. Supports multiple jurisdictions: US (SSN, EIN), EU (IBAN), Brazil (CPF, CNPJ, CEP), Germany, and global patterns (email, phone, credit card, dates, monetary amounts).</p>
+    <div class="layer-meta">Confidence: 95% &middot; Deterministic &middot; Fastest layer</div>
+  </div>
+
+  <div class="layer-card">
+    <h3><span class="layer-num" style="background:var(--green);">2</span> Heuristic Analysis</h3>
+    <p>Context-aware detection using capitalization patterns, legal role keywords, and company suffixes. Recognizes "Giuliano Ferrari" after "representada por", detects "ELEVADORES ZENIT LTDA" by the company suffix, and filters false positives like "Vila Santa Catarina" using address stop words.</p>
+    <div class="layer-meta">Confidence: 75&ndash;92% &middot; Supports EN, PT-BR, ES legal terminology</div>
+  </div>
+
+  <div class="layer-card" style="border-color:var(--purple);">
+    <h3><span class="layer-num" style="background:var(--purple);">3</span> Local AI Model <span style="background:var(--purple);color:white;font-size:0.7rem;padding:2px 8px;border-radius:12px;font-weight:600;">NEW</span></h3>
+    <p>A quantized Qwen 2.5 0.5B model powered by <a href="https://github.com/huggingface/candle" style="color:var(--blue-accent);">HuggingFace Candle</a> (pure Rust, no C++ dependencies). The model receives each page of text with a structured prompt and returns a JSON array of PII entities it found. Results are mapped back to exact character offsets and filtered against existing detections.</p>
+    <div class="layer-meta">Confidence: 70% &middot; GPU accelerated (CUDA / Metal) &middot; ~400 MB download &middot; Optional</div>
+  </div>
+
+  <h2>Why Candle Instead of llama.cpp?</h2>
+
+  <p>
+    We evaluated several options for local inference: llama.cpp (via <code>llama-cpp-2</code>), ONNX Runtime, Burn, and Candle. We chose Candle because:
+  </p>
+
+  <ul>
+    <li><strong>Pure Rust</strong> &mdash; no cmake, no C++ compiler needed. Trivial cross-platform builds for macOS, Windows, Linux, and eventually mobile.</li>
+    <li><strong>Simple Tauri integration</strong> &mdash; no external binaries or shell plugins. Just another Rust crate in our dependency tree.</li>
+    <li><strong>GPU acceleration</strong> &mdash; CUDA for NVIDIA GPUs, Metal for Apple Silicon. Falls back to CPU automatically.</li>
+    <li><strong>Performance is sufficient</strong> &mdash; for a 0.5B model, the speed difference versus llama.cpp is negligible.</li>
+  </ul>
+
+  <h2>Privacy by Design</h2>
+
+  <p>
+    The AI model follows the same zero-transmission principle as everything else in Qvault:
+  </p>
+
+  <ul>
+    <li>The model file (~400 MB) is downloaded once from HuggingFace and cached locally.</li>
+    <li>All inference runs on your CPU or GPU &mdash; no API calls, no cloud services.</li>
+    <li>The feature is entirely optional. Qvault works perfectly with just Layers 1 and 2.</li>
+    <li>The model auto-unloads from memory after 30 seconds of inactivity to conserve RAM.</li>
+  </ul>
+
+  <h2>Brazilian Contract Detection Improvements</h2>
+
+  <p>Alongside Layer 3, we also significantly improved Brazilian contract detection in Layers 1 and 2:</p>
+
+  <ul>
+    <li><strong>CEP</strong> (postal code) pattern: <code>00000-000</code></li>
+    <li><strong>Company suffixes</strong>: LTDA, EIRELI, ME, EPP, Cia</li>
+    <li><strong>"representada por"</strong> pattern for extracting representative names</li>
+    <li><strong>Brazilian legal roles</strong>: S&oacute;cio, Diretor, Gerente, Administrador, Procurador</li>
+    <li><strong>Address stop words</strong>: Rua, Alameda, Avenida, Vila, Bairro (prevents false name detections)</li>
+  </ul>
+
+  <p>Tested against a real Brazilian cloud hosting contract (Zenit / Bravado), the pipeline now correctly identifies:</p>
+
+  <div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:0.9rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--gray-200);text-align:left;">
+        <th style="padding:8px 12px;">Entity</th>
+        <th style="padding:8px 12px;">Category</th>
+        <th style="padding:8px 12px;">Confidence</th>
+        <th style="padding:8px 12px;">Layer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px 12px;">ELEVADORES ZENIT LTDA</td><td style="padding:8px 12px;">Company</td><td style="padding:8px 12px;">90%</td><td style="padding:8px 12px;">Heuristic</td></tr>
+      <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px 12px;">Bravado Tecnologia da Informa&ccedil;&atilde;o EIRELI</td><td style="padding:8px 12px;">Company</td><td style="padding:8px 12px;">90%</td><td style="padding:8px 12px;">Heuristic</td></tr>
+      <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px 12px;">Giuliano Ferrari</td><td style="padding:8px 12px;">Person</td><td style="padding:8px 12px;">92%</td><td style="padding:8px 12px;">Heuristic</td></tr>
+      <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px 12px;">Guilherme Barile</td><td style="padding:8px 12px;">Person</td><td style="padding:8px 12px;">92%</td><td style="padding:8px 12px;">Heuristic</td></tr>
+      <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px 12px;">04371-000</td><td style="padding:8px 12px;">Address (CEP)</td><td style="padding:8px 12px;">95%</td><td style="padding:8px 12px;">Regex</td></tr>
+      <tr style="border-bottom:1px solid var(--gray-100);"><td style="padding:8px 12px;">61.520.011/0001-97</td><td style="padding:8px 12px;">Tax ID (CNPJ)</td><td style="padding:8px 12px;">95%</td><td style="padding:8px 12px;">Regex</td></tr>
+      <tr><td style="padding:8px 12px;">35.661.121/0001-69</td><td style="padding:8px 12px;">Tax ID (CNPJ)</td><td style="padding:8px 12px;">95%</td><td style="padding:8px 12px;">Regex</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>How to Enable Layer 3</h2>
+
+  <ol>
+    <li>Open Qvault and go to <strong>Settings</strong>.</li>
+    <li>In the <strong>AI Detection</strong> section, click <strong>Download Model</strong> (~400 MB, one-time).</li>
+    <li>Once downloaded, click <strong>Load Model</strong>. The settings page will show your compute device (CPU, CUDA GPU, or Metal GPU).</li>
+    <li>Enable the toggle. Layer 3 will now run automatically during scans.</li>
+  </ol>
+
+  <p>The model auto-unloads after 30 seconds of inactivity to free memory. It reloads automatically on the next scan.</p>
+
+  <div class="cta-box">
+    <h2>Try it now</h2>
+    <p>Qvault is free, open source, and runs on macOS, Windows, and Linux.</p>
+    <a href="../index.html#download" class="btn-cta">Download Qvault</a>
+  </div>
+
+</article>
+
+<footer>
+  <p>&copy; 2026 <a href="https://santacroce.es">Santacroce Tech</a> &middot; <a href="../index.html">Qvault</a> &middot; <a href="https://github.com/santacroce-tech/qvault">GitHub</a></p>
+</footer>
+
+</body>
+</html>
