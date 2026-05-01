@@ -200,7 +200,7 @@ fn test_germany_tax_id_detection() {
 
 #[test]
 fn test_full_pipeline_us() {
-    let entities = pipeline::run_pipeline(TEST_TEXT_US, 0, &["global", "us", "eu"]);
+    let entities = pipeline::run_pipeline_no_llm(TEST_TEXT_US, 0, &["global", "us", "eu"]);
 
     println!("\n=== Full Pipeline Results (US Text) ===");
     for e in &entities {
@@ -216,7 +216,7 @@ fn test_full_pipeline_us() {
 
 #[test]
 fn test_full_pipeline_brazil() {
-    let entities = pipeline::run_pipeline(TEST_TEXT_BR, 0, &["global", "br"]);
+    let entities = pipeline::run_pipeline_no_llm(TEST_TEXT_BR, 0, &["global", "br"]);
 
     println!("\n=== Full Pipeline Results (Brazil Text) ===");
     for e in &entities {
@@ -233,7 +233,7 @@ fn test_full_pipeline_brazil() {
 fn test_no_false_positives_on_clean_text() {
     let clean_text = "The quick brown fox jumps over the lazy dog. This is a normal sentence with no personal information. The year 2024 was eventful.";
 
-    let entities = pipeline::run_pipeline(clean_text, 0, &["global", "us", "eu", "br", "de"]);
+    let entities = pipeline::run_pipeline_no_llm(clean_text, 0, &["global", "us", "eu", "br", "de"]);
 
     println!("\n=== Clean Text Results ===");
     for e in &entities {
@@ -251,7 +251,7 @@ fn test_no_false_positives_on_clean_text() {
 fn test_overlap_resolution() {
     // Text where multiple patterns might match the same region
     let text = "Contact SSN: 123-45-6789 or EIN: 12-3456789";
-    let entities = pipeline::run_pipeline(text, 0, &["global", "us"]);
+    let entities = pipeline::run_pipeline_no_llm(text, 0, &["global", "us"]);
 
     // Verify no overlapping entities
     let mut sorted = entities.clone();
@@ -267,7 +267,7 @@ fn test_overlap_resolution() {
 
 #[test]
 fn test_entity_has_valid_replacement() {
-    let entities = pipeline::run_pipeline(TEST_TEXT_US, 0, &["global", "us"]);
+    let entities = pipeline::run_pipeline_no_llm(TEST_TEXT_US, 0, &["global", "us"]);
 
     for e in &entities {
         assert!(!e.replacement.is_empty(),
@@ -279,7 +279,7 @@ fn test_entity_has_valid_replacement() {
 
 #[test]
 fn test_confidence_values() {
-    let entities = pipeline::run_pipeline(TEST_TEXT_US, 0, &["global", "us"]);
+    let entities = pipeline::run_pipeline_no_llm(TEST_TEXT_US, 0, &["global", "us"]);
 
     for e in &entities {
         assert!(e.confidence > 0.0 && e.confidence <= 1.0,
@@ -314,7 +314,7 @@ Gustavo Lima Caldeira de Andrada, Shareholder"#;
 
 #[test]
 fn test_legal_contract_names() {
-    let entities = pipeline::run_pipeline(LEGAL_CONTRACT_PAGE4, 3, &["global", "us", "eu", "br", "de"]);
+    let entities = pipeline::run_pipeline_no_llm(LEGAL_CONTRACT_PAGE4, 3, &["global", "us", "eu", "br", "de"]);
 
     println!("\n=== Legal Contract Page 4 (Signatures) ===");
     for e in &entities {
@@ -341,7 +341,7 @@ fn test_legal_contract_names() {
 
 #[test]
 fn test_legal_contract_dates_and_money() {
-    let entities = pipeline::run_pipeline(LEGAL_CONTRACT_PAGE2, 1, &["global", "us", "eu", "br", "de"]);
+    let entities = pipeline::run_pipeline_no_llm(LEGAL_CONTRACT_PAGE2, 1, &["global", "us", "eu", "br", "de"]);
 
     println!("\n=== Legal Contract Page 2 (Body) ===");
     for e in &entities {
@@ -400,7 +400,7 @@ CS MANAGEMENT GROUP LLC
 
 Roberto Santacroce Martins, Shareholder"#;
 
-    let entities = pipeline::run_pipeline(text, 0, &["global", "us", "eu", "br", "de"]);
+    let entities = pipeline::run_pipeline_no_llm(text, 0, &["global", "us", "eu", "br", "de"]);
 
     println!("\n=== Company Name Detection Test ===");
     for e in &entities {
@@ -428,4 +428,79 @@ Roberto Santacroce Martins, Shareholder"#;
     // "Roberto Santacroce Martins" should be a PersonName, not a CompanyName
     assert!(names.iter().any(|n| n.contains("Roberto Santacroce Martins")),
         "Should detect 'Roberto Santacroce Martins' as a name, found: {:?}", names);
+}
+
+// ===================== Brazilian Contract Tests =====================
+
+const BR_CONTRACT_TEXT: &str = r#"ELEVADORES ZENIT LTDA, com sede na Cidade de São Paulo, Estado de São Paulo, na Rua Rishin
+Matsuda, 562, Vila Santa Catarina, CEP 04371-000, inscrita no Cadastro Nacional de Pessoas
+Jurídicas (CNPJ) sob n° 61.520.011/0001-97, representada por Giuliano Ferrari, doravante designada
+simplesmente "CONTRATANTE".
+A CONTRATADA é Bravado Tecnologia da Informação EIRELI, com sede em São Paulo, na
+Alameda Santos, número 211 CJ 1209. Inscrita no CNPJ (MF) sob n° 35.661.121/0001-69, neste ato
+representada por seu sócio Guilherme Barile."#;
+
+#[test]
+fn test_br_contract_cep() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    let addresses: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::Address)
+        .map(|e| e.text.as_str())
+        .collect();
+    println!("  Addresses: {:?}", addresses);
+    assert!(addresses.iter().any(|a| a.contains("04371-000")),
+        "Should detect CEP 04371-000, found: {:?}", addresses);
+}
+
+#[test]
+fn test_br_contract_cnpj() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    let tax_ids: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::TaxId)
+        .map(|e| e.text.as_str())
+        .collect();
+    println!("  Tax IDs: {:?}", tax_ids);
+    assert!(tax_ids.contains(&"61.520.011/0001-97"), "Should detect CNPJ 61.520.011/0001-97");
+    assert!(tax_ids.contains(&"35.661.121/0001-69"), "Should detect CNPJ 35.661.121/0001-69");
+}
+
+#[test]
+fn test_br_contract_companies() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    let companies: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::CompanyName)
+        .map(|e| e.text.as_str())
+        .collect();
+    println!("  Companies: {:?}", companies);
+    assert!(companies.iter().any(|c| c.contains("ZENIT") && c.contains("LTDA")),
+        "Should detect 'ELEVADORES ZENIT LTDA', found: {:?}", companies);
+    assert!(companies.iter().any(|c| c.contains("Bravado") && c.contains("EIRELI")),
+        "Should detect 'Bravado Tecnologia da Informação EIRELI', found: {:?}", companies);
+}
+
+#[test]
+fn test_br_contract_person_names() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    let names: Vec<&str> = entities.iter()
+        .filter(|e| e.category == PiiCategory::PersonName)
+        .map(|e| e.text.as_str())
+        .collect();
+    println!("  Names: {:?}", names);
+    assert!(names.iter().any(|n| n.contains("Giuliano Ferrari")),
+        "Should detect 'Giuliano Ferrari', found: {:?}", names);
+    assert!(names.iter().any(|n| n.contains("Guilherme Barile")),
+        "Should detect 'Guilherme Barile', found: {:?}", names);
+}
+
+#[test]
+fn test_br_contract_full_pipeline() {
+    let entities = pipeline::run_pipeline_no_llm(BR_CONTRACT_TEXT, 0, &["global", "br"]);
+    println!("\n=== Brazilian Contract Full Detection ===");
+    for e in &entities {
+        println!("  [{:?}] '{}' (confidence: {:.0}%, layer: {}, pos: {}-{})",
+            e.category, e.text, e.confidence * 100.0, e.layer, e.start, e.end);
+    }
+    // Should find at minimum: 2 CNPJ, 1 CEP, 2 companies, 2 person names = 7+
+    assert!(entities.len() >= 7,
+        "Expected at least 7 entities from BR contract, found {}", entities.len());
 }

@@ -34,3 +34,13 @@ chrono = { version = "0.4", features = ["serde"] }
 hex = "0.4"
 base64 = "0.22"
 tauri-plugin-opener = "2"
+ort = { version = "2.0.0-rc.10", default-features = false, features = ["std", "ndarray", "download-binaries", "tls-rustls"], optional = true }
+ndarray = { version = "0.17", optional = true }
+tokenizers = { version = "0.21", optional = true }
+hf-hub = { version = "0.4", optional = true }
+
+[features]
+default = ["llm"]
+llm = ["dep:ort", "dep:ndarray", "dep:tokenizers", "dep:hf-hub"]
+cuda = ["llm", "ort/cuda"]
+metal = ["llm", "ort/coreml"]

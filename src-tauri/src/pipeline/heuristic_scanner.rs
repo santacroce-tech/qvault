@@ -11,12 +11,16 @@ pub struct HeuristicScanner {
     name_percentage_re: Regex,
     // Capitalized word sequences on a single line (2+ words)
     cap_sequence_re: Regex,
-    // Company patterns: "Foo Bar LLC", "Foo Bar Inc.", etc.
+    // Company patterns: "Foo Bar LLC", "Foo Bar Inc.", "ELEVADORES ZENIT LTDA" etc.
     company_suffix_re: Regex,
     // Company patterns from context: "... of CompanyName, a Delaware ..."
     company_entity_re: Regex,
     // Company name + percentage pattern (like name percentage)
     company_percentage_re: Regex,
+    // Brazilian contract patterns: "representada por Name", "sócio Name"
+    br_representative_re: Regex,
+    // Brazilian address patterns: "Rua ..., 123, Bairro, CEP 00000-000"
+    br_address_re: Regex,
     // Common terms that look like names but aren't
     stop_phrases: HashSet<&'static str>,
     stop_words: HashSet<&'static str>,
@@ -28,10 +32,10 @@ pub struct HeuristicScanner {
 
 impl HeuristicScanner {
     pub fn new() -> Self {
-        // "Firstname Lastname, Title" where Title is a known role
+        // "Firstname Lastname, Title" where Title is a known role (EN + PT-BR)
         // Supports names with multiple connector words: "Gustavo Lima Caldeira de Andrada"
         let name_title_re = Regex::new(
-            r"([A-Z][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das|van|von|del|di|el|la|le))*(?:[ ]+[A-Z][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das|van|von|del|di|el|la|le))*)+),\s*(?:Manager|Shareholder|Member|Director|Officer|President|Secretary|Treasurer|Partner|Attorney|Counsel|Agent|Trustee|Executor|Administrator|Signatory|Authorized\s+Representative)"
+            r"([A-ZÀ-Ú][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das|van|von|del|di|el|la|le))*(?:[ ]+[A-ZÀ-Ú][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das|van|von|del|di|el|la|le))*)+),\s*(?:Manager|Shareholder|Member|Director|Officer|President|Secretary|Treasurer|Partner|Attorney|Counsel|Agent|Trustee|Executor|Administrator|Signatory|Authorized\s+Representative|Diretor|Gerente|Presidente|Sócio|Administrador|Procurador|Representante\s+Legal)"
         ).unwrap();
 
         // "Firstname Lastname – XX.XXXX%" (distribution tables)
@@ -44,21 +48,31 @@ impl HeuristicScanner {
             r"(?m)^.*?([A-Z][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das|van|von|del|di|el|la|le))*(?:[ ]+[A-Z][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das|van|von|del|di|el|la|le))*)+)"
         ).unwrap();
 
-        // Company with suffix: "CS Digital Ventures LLC", "Acme Corp.", "Olenox Industries Inc"
+        // Company with suffix: "CS Digital Ventures LLC", "Acme Corp.", "ELEVADORES ZENIT LTDA"
         // Matches sequences of words (including uppercase, mixed case, single uppercase letters) followed by a company suffix
         // Requires at least 2 words before the suffix to avoid "Restated Limited" false positives
         let company_suffix_re = Regex::new(
-            r"\b((?:[A-Z][A-Za-z]*(?:[ ]+[A-Z][A-Za-z]*)+))[ ]+(LLC|Inc\.?|Corp\.?|Corporation|Ltd\.?|Limited|LLP|LP|PLC|GmbH|S\.?A\.?|SARL|AG|BV|NV|Pty|Co\.?)\b"
+            r"\b((?:[A-ZÀ-Ú][A-Za-zà-ÿ]*(?:[ ]+(?:de|da|do|dos|das|e|y)?[ ]*[A-ZÀ-Ú][A-Za-zà-ÿ]*)*))[ ]+(LLC|Inc\.?|Corp\.?|Corporation|Ltd\.?|Limited|LLP|LP|PLC|GmbH|S\.?A\.?|SARL|AG|BV|NV|Pty|Co\.?|LTDA\.?|Ltda\.?|EIRELI|ME|EPP|S/?S|Cia\.?)\b"
         ).unwrap();
 
-        // "...of CompanyName, a Delaware limited liability company..."
+        // "...of CompanyName, a Delaware limited liability company..." or "A CONTRATADA é Bravado ..."
         let company_entity_re = Regex::new(
-            r"(?:of|by|to|from|with|and)\s+((?:[A-Z][A-Za-z]*(?:\s+[A-Z][A-Za-z]*)*)\s+(?:LLC|Inc\.?|Corp\.?|Corporation|Ltd\.?|Limited|LLP|LP))"
+            r"(?:of|by|to|from|with|and|é)\s+((?:[A-ZÀ-Ú][A-Za-zà-ÿ]*(?:\s+(?:de|da|do|dos|das|e|y)?\s*[A-ZÀ-Ú][A-Za-zà-ÿ]*)*)\s+(?:LLC|Inc\.?|Corp\.?|Corporation|Ltd\.?|Limited|LLP|LP|LTDA\.?|Ltda\.?|EIRELI|ME|EPP))"
         ).unwrap();
 
         // "CompanyName LLC – XX.XXXX%" in distribution tables
         let company_percentage_re = Regex::new(
             r"((?:[A-Z][A-Za-z]*(?:[ ]+[A-Z][A-Za-z]*)*[ ]+(?:LLC|Inc\.?|Corp\.?|Ltd\.?)?))\s*[–—\-]\s*\d+(?:\.\d+)?%"
+        ).unwrap();
+
+        // Brazilian: "representada por Giuliano Ferrari", "seu sócio Guilherme Barile"
+        let br_representative_re = Regex::new(
+            r"(?:representad[ao]|firmad[ao])(?:\s+(?:por|pelo|pela))(?:\s+(?:seu|sua|seus|suas))?\s+(?:sócio|sócia|diretor|diretora|administrador|administradora|procurador|procuradora|gerente|representante)?\s*([A-ZÀ-Ú][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das))*(?:[ ]+[A-ZÀ-Ú][a-zà-ÿ]+(?:[ ]+(?:de|da|do|dos|das))*)+)"
+        ).unwrap();
+
+        // Brazilian address: "Rua/Alameda/Avenida ... , NNN"
+        let br_address_re = Regex::new(
+            r"(?:na|à|na\s+)?((?:Rua|Alameda|Avenida|Av\.?|Travessa|Praça|Estrada|Rodovia)\s+[A-ZÀ-Ú][A-Za-zà-ÿ]+(?:[\s,]+[A-Za-zà-ÿ0-9]+)*,\s*(?:n[°ºo]?\s*)?\d+(?:\s*[,/]\s*[A-Za-zà-ÿ0-9\s]+)*)"
         ).unwrap();
 
         let stop_phrases: HashSet<&'static str> = [
@@ -82,6 +96,10 @@ impl HeuristicScanner {
             "Client Intake Form", "Court File Number",
             "Distribution Of Transaction", "Social Security Number",
             "Medical Record Number",
+            // Portuguese legal terms
+            "Cadastro Nacional", "Pessoas Jurídicas",
+            "Objeto Do Contrato", "Prazo Do Contrato",
+            "Cidade De", "Estado De", "Vila Santa",
         ].iter().copied().collect();
 
         let stop_words: HashSet<&'static str> = [
@@ -105,16 +123,26 @@ impl HeuristicScanner {
             "Contact", "Credit", "Card", "Account", "Bank", "Record",
             "Medical", "Social", "Security", "Number", "Court", "File",
             "Case", "Reference", "Annual", "Income",
-            "Street", "Avenue", "Road", "Boulevard", "Drive", "Lane",
+            "Street", "Avenue", "Road", "Boulevard", "Drive", "Lane", "Plaza",
+            // Portuguese address terms
+            "Rua", "Alameda", "Avenida", "Travessa", "Praça", "Estrada", "Rodovia",
+            "Vila", "Bairro", "Jardim", "Parque", "Centro",
             "Not", "For", "Avoidance", "Doubt", "Exhibit",
             "Schedule", "Appendix", "Annex", "Name", "Date",
+            // Portuguese legal/document terms
+            "Contrato", "Contratante", "Contratada", "Contratado",
+            "Cláusula", "Objeto", "Prazo", "Presente", "Serviços",
+            "Cadastro", "Nacional", "Pessoas", "Jurídicas",
+            "Cidade", "Estado", "Sede", "Inscrita", "Inscrito",
         ].iter().copied().collect();
 
         let company_suffixes: HashSet<&'static str> = [
-            // Formal legal entity suffixes
+            // Formal legal entity suffixes (US/EU)
             "LLC", "Inc", "Inc.", "Corp", "Corp.", "Corporation",
             "Ltd", "Ltd.", "Limited", "LLP", "LP", "PLC",
             "GmbH", "SA", "S.A.", "SARL", "AG", "BV", "NV", "Pty", "Co", "Co.",
+            // Brazilian entity suffixes
+            "LTDA", "LTDA.", "Ltda", "Ltda.", "EIRELI", "ME", "EPP", "S/S", "SS", "Cia", "Cia.",
         ].iter().copied().collect();
 
         let company_indicators: HashSet<&'static str> = [
@@ -131,6 +159,8 @@ impl HeuristicScanner {
             company_suffix_re,
             company_entity_re,
             company_percentage_re,
+            br_representative_re,
+            br_address_re,
             stop_phrases,
             stop_words,
             company_suffixes,
@@ -241,6 +271,37 @@ impl HeuristicScanner {
                     name_match.end(),
                     page,
                     0.90,
+                    &mut entities,
+                    &mut matched_ranges,
+                );
+            }
+        }
+
+        // Pass 2b: Brazilian — "representada por [sócio] Firstname Lastname"
+        for cap in self.br_representative_re.captures_iter(text) {
+            if let Some(name_match) = cap.get(1) {
+                self.maybe_add_name(
+                    name_match.as_str(),
+                    name_match.start(),
+                    name_match.end(),
+                    page,
+                    0.92,
+                    &mut entities,
+                    &mut matched_ranges,
+                );
+            }
+        }
+
+        // Pass 2c: Brazilian addresses — "Rua Rishin Matsuda, 562, Vila Santa Catarina"
+        for cap in self.br_address_re.captures_iter(text) {
+            if let Some(m) = cap.get(1) {
+                self.maybe_add_entity(
+                    m.as_str(),
+                    m.start(),
+                    m.end(),
+                    page,
+                    PiiCategory::Address,
+                    0.88,
                     &mut entities,
                     &mut matched_ranges,
                 );
@@ -439,6 +500,10 @@ impl HeuristicScanner {
             "authorized representative",
             "amendment no", "full satisfaction", "file number",
             "record number", "security number", "intake form",
+            // Portuguese
+            "objeto do contrato", "prazo do contrato", "cadastro nacional",
+            "pessoas jurídicas", "prestação de serviços", "contrato de",
+            "gestão personalizada", "cidade de são paulo", "estado de são paulo",
         ];
         for phrase in &legal_fragments {
             if lower.contains(phrase) {
@@ -511,6 +576,10 @@ impl HeuristicScanner {
             "Name:", "name:", "between", "among", "party", "Party",
             "executed", "Executed", "undersigned", "behalf",
             "Signature", "signature", "witness", "Witness",
+            // Portuguese
+            "representad", "sócio", "sócia", "diretor", "diretora",
+            "administrador", "procurador", "assinatura", "testemunha",
+            "entre", "partes", "contratante", "contratad",
         ];
 
         positive_signals.iter().any(|kw| {

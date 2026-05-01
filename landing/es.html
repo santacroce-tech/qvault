@@ -724,6 +724,7 @@
       <ul class="nav-links">
         <li><a href="#download">Descargar</a></li>
         <li><a href="#features">Funciones</a></li>
+        <li><a href="#detection-engine">Motor de IA</a></li>
         <li><a href="#how-it-works">C&oacute;mo Funciona</a></li>
         <li><a href="#demo">Demo</a></li>
         <li><a href="#enterprise">Empresarial</a></li>
@@ -796,8 +797,8 @@
       <div class="features-grid">
         <div class="feature-card fade-in">
           <div class="feature-icon">&#128269;</div>
-          <h3>Detecci&oacute;n Inteligente</h3>
-          <p>An&aacute;lisis con expresiones regulares y heur&iacute;sticas detecta nombres, empresas, n&uacute;meros de seguro social, tarjetas de cr&eacute;dito, direcciones, fechas y m&aacute;s en sus documentos.</p>
+          <h3>Detecci&oacute;n de IA de 3 Capas</h3>
+          <p>Patrones regex, an&aacute;lisis heur&iacute;stico y un modelo de IA local trabajan juntos para detectar PII estructurado y contextual &mdash; incluso oculto en lenguaje natural.</p>
         </div>
         <div class="feature-card fade-in">
           <div class="feature-icon">&#128274;</div>
@@ -829,6 +830,46 @@
           <h3>Movil y Tableta</h3>
           <p>Funciona en iPhone, iPad y Android. Revisa y redacta documentos en movimiento con una interfaz optimizada para tactil.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Motor de Detecci&oacute;n -->
+  <section class="detection-engine" id="detection-engine" style="padding:80px 0;background:var(--gray-50);">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">Motor de Detecci&oacute;n</div>
+        <h2 class="section-title">Tres capas de protecci&oacute;n, cero datos transmitidos</h2>
+        <p class="section-subtitle">Cada capa detecta lo que la anterior no puede. Todo el procesamiento ocurre localmente en tu dispositivo &mdash; incluyendo el modelo de IA.</p>
+      </div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;max-width:960px;margin:40px auto 0;">
+        <div class="feature-card fade-in" style="flex:1;min-width:280px;border-left:4px solid var(--blue-accent);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="background:var(--blue-accent);color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">1</div>
+            <h3 style="margin:0;">Patrones Regex</h3>
+          </div>
+          <p style="color:var(--gray-600);font-size:0.95rem;margin-bottom:8px;">Coincidencia de patrones de alta precisi&oacute;n para datos estructurados: correos electr&oacute;nicos, tel&eacute;fonos, n&uacute;meros de seguro social, tarjetas de cr&eacute;dito, IBANs, CNPJs, CEPs, fechas y montos monetarios.</p>
+          <div style="font-size:0.85rem;color:var(--gray-500);">Confianza: 95% &middot; Soporta jurisdicciones US, EU, BR, DE</div>
+        </div>
+        <div class="feature-card fade-in" style="flex:1;min-width:280px;border-left:4px solid var(--green);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="background:var(--green);color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">2</div>
+            <h3 style="margin:0;">An&aacute;lisis Heur&iacute;stico</h3>
+          </div>
+          <p style="color:var(--gray-600);font-size:0.95rem;margin-bottom:8px;">Detecci&oacute;n con conciencia de contexto de nombres de personas, empresas (LLC, LTDA, EIRELI, GmbH) y direcciones usando patrones de capitalizaci&oacute;n y palabras clave de roles legales.</p>
+          <div style="font-size:0.85rem;color:var(--gray-500);">Confianza: 75&ndash;92% &middot; Detecta nombres despu&eacute;s de "representada por", t&iacute;tulos, etc.</div>
+        </div>
+        <div class="feature-card fade-in" style="flex:1;min-width:280px;border-left:4px solid #8B5CF6;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="background:#8B5CF6;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">3</div>
+            <h3 style="margin:0;">Modelo de IA Local <span style="background:#8B5CF6;color:white;font-size:0.7rem;padding:2px 8px;border-radius:12px;margin-left:8px;font-weight:600;">NUEVO</span></h3>
+          </div>
+          <p style="color:var(--gray-600);font-size:0.95rem;margin-bottom:8px;">Un peque&ntilde;o modelo de lenguaje (Qwen 2.5 0.5B) se ejecuta completamente en tu dispositivo para detectar PII contextual que los patrones no encuentran &mdash; como nombres y direcciones ocultos en lenguaje natural.</p>
+          <div style="font-size:0.85rem;color:var(--gray-500);">Confianza: 70% &middot; Acelerado por GPU (CUDA/Metal) &middot; ~400 MB descarga</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:32px;">
+        <p style="color:var(--gray-500);font-size:0.9rem;max-width:640px;margin:0 auto;">El modelo de IA es opcional y se descarga en el primer uso. Qvault funciona perfectamente solo con las Capas 1 y 2 &mdash; la Capa 3 agrega comprensi&oacute;n contextual m&aacute;s profunda para documentos con lenguaje natural complejo.</p>
       </div>
     </div>
   </section>
@@ -985,7 +1026,7 @@
           <div class="price-period">para siempre</div>
           <ul class="pricing-features">
             <li>Documentos ilimitados</li>
-            <li>Todos los patrones de detecci&oacute;n de PII</li>
+            <li>Todos los patrones de detecci&oacute;n de PII + IA local</li>
             <li>Seguimiento de entidades entre documentos</li>
             <li>C&oacute;digo fuente completo disponible</li>
             <li>Soporte para escritorio, movil y tableta</li>

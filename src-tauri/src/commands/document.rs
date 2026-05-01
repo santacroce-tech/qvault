@@ -1,6 +1,6 @@
 use std::path::Path;
 use serde::Deserialize;
-use tauri::State;
+use tauri::{Emitter, State};
 use uuid::Uuid;
 
 use crate::pipeline;
@@ -116,9 +116,17 @@ pub async fn scan_document_text(
     id: String,
     pages: Vec<String>,
     state: State<'_, AppState>,
+    app_handle: tauri::AppHandle,
 ) -> Result<i32, String> {
     let jurisdictions = vec!["global", "us", "eu", "br", "de"];
     let mut total_pii = 0;
+    let total_pages = pages.len();
+    let llm_active = {
+        #[cfg(feature = "llm")]
+        { state.llm_state.is_enabled() && state.llm_state.is_model_loaded() }
+        #[cfg(not(feature = "llm"))]
+        { false }
+    };
 
     // Store text and run PII pipeline per page
     let text_dir = state.storage_dir.join("text");
@@ -126,6 +134,14 @@ pub async fn scan_document_text(
         .map_err(|e| format!("Failed to create text dir: {}", e))?;
 
     for (page_num, text) in pages.iter().enumerate() {
+        // Emit scan progress event
+        let _ = app_handle.emit("scan-progress", serde_json::json!({
+            "documentId": id,
+            "page": page_num,
+            "totalPages": total_pages,
+            "llmActive": llm_active,
+            "phase": if llm_active { "llm" } else { "heuristic" },
+        }));
         // Save text to filesystem (backward compat)
         let text_path = text_dir.join(format!("{}_{}.txt", id, page_num));
         std::fs::write(&text_path, text)
@@ -137,7 +153,34 @@ pub async fn scan_document_text(
             .insert_document_page(&id, page_num as i32, text)
             .map_err(|e| format!("Failed to store page text: {}", e))?;
 
-        // Run PII pipeline
+        // Run PII pipeline (with optional LLM layer)
+        #[cfg(feature = "llm")]
+        let entities = {
+            let mut llm_guard = if state.llm_state.is_enabled() {
+                state.llm_state.touch(); // reset idle unload timer
+                state.llm_state.runtime.lock().ok()
+            } else {
+                None
+            };
+            let llm_runtime = llm_guard.as_mut().and_then(|g| g.as_mut());
+
+            // Build progress callback that emits Tauri events during LLM inference
+            let app_handle_clone = app_handle.clone();
+            let doc_id_clone = id.clone();
+            let page_idx = page_num;
+            let progress_cb: crate::llm::llm_scanner::ProgressFn = Box::new(move |tokens, phase| {
+                let _ = app_handle_clone.emit("llm-progress", serde_json::json!({
+                    "documentId": doc_id_clone,
+                    "page": page_idx,
+                    "tokensGenerated": tokens,
+                    "phase": phase,
+                }));
+            });
+            let on_progress = if llm_runtime.is_some() { Some(&progress_cb) } else { None };
+
+            pipeline::run_pipeline(text, page_num as u32, &jurisdictions, llm_runtime, on_progress)
+        };
+        #[cfg(not(feature = "llm"))]
         let entities = pipeline::run_pipeline(text, page_num as u32, &jurisdictions);
 
         // Build cleaned text by applying redactions
