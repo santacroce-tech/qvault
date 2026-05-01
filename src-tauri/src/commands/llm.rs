@@ -32,7 +32,7 @@ pub async fn llm_status(
         {
             let guard = llm.runtime.lock().unwrap();
             match guard.as_ref() {
-                Some(rt) => (true, model_manager::device_name(&rt.device).to_string()),
+                Some(rt) => (true, model_manager::device_name(rt).to_string()),
                 None => (false, "N/A".to_string()),
             }
         }

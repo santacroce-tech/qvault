@@ -34,16 +34,13 @@ chrono = { version = "0.4", features = ["serde"] }
 hex = "0.4"
 base64 = "0.22"
 tauri-plugin-opener = "2"
-candle-core = { version = "0.9", optional = true }
-candle-transformers = { version = "0.9", optional = true }
+ort = { version = "2.0.0-rc.10", default-features = false, features = ["std", "ndarray", "download-binaries", "tls-rustls"], optional = true }
+ndarray = { version = "0.17", optional = true }
 tokenizers = { version = "0.21", optional = true }
 hf-hub = { version = "0.4", optional = true }
-reqwest = { version = "0.12", features = ["stream"], optional = true }
-sha2 = { version = "0.10", optional = true }
-futures-util = { version = "0.3", optional = true }
 
 [features]
 default = ["llm"]
-llm = ["dep:candle-core", "dep:candle-transformers", "dep:tokenizers", "dep:hf-hub", "dep:reqwest", "dep:sha2", "dep:futures-util"]
-cuda = ["llm", "candle-core/cuda", "candle-transformers/cuda"]
-metal = ["llm", "candle-core/metal", "candle-transformers/metal"]
+llm = ["dep:ort", "dep:ndarray", "dep:tokenizers", "dep:hf-hub"]
+cuda = ["llm", "ort/cuda"]
+metal = ["llm", "ort/coreml"]

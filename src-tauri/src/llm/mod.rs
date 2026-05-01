@@ -20,12 +20,12 @@ pub struct LlmState {
     idle_timer_started: AtomicBool,
 }
 
-/// Loaded model + tokenizer, ready for inference.
+/// Loaded GLiNER ONNX session + tokenizer, ready for inference.
 #[cfg(feature = "llm")]
 pub struct LlmRuntime {
-    pub model: candle_transformers::models::quantized_qwen2::ModelWeights,
+    pub session: ort::session::Session,
     pub tokenizer: tokenizers::Tokenizer,
-    pub device: candle_core::Device,
+    pub device_label: &'static str,
 }
 
 impl LlmState {

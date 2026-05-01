@@ -1,34 +1,39 @@
 use std::path::{Path, PathBuf};
 
-// Qwen2.5-0.5B-Instruct GGUF (Q4_0 quantization, ~400MB)
+// GLiNER large v2.1 — ONNX-exported on Hugging Face Hub.
+// Span-based zero-shot NER, ~440M params (DeBERTa-v3-large backbone).
 #[cfg(feature = "llm")]
-const MODEL_REPO: &str = "Qwen/Qwen2.5-0.5B-Instruct-GGUF";
-const MODEL_FILENAME: &str = "qwen2.5-0.5b-instruct-q4_0.gguf";
-#[cfg(feature = "llm")]
-const TOKENIZER_REPO: &str = "Qwen/Qwen2.5-0.5B-Instruct";
+const MODEL_REPO: &str = "onnx-community/gliner_large-v2.1";
+const MODEL_FILENAME: &str = "onnx/model.onnx";
+const TOKENIZER_FILENAME: &str = "tokenizer.json";
+const CONFIG_FILENAME: &str = "gliner_config.json";
 
-/// Directory where models are cached.
+/// Local file names (flattened — we don't preserve the `onnx/` subdir).
+const LOCAL_MODEL_FILE: &str = "gliner_large_v2.1.onnx";
+const LOCAL_TOKENIZER_FILE: &str = "gliner_tokenizer.json";
+const LOCAL_CONFIG_FILE: &str = "gliner_config.json";
+
 pub fn model_dir(app_data: &Path) -> PathBuf {
     app_data.join("models")
 }
 
-/// Path to the downloaded GGUF model file.
 pub fn model_path(app_data: &Path) -> PathBuf {
-    model_dir(app_data).join(MODEL_FILENAME)
+    model_dir(app_data).join(LOCAL_MODEL_FILE)
 }
 
-/// Path to the downloaded tokenizer.json.
 pub fn tokenizer_path(app_data: &Path) -> PathBuf {
-    model_dir(app_data).join("tokenizer.json")
+    model_dir(app_data).join(LOCAL_TOKENIZER_FILE)
 }
 
-/// Check if the model and tokenizer are both present on disk.
+pub fn config_path(app_data: &Path) -> PathBuf {
+    model_dir(app_data).join(LOCAL_CONFIG_FILE)
+}
+
 pub fn is_model_available(app_data: &Path) -> bool {
     model_path(app_data).exists() && tokenizer_path(app_data).exists()
 }
 
-/// Download the model GGUF file and tokenizer from Hugging Face Hub.
-/// Updates `llm_state.download_progress` as download proceeds.
+/// Download the ONNX model, tokenizer, and config from Hugging Face Hub.
 #[cfg(feature = "llm")]
 pub fn download_model(
     app_data: &Path,
@@ -44,38 +49,34 @@ pub fn download_model(
     *llm_state.download_progress.lock().unwrap() = 0.0;
 
     let result = (|| -> Result<(), String> {
-        // Use hf-hub to download both files
         let api = hf_hub::api::sync::Api::new()
             .map_err(|e| format!("Failed to init HF API: {}", e))?;
+        let repo = api.model(MODEL_REPO.to_string());
 
-        // Download tokenizer
-        log::info!("Downloading tokenizer from {}", TOKENIZER_REPO);
-        *llm_state.download_progress.lock().unwrap() = 0.05;
-
-        let tokenizer_src = api
-            .model(TOKENIZER_REPO.to_string())
-            .get("tokenizer.json")
+        log::info!("Downloading GLiNER tokenizer from {}", MODEL_REPO);
+        *llm_state.download_progress.lock().unwrap() = 0.02;
+        let tok_src = repo
+            .get(TOKENIZER_FILENAME)
             .map_err(|e| format!("Failed to download tokenizer: {}", e))?;
-
-        std::fs::copy(&tokenizer_src, tokenizer_path(app_data))
+        std::fs::copy(&tok_src, tokenizer_path(app_data))
             .map_err(|e| format!("Failed to copy tokenizer: {}", e))?;
 
-        *llm_state.download_progress.lock().unwrap() = 0.1;
+        // Config is optional but helpful (max_width, label format, etc.).
+        *llm_state.download_progress.lock().unwrap() = 0.05;
+        if let Ok(cfg_src) = repo.get(CONFIG_FILENAME) {
+            let _ = std::fs::copy(&cfg_src, config_path(app_data));
+        }
 
-        // Download model GGUF
-        log::info!("Downloading model from {}/{}", MODEL_REPO, MODEL_FILENAME);
-
-        let model_src = api
-            .model(MODEL_REPO.to_string())
+        *llm_state.download_progress.lock().unwrap() = 0.10;
+        log::info!("Downloading GLiNER ONNX model (~440MB) from {}", MODEL_REPO);
+        let model_src = repo
             .get(MODEL_FILENAME)
             .map_err(|e| format!("Failed to download model: {}", e))?;
-
         std::fs::copy(&model_src, model_path(app_data))
             .map_err(|e| format!("Failed to copy model: {}", e))?;
 
         *llm_state.download_progress.lock().unwrap() = 1.0;
-        log::info!("Model download complete");
-
+        log::info!("GLiNER model download complete");
         Ok(())
     })();
 
@@ -83,79 +84,77 @@ pub fn download_model(
     result
 }
 
-/// Select the best available compute device: CUDA > Metal > CPU.
+/// Human-readable name of the active execution provider.
 #[cfg(feature = "llm")]
-fn best_device() -> candle_core::Device {
-    // Try CUDA first (NVIDIA GPU)
-    #[cfg(feature = "cuda")]
-    {
-        if let Ok(device) = candle_core::Device::new_cuda(0) {
-            log::info!("CUDA GPU detected, using GPU acceleration");
-            return device;
-        }
-    }
-
-    // Try Metal (Apple Silicon / macOS GPU)
-    #[cfg(feature = "metal")]
-    {
-        if let Ok(device) = candle_core::Device::new_metal(0) {
-            log::info!("Metal GPU detected, using GPU acceleration");
-            return device;
-        }
-    }
-
-    log::info!("No GPU available, using CPU");
-    candle_core::Device::Cpu
+pub fn device_name(rt: &super::LlmRuntime) -> &'static str {
+    rt.device_label
 }
 
-/// Return a human-readable string for the active device.
-#[cfg(feature = "llm")]
-pub fn device_name(device: &candle_core::Device) -> &'static str {
-    match device {
-        candle_core::Device::Cpu => "CPU",
-        candle_core::Device::Cuda(_) => "CUDA GPU",
-        candle_core::Device::Metal(_) => "Metal GPU",
-    }
-}
-
-/// Load the GGUF model and tokenizer into memory, returning an LlmRuntime.
+/// Load the ONNX model and tokenizer.
 #[cfg(feature = "llm")]
 pub fn load_model(app_data: &Path) -> Result<super::LlmRuntime, String> {
-    use candle_core::quantized::gguf_file;
-    use candle_transformers::models::quantized_qwen2::ModelWeights;
+    use ort::session::Session;
+    use ort::session::builder::GraphOptimizationLevel;
 
     let mpath = model_path(app_data);
     let tpath = tokenizer_path(app_data);
 
     if !mpath.exists() {
-        return Err("Model file not found. Please download it first.".to_string());
+        return Err("GLiNER model file not found. Please download it first.".to_string());
     }
     if !tpath.exists() {
         return Err("Tokenizer file not found. Please download it first.".to_string());
     }
 
-    log::info!("Loading model from {:?}", mpath);
-    let device = best_device();
-    log::info!("Using device: {:?}", device);
+    log::info!("Loading GLiNER ONNX session from {:?}", mpath);
 
-    let mut file = std::fs::File::open(&mpath)
-        .map_err(|e| format!("Failed to open model file: {}", e))?;
+    // Try GPU providers in order, fall back to CPU.
+    let device_label: &'static str = "CPU";
+    let builder = Session::builder()
+        .map_err(|e| format!("Failed to create ORT session builder: {}", e))?
+        .with_optimization_level(GraphOptimizationLevel::Level3)
+        .map_err(|e| format!("Failed to set opt level: {}", e))?;
 
-    let model_content = gguf_file::Content::read(&mut file)
-        .map_err(|e| format!("Failed to read GGUF: {}", e))?;
+    #[cfg(feature = "cuda")]
+    {
+        use ort::execution_providers::CUDAExecutionProvider;
+        if builder
+            .clone()
+            .with_execution_providers([CUDAExecutionProvider::default().build()])
+            .is_ok()
+        {
+            builder = builder
+                .with_execution_providers([CUDAExecutionProvider::default().build()])
+                .map_err(|e| format!("CUDA EP setup failed: {}", e))?;
+            device_label = "CUDA GPU";
+        }
+    }
+    #[cfg(feature = "metal")]
+    {
+        use ort::execution_providers::CoreMLExecutionProvider;
+        if let Ok(b) = builder
+            .clone()
+            .with_execution_providers([CoreMLExecutionProvider::default().build()])
+        {
+            builder = b;
+            device_label = "CoreML GPU";
+        }
+    }
 
-    let model = ModelWeights::from_gguf(model_content, &mut file, &device)
-        .map_err(|e| format!("Failed to load model weights: {}", e))?;
+    let mut builder = builder;
+    let session = builder
+        .commit_from_file(&mpath)
+        .map_err(|e| format!("Failed to load ONNX model: {}", e))?;
 
     log::info!("Loading tokenizer from {:?}", tpath);
     let tokenizer = tokenizers::Tokenizer::from_file(&tpath)
         .map_err(|e| format!("Failed to load tokenizer: {}", e))?;
 
-    log::info!("LLM model loaded successfully");
+    log::info!("GLiNER model loaded successfully on {}", device_label);
 
     Ok(super::LlmRuntime {
-        model,
+        session,
         tokenizer,
-        device,
+        device_label,
     })
 }
