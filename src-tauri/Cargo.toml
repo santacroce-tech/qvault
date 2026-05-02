@@ -5,7 +5,9 @@ description = "Detect and redact PII from documents"
 authors = ["Qvault"]
 license = "MIT"
 edition = "2021"
-rust-version = "1.77.2"
+# Bumped to 1.88 for ort-tract (pure-Rust ONNX backend, required for
+# x86_64-apple-darwin support since ort 2.0 dropped Intel Mac binaries).
+rust-version = "1.88"
 
 [lib]
 name = "app_lib"
@@ -34,13 +36,19 @@ chrono = { version = "0.4", features = ["serde"] }
 hex = "0.4"
 base64 = "0.22"
 tauri-plugin-opener = "2"
-ort = { version = "2.0.0-rc.10", default-features = false, features = ["std", "ndarray", "download-binaries", "tls-rustls"], optional = true }
+# ort + ort-tract: pure-Rust ONNX runtime, no native binary download.
+# Works on every target (incl. x86_64-apple-darwin). CPU-only.
+ort = { version = "=2.0.0-rc.12", default-features = false, features = ["std", "ndarray", "alternative-backend"], optional = true }
+ort-tract = { version = "0.3", optional = true }
 ndarray = { version = "0.17", optional = true }
 tokenizers = { version = "0.21", optional = true }
 hf-hub = { version = "0.4", optional = true }
 
 [features]
 default = ["llm"]
-llm = ["dep:ort", "dep:ndarray", "dep:tokenizers", "dep:hf-hub"]
-cuda = ["llm", "ort/cuda"]
-metal = ["llm", "ort/coreml"]
+llm = ["dep:ort", "dep:ort-tract", "dep:ndarray", "dep:tokenizers", "dep:hf-hub"]
+# NOTE: cuda/metal acceleration was dropped when we moved to the tract
+# backend (tract is CPU-only). Kept as aliases for `llm` so build scripts
+# that pass --features cuda|metal still work.
+cuda = ["llm"]
+metal = ["llm"]

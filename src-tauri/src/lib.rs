@@ -18,6 +18,12 @@ pub struct AppState {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Wire up the pure-Rust ONNX backend (tract). Must run before any
+    // ort::Session is constructed. CPU-only; works on every target
+    // including x86_64-apple-darwin where ort no longer ships prebuilts.
+    #[cfg(feature = "llm")]
+    ort::set_api(ort_tract::api());
+
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
