@@ -3,7 +3,11 @@ name: Build & Release
 on:
   push:
     tags:
-      - 'v*'
+      # Accept both `v0.2.3` and `0.2.3` style tags.
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+      - '[0-9]+.[0-9]+.[0-9]+*'
+  release:
+    types: [created]
   workflow_dispatch:
 
 # Cancel in-progress runs for the same ref
