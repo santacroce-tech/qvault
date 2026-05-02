@@ -22,9 +22,9 @@ jobs:
           - platform: macos-latest
             args: '--target aarch64-apple-darwin'
             label: macOS-ARM64
-          - platform: macos-latest
-            args: '--target x86_64-apple-darwin'
-            label: macOS-Intel
+          # Intel Mac (x86_64-apple-darwin) dropped: ort 2.0 (ONNX Runtime)
+          # no longer ships prebuilt binaries for that target. Apple's last
+          # Intel Mac shipped mid-2023; Apple Silicon covers everything since.
           - platform: ubuntu-22.04
             args: ''
             label: Linux
@@ -48,7 +48,7 @@ jobs:
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
