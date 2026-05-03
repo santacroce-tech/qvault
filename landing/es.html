@@ -773,16 +773,16 @@
         </a>
       </div>
       <div class="download-alt">
-        <a href="/releases/Qvault_0.2.0_aarch64.dmg" id="dl-mac" data-os="macos">macOS Apple Silicon (.dmg)</a>
-        <a href="/releases/Qvault_0.2.0_x64.dmg" id="dl-mac-intel" data-os="macos">macOS Intel (.dmg)</a>
-        <a href="/releases/Qvault_0.2.0_x64-setup.exe" id="dl-win" data-os="windows">Windows (.exe)</a>
-        <a href="/releases/Qvault_0.2.0_x64_en-US.msi" id="dl-win-msi" data-os="windows">Windows (.msi)</a>
-        <a href="/releases/Qvault_0.2.0_amd64.AppImage" id="dl-linux" data-os="linux">Linux (.AppImage)</a>
-        <a href="/releases/Qvault_0.2.0_amd64.deb" id="dl-linux-deb" data-os="linux">Linux (.deb)</a>
+        <a href="/releases/Qvault_0.2.2_aarch64.dmg" id="dl-mac" data-os="macos">macOS Apple Silicon (.dmg)</a>
+        <a href="/releases/Qvault_0.2.2_x64.dmg" id="dl-mac-intel" data-os="macos">macOS Intel (.dmg)</a>
+        <a href="/releases/Qvault_0.2.2_x64-setup.exe" id="dl-win" data-os="windows">Windows (.exe)</a>
+        <a href="/releases/Qvault_0.2.2_x64_en-US.msi" id="dl-win-msi" data-os="windows">Windows (.msi)</a>
+        <a href="/releases/Qvault_0.2.2_amd64.AppImage" id="dl-linux" data-os="linux">Linux (.AppImage)</a>
+        <a href="/releases/Qvault_0.2.2_amd64.deb" id="dl-linux-deb" data-os="linux">Linux (.deb)</a>
         <a href="#" id="dl-ios" data-os="ios">iOS (Proximamente)</a>
         <a href="#" id="dl-android" data-os="android">Android (Proximamente)</a>
       </div>
-      <p class="download-version">v0.2.0 &middot; Licencia MIT &middot; Gratuito y C&oacute;digo Abierto</p>
+      <p class="download-version">v0.2.2 &middot; Licencia MIT &middot; Gratuito y C&oacute;digo Abierto</p>
     </div>
   </section>
 
@@ -1153,7 +1153,7 @@
         const labels = { macos: 'Descargar para macOS', windows: 'Descargar para Windows', linux: 'Descargar para Linux', ios: 'Proximamente para iOS', android: 'Proximamente para Android' };
         const primary = document.getElementById('download-primary');
         const label = document.getElementById('download-label');
-                const hrefs = { macos: '/releases/Qvault_0.2.0_aarch64.dmg', windows: '/releases/Qvault_0.2.0_x64-setup.exe', linux: '/releases/Qvault_0.2.0_amd64.AppImage', ios: '#', android: '#' };
+                const hrefs = { macos: '/releases/Qvault_0.2.2_aarch64.dmg', windows: '/releases/Qvault_0.2.2_x64-setup.exe', linux: '/releases/Qvault_0.2.2_amd64.AppImage', ios: '#', android: '#' };
         if (primary && label) { label.textContent = labels[os]; primary.href = hrefs[os]; }
         const altId = os === 'macos' ? 'dl-mac' : os === 'windows' ? 'dl-win' : os === 'ios' ? 'dl-ios' : os === 'android' ? 'dl-android' : 'dl-linux';
         const altLink = document.getElementById(altId);
