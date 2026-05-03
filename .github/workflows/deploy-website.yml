@@ -3,8 +3,6 @@ name: Deploy Website
 on:
   push:
     branches: [main]
-    paths:
-      - 'landing/**'
   workflow_dispatch:
 
 concurrency:
