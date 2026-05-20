@@ -81,6 +81,22 @@ impl Database {
                 UNIQUE(document_id, page_number)
             );
 
+            CREATE TABLE IF NOT EXISTS annotations (
+                id TEXT PRIMARY KEY,
+                document_id TEXT REFERENCES documents(id),
+                page INTEGER NOT NULL,
+                kind TEXT NOT NULL,
+                x REAL NOT NULL,
+                y REAL NOT NULL,
+                width REAL NOT NULL,
+                height REAL NOT NULL,
+                content TEXT NOT NULL,
+                font_size REAL,
+                created_at TEXT NOT NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_annotations_document ON annotations(document_id);
+
             CREATE TABLE IF NOT EXISTS audit_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id TEXT,
@@ -477,8 +493,84 @@ impl Database {
         conn.execute("DELETE FROM entities WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM document_pages WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM redactions WHERE document_id = ?1", params![id])?;
+        conn.execute("DELETE FROM annotations WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM documents WHERE id = ?1", params![id])?;
         Ok(())
+    }
+
+    // ─── Annotations ───
+
+    pub fn insert_annotation(
+        &self,
+        id: &str,
+        document_id: &str,
+        page: i32,
+        kind: &str,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+        content: &str,
+        font_size: Option<f64>,
+    ) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        let now = chrono::Utc::now().to_rfc3339();
+        conn.execute(
+            "INSERT INTO annotations (id, document_id, page, kind, x, y, width, height, content, font_size, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+            params![id, document_id, page, kind, x, y, width, height, content, font_size, now],
+        )?;
+        Ok(())
+    }
+
+    pub fn update_annotation(
+        &self,
+        id: &str,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+        content: &str,
+        font_size: Option<f64>,
+    ) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "UPDATE annotations SET x = ?1, y = ?2, width = ?3, height = ?4, content = ?5, font_size = ?6 WHERE id = ?7",
+            params![x, y, width, height, content, font_size, id],
+        )?;
+        Ok(())
+    }
+
+    pub fn delete_annotation(&self, id: &str) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute("DELETE FROM annotations WHERE id = ?1", params![id])?;
+        Ok(())
+    }
+
+    pub fn get_annotations(&self, document_id: &str) -> Result<Vec<AnnotationRow>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, document_id, page, kind, x, y, width, height, content, font_size, created_at
+             FROM annotations WHERE document_id = ?1 ORDER BY page, created_at"
+        )?;
+
+        let rows = stmt.query_map(params![document_id], |row| {
+            Ok(AnnotationRow {
+                id: row.get(0)?,
+                document_id: row.get(1)?,
+                page: row.get(2)?,
+                kind: row.get(3)?,
+                x: row.get(4)?,
+                y: row.get(5)?,
+                width: row.get(6)?,
+                height: row.get(7)?,
+                content: row.get(8)?,
+                font_size: row.get(9)?,
+                created_at: row.get(10)?,
+            })
+        })?;
+
+        rows.collect()
     }
 
     // ─── Audit Log ───
@@ -548,6 +640,21 @@ pub struct EntitySummary {
     pub category: String,
     pub occurrence_count: i32,
     pub document_count: i32,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct AnnotationRow {
+    pub id: String,
+    pub document_id: String,
+    pub page: i32,
+    pub kind: String,
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+    pub content: String,
+    pub font_size: Option<f64>,
+    pub created_at: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]

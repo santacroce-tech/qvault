@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { exportClean, exportCleanFlat, openFile } from "../lib/tauri-commands";
 import type { RedactionRect, PageImageData } from "../lib/tauri-commands";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
+import type { UseAnnotationsReturn } from "../hooks/useAnnotations";
 import { PII_COLORS, piiCategoryLabel } from "../lib/types";
 import type { PiiCategory } from "../lib/types";
 
@@ -12,8 +13,11 @@ interface Props {
   getPdfRects: () => RedactionRect[];
   renderFlatPages: () => Promise<PageImageData[]>;
   advancedMode: boolean;
+  annotateMode: boolean;
   onToggleAdvanced: () => void;
+  onToggleAnnotate: () => void;
   redactionsHook: UseRedactionsReturn;
+  annotationsHook: UseAnnotationsReturn;
   onExportSuccess?: (outputPath: string) => void;
   /** When true, renders as a mobile slide-up bottom sheet */
   mobile?: boolean;
@@ -25,8 +29,11 @@ export default function RedactionSidebar({
   getPdfRects,
   renderFlatPages,
   advancedMode,
+  annotateMode,
   onToggleAdvanced,
+  onToggleAnnotate,
   redactionsHook,
+  annotationsHook,
   onExportSuccess,
   mobile,
 }: Props) {
@@ -85,22 +92,23 @@ export default function RedactionSidebar({
     setExportError(null);
     try {
       const rects = getPdfRects();
-      console.log("[Qvault] Exporting with", rects.length, "redaction rects, fileType:", fileType);
-      if (rects.length === 0) {
+      const hasAnnotations = annotationsHook.annotations.length > 0;
+      console.log("[Qvault] Exporting with", rects.length, "redaction rects,", annotationsHook.annotations.length, "annotations, fileType:", fileType);
+      if (rects.length === 0 && !hasAnnotations) {
         setExportError(t('sidebar.exportErrorNoApproved'));
         return;
       }
 
       let outputPath: string;
 
-      if (fileType === "docx") {
-        // DOCX: use structured export — replaces PII text directly in the DOCX XML
-        // Produces a clean .docx file preserving original formatting
+      if (fileType === "docx" && !hasAnnotations) {
+        // DOCX without annotations: structured export preserves the original
+        // .docx formatting by editing the XML directly.
         console.log("[Qvault] Exporting redacted DOCX...");
         outputPath = await exportClean(documentId, rects, "text_replace");
       } else {
-        // PDF: render pages to flattened images with redaction overlays baked in.
-        // This produces an image-based PDF with no copyable text layer.
+        // PDF, or DOCX with annotations: flatten pages to images and emit a PDF.
+        // Annotations and redactions are baked in pixel-perfect on the client.
         console.log("[Qvault] Rendering flattened pages...");
         const pageImages = await renderFlatPages();
         outputPath = await exportCleanFlat(documentId, pageImages);
@@ -154,16 +162,35 @@ export default function RedactionSidebar({
           </div>
         )}
 
-        <button
-          onClick={onToggleAdvanced}
-          className={`mt-2 w-full px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-            advancedMode
-              ? "bg-purple-50 border-purple-300 text-purple-700"
-              : "border-gray-200 text-gray-600 hover:bg-gray-50"
-          }`}
-        >
-          {advancedMode ? t('sidebar.exitAdvanced') : t('sidebar.enterAdvanced')}
-        </button>
+        <div className="mt-2 flex gap-2">
+          <button
+            onClick={onToggleAdvanced}
+            className={`flex-1 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+              advancedMode
+                ? "bg-purple-50 border-purple-300 text-purple-700"
+                : "border-gray-200 text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            {advancedMode ? t('sidebar.exitAdvanced') : t('sidebar.enterAdvanced')}
+          </button>
+          <button
+            onClick={onToggleAnnotate}
+            className={`flex-1 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+              annotateMode
+                ? "bg-blue-50 border-blue-300 text-blue-700"
+                : "border-gray-200 text-gray-600 hover:bg-gray-50"
+            }`}
+            title={t('sidebar.annotateHint', 'Add text and signatures')}
+          >
+            {annotateMode ? t('sidebar.exitAnnotate', 'Exit Annotate') : t('sidebar.enterAnnotate', 'Annotate')}
+          </button>
+        </div>
+
+        {annotationsHook.annotations.length > 0 && (
+          <div className="mt-2 text-xs text-gray-500">
+            {t('sidebar.annotationsCount', { count: annotationsHook.annotations.length, defaultValue: '{{count}} annotation(s)' })}
+          </div>
+        )}
       </div>
 
       {/* Redaction List */}

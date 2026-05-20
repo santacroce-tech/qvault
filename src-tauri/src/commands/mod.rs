@@ -1,4 +1,5 @@
 pub mod document;
+pub mod annotations;
 pub mod redaction;
 pub mod history;
 pub mod settings;

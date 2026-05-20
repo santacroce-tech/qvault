@@ -8,6 +8,7 @@ import EntityDatabaseView from "./components/EntityDatabaseView";
 import Settings from "./components/Settings";
 import type { RedactionRect, PageImageData } from "./lib/tauri-commands";
 import { useRedactions } from "./hooks/useRedactions";
+import { useAnnotations } from "./hooks/useAnnotations";
 
 type View = "upload" | "review" | "history" | "entities" | "settings";
 
@@ -36,10 +37,12 @@ function App() {
   const pdfRectsRef = useRef<GetPdfRectsForExport>(() => []);
   const flatPagesRef = useRef<RenderFlatPages>(async () => []);
   const [advancedMode, setAdvancedMode] = useState(false);
+  const [annotateMode, setAnnotateMode] = useState(false);
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
   // Shared redactions state — both DocumentViewer and RedactionSidebar use this
   const redactionsHook = useRedactions(activeDocumentId);
+  const annotationsHook = useAnnotations(activeDocumentId);
 
   const handleDocumentReady = (docId: string, fileType?: string) => {
     setActiveDocumentId(docId);
@@ -152,7 +155,9 @@ function App() {
                 onRectsReady={(getter) => { pdfRectsRef.current = getter; }}
                 onFlatPagesReady={(renderer) => { flatPagesRef.current = renderer; }}
                 advancedMode={advancedMode}
+                annotateMode={annotateMode}
                 redactionsHook={redactionsHook}
+                annotationsHook={annotationsHook}
               />
             </div>
             <div className="hidden md:block w-96 border-l border-gray-200 overflow-auto">
@@ -162,8 +167,11 @@ function App() {
                 getPdfRects={() => pdfRectsRef.current()}
                 renderFlatPages={() => flatPagesRef.current()}
                 advancedMode={advancedMode}
+                annotateMode={annotateMode}
                 onToggleAdvanced={() => setAdvancedMode((v) => !v)}
+                onToggleAnnotate={() => setAnnotateMode((v) => !v)}
                 redactionsHook={redactionsHook}
+                annotationsHook={annotationsHook}
                 onExportSuccess={handleExportSuccess}
               />
             </div>
@@ -175,8 +183,11 @@ function App() {
                 getPdfRects={() => pdfRectsRef.current()}
                 renderFlatPages={() => flatPagesRef.current()}
                 advancedMode={advancedMode}
+                annotateMode={annotateMode}
                 onToggleAdvanced={() => setAdvancedMode((v) => !v)}
+                onToggleAnnotate={() => setAnnotateMode((v) => !v)}
                 redactionsHook={redactionsHook}
+                annotationsHook={annotationsHook}
                 onExportSuccess={handleExportSuccess}
                 mobile
               />

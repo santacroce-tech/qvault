@@ -55,6 +55,24 @@ export interface Redaction {
   reviewed_at: string | null;
 }
 
+export type AnnotationKind = "text" | "signature";
+
+export interface Annotation {
+  id: string;
+  document_id: string;
+  page: number;
+  kind: AnnotationKind;
+  /** Coordinates are in page-logical units: PDF points for PDFs, DocxPage logical pixels for DOCX. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** For "text": the string to render. For "signature": a base64 PNG data URL. */
+  content: string;
+  font_size: number | null;
+  created_at: string;
+}
+
 export interface EntityRow {
   id: string;
   document_id: string;

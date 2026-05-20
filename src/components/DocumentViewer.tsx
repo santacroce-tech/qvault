@@ -5,6 +5,9 @@ import * as pdfjsLib from "pdfjs-dist";
 import type { PDFDocumentProxy, TextItem } from "pdfjs-dist/types/src/display/api";
 import { useDocument } from "../hooks/useDocument";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
+import type { UseAnnotationsReturn } from "../hooks/useAnnotations";
+import AnnotationLayer from "./AnnotationLayer";
+import SignaturePad from "./SignaturePad";
 import { getDocumentBytes, extractDocxText, scanDocumentText, addManualRedaction } from "../lib/tauri-commands";
 import type { RedactionRect } from "../lib/tauri-commands";
 import { PII_COLORS } from "../lib/types";
@@ -20,7 +23,9 @@ interface Props {
   onRectsReady: (getter: GetPdfRectsForExport) => void;
   onFlatPagesReady: (renderer: RenderFlatPages) => void;
   advancedMode: boolean;
+  annotateMode: boolean;
   redactionsHook: UseRedactionsReturn;
+  annotationsHook: UseAnnotationsReturn;
 }
 
 interface TextSpan {
@@ -81,10 +86,12 @@ interface PageData {
   scale: number;
 }
 
-export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesReady, advancedMode, redactionsHook }: Props) {
+export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesReady, advancedMode, annotateMode, redactionsHook, annotationsHook }: Props) {
   const { t } = useTranslation();
   const { document: doc, loading: docLoading, error, loadDocument } = useDocument();
   const { redactions, selectedId, setSelectedId, reload: reloadRedactions } = redactionsHook;
+  const { annotations } = annotationsHook;
+  const [pendingSignature, setPendingSignature] = useState<{ page: number; x: number; y: number } | null>(null);
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pageData, setPageData] = useState<PageData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -336,9 +343,10 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
     });
   }, [pageData, redactions, onRectsReady]);
 
-  // Expose flat page renderer: renders each page to canvas with redaction overlays baked in
+  // Expose flat page renderer: renders each page to canvas with redaction + annotation overlays baked in.
+  // Works for PDFs (renders the original page) and DOCX (renders the text-span layout we computed).
   useEffect(() => {
-    if (!pdfDoc || pageData.length === 0) return;
+    if (pageData.length === 0) return;
 
     onFlatPagesReady(async (): Promise<PageImageData[]> => {
       const renderScale = 2.0; // 2x for high quality
@@ -346,20 +354,60 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
       const mode = localStorage.getItem("qvault_redaction_style") || "black_bar";
       const results: PageImageData[] = [];
 
+      // Preload signature images
+      const sigImages = new Map<string, HTMLImageElement>();
+      const sigAnns = annotations.filter((a) => a.kind === "signature");
+      await Promise.all(
+        sigAnns.map(
+          (a) =>
+            new Promise<void>((resolve) => {
+              const img = new Image();
+              img.onload = () => {
+                sigImages.set(a.id, img);
+                resolve();
+              };
+              img.onerror = () => resolve();
+              img.src = a.content;
+            })
+        )
+      );
+
       for (let pageIdx = 0; pageIdx < pageData.length; pageIdx++) {
         const pd = pageData[pageIdx];
-        const page = await pdfDoc.getPage(pd.pageNum);
-        const viewport = page.getViewport({ scale: renderScale });
 
-        // Render PDF page to offscreen canvas
         const canvas = document.createElement("canvas");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
         const ctx = canvas.getContext("2d")!;
+        let pageWidthPts: number;
+        let pageHeightPts: number;
 
-        await page.render({ canvasContext: ctx, viewport }).promise;
+        if (pdfDoc) {
+          const page = await pdfDoc.getPage(pd.pageNum);
+          const viewport = page.getViewport({ scale: renderScale });
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          const orig = page.getViewport({ scale: 1.0 });
+          pageWidthPts = orig.width;
+          pageHeightPts = orig.height;
+        } else {
+          // DOCX: draw a white page with the text spans we laid out.
+          canvas.width = pd.width * renderScale;
+          canvas.height = pd.height * renderScale;
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#111827";
+          const fontPx = 13 * renderScale;
+          ctx.font = `${fontPx}px Georgia, "Times New Roman", serif`;
+          ctx.textBaseline = "top";
+          for (const span of pd.textSpans) {
+            ctx.fillText(span.text, span.x * renderScale, span.y * renderScale);
+          }
+          // Convert from 96dpi logical pixels to 72dpi PDF points.
+          pageWidthPts = pd.width * 72 / 96;
+          pageHeightPts = pd.height * 72 / 96;
+        }
 
-        // Draw redaction overlays on top
+        // Draw redaction overlays
         const pageRedactions = approved.filter((r) => r.page === pageIdx);
         const mapped = mapRedactionsToRects(pd.textSpans, pageRedactions);
         const scaleFactor = renderScale / pd.scale;
@@ -372,7 +420,6 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
             const rh = rect.height * scaleFactor;
 
             if (mode === "text_replace") {
-              // White rectangle + gray label
               ctx.fillStyle = "#ffffff";
               ctx.fillRect(rx, ry, rw, rh);
               ctx.fillStyle = "#666666";
@@ -381,14 +428,64 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
               ctx.font = `${fontSize}px Helvetica, Arial, sans-serif`;
               ctx.fillText(label, rx + 1, ry + rh - 2, rw);
             } else {
-              // Solid black bar
               ctx.fillStyle = "#000000";
               ctx.fillRect(rx, ry, rw, rh);
             }
           }
         }
 
-        // Export as JPEG
+        // Draw annotations on top. Stored coords are in page-logical units:
+        // - PDF: viewport pixels at pd.scale (same as the display layer)
+        // - DOCX: logical pixels at scale 1.0
+        // In both cases, the conversion to render-canvas pixels is renderScale / pd.scale.
+        const annScale = renderScale / pd.scale;
+        const pageAnns = annotations.filter((a) => a.page === pageIdx);
+        for (const ann of pageAnns) {
+          const ax = ann.x * annScale;
+          const ay = ann.y * annScale;
+          const aw = ann.width * annScale;
+          const ah = ann.height * annScale;
+
+          if (ann.kind === "text") {
+            if (!ann.content) continue;
+            const fontPx = (ann.font_size ?? 14) * annScale;
+            ctx.fillStyle = "#111827";
+            ctx.font = `${fontPx}px Helvetica, Arial, sans-serif`;
+            ctx.textBaseline = "top";
+            // Wrap text within the box width
+            const lineHeight = fontPx * 1.2;
+            const words = ann.content.split(/(\s+)/);
+            let line = "";
+            let yCursor = ay;
+            for (const w of words) {
+              const test = line + w;
+              if (ctx.measureText(test).width > aw && line.length > 0) {
+                ctx.fillText(line, ax, yCursor);
+                line = w.trimStart();
+                yCursor += lineHeight;
+                if (yCursor + lineHeight > ay + ah + lineHeight) break;
+              } else {
+                line = test;
+              }
+              // Handle explicit newlines
+              if (w.includes("\n")) {
+                const parts = line.split("\n");
+                for (let i = 0; i < parts.length - 1; i++) {
+                  ctx.fillText(parts[i], ax, yCursor);
+                  yCursor += lineHeight;
+                }
+                line = parts[parts.length - 1];
+              }
+            }
+            if (line) ctx.fillText(line, ax, yCursor);
+          } else if (ann.kind === "signature") {
+            const img = sigImages.get(ann.id);
+            if (img) {
+              ctx.drawImage(img, ax, ay, aw, ah);
+            }
+          }
+        }
+
         const blob = await new Promise<Blob>((resolve) =>
           canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92)
         );
@@ -400,21 +497,18 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
         }
         const jpegBase64 = btoa(binary);
 
-        // Get original page dimensions in PDF points
-        const origViewport = page.getViewport({ scale: 1.0 });
-
         results.push({
           jpegBase64,
           width: canvas.width,
           height: canvas.height,
-          pageWidth: origViewport.width,
-          pageHeight: origViewport.height,
+          pageWidth: pageWidthPts,
+          pageHeight: pageHeightPts,
         });
       }
 
       return results;
     });
-  }, [pdfDoc, pageData, redactions, onFlatPagesReady]);
+  }, [pdfDoc, pageData, redactions, annotations, onFlatPagesReady]);
 
   // Handle manual redaction from text selection
   const handleManualRedaction = useCallback(
@@ -523,6 +617,10 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
               onSelectRedaction={setSelectedId}
               advancedMode={advancedMode}
               onManualRedaction={handleManualRedaction}
+              annotateMode={annotateMode}
+              annotationsHook={annotationsHook}
+              annotations={annotations}
+              onRequestSignature={(p, x, y) => setPendingSignature({ page: p, x, y })}
             />
           ) : (
             <PdfPage
@@ -536,10 +634,37 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
               onSelectRedaction={setSelectedId}
               advancedMode={advancedMode}
               onManualRedaction={handleManualRedaction}
+              annotateMode={annotateMode}
+              annotationsHook={annotationsHook}
+              annotations={annotations}
+              onRequestSignature={(p, x, y) => setPendingSignature({ page: p, x, y })}
             />
           )
         )}
       </div>
+
+      {pendingSignature && (
+        <SignaturePad
+          onCancel={() => setPendingSignature(null)}
+          onSave={(dataUrl, w, h) => {
+            const pd = pageData[pendingSignature.page];
+            // Cap width to 200 logical units; keep aspect ratio
+            const targetW = Math.min(200, pd ? pd.width / 3 : 200);
+            const aspect = h > 0 ? w / h : 4;
+            const targetH = targetW / aspect;
+            annotationsHook.addAnnotation(
+              pendingSignature.page,
+              "signature",
+              pendingSignature.x,
+              pendingSignature.y,
+              targetW,
+              targetH,
+              dataUrl,
+            );
+            setPendingSignature(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -553,6 +678,10 @@ function DocxPage({
   onSelectRedaction,
   advancedMode,
   onManualRedaction,
+  annotateMode,
+  annotationsHook,
+  annotations,
+  onRequestSignature,
 }: {
   pageData: PageData;
   pageIdx: number;
@@ -561,6 +690,10 @@ function DocxPage({
   onSelectRedaction: (id: string) => void;
   advancedMode: boolean;
   onManualRedaction: (pageIdx: number, text: string) => void;
+  annotateMode: boolean;
+  annotationsHook: UseAnnotationsReturn;
+  annotations: import("../lib/types").Annotation[];
+  onRequestSignature: (page: number, x: number, y: number) => void;
 }) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -678,6 +811,16 @@ function DocxPage({
           </button>
         </div>
       )}
+
+      {/* Annotation layer (DOCX uses logical scale 1.0) */}
+      <AnnotationLayer
+        pageIdx={pageIdx}
+        scale={1.0}
+        active={annotateMode}
+        annotations={annotations}
+        hook={annotationsHook}
+        onRequestSignature={onRequestSignature}
+      />
     </div>
   );
 }
@@ -693,6 +836,10 @@ function PdfPage({
   onSelectRedaction,
   advancedMode,
   onManualRedaction,
+  annotateMode,
+  annotationsHook,
+  annotations,
+  onRequestSignature,
 }: {
   pageNum: number;
   pdfDoc: PDFDocumentProxy;
@@ -703,6 +850,10 @@ function PdfPage({
   onSelectRedaction: (id: string) => void;
   advancedMode: boolean;
   onManualRedaction: (pageIdx: number, text: string) => void;
+  annotateMode: boolean;
+  annotationsHook: UseAnnotationsReturn;
+  annotations: import("../lib/types").Annotation[];
+  onRequestSignature: (page: number, x: number, y: number) => void;
 }) {
   const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -879,6 +1030,16 @@ function PdfPage({
       <div className="absolute bottom-2 right-3 text-xs text-gray-400 bg-white/80 px-1.5 py-0.5 rounded">
         {t('viewer.page', { number: pageNum })}
       </div>
+
+      {/* Annotation layer — stored coords are in pd-scale viewport pixels (== PDF points * pd.scale) */}
+      <AnnotationLayer
+        pageIdx={pageIdx}
+        scale={1.0}
+        active={annotateMode}
+        annotations={annotations}
+        hook={annotationsHook}
+        onRequestSignature={onRequestSignature}
+      />
     </div>
   );
 }

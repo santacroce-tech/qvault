@@ -5,6 +5,8 @@ import type {
   EntityRow,
   EntitySummary,
   DocumentPage,
+  Annotation,
+  AnnotationKind,
 } from "./types";
 
 // Documents
@@ -130,6 +132,59 @@ export async function bulkApprove(
   category?: string
 ): Promise<void> {
   return invoke("bulk_approve", { documentId, category });
+}
+
+// Annotations
+export async function getAnnotations(documentId: string): Promise<Annotation[]> {
+  return invoke("get_annotations", { documentId });
+}
+
+export async function addAnnotation(
+  documentId: string,
+  page: number,
+  kind: AnnotationKind,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  content: string,
+  fontSize?: number,
+): Promise<string> {
+  return invoke("add_annotation", {
+    documentId,
+    page,
+    kind,
+    x,
+    y,
+    width,
+    height,
+    content,
+    fontSize: fontSize ?? null,
+  });
+}
+
+export async function updateAnnotation(
+  id: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  content: string,
+  fontSize?: number,
+): Promise<void> {
+  return invoke("update_annotation", {
+    id,
+    x,
+    y,
+    width,
+    height,
+    content,
+    fontSize: fontSize ?? null,
+  });
+}
+
+export async function deleteAnnotation(id: string): Promise<void> {
+  return invoke("delete_annotation", { id });
 }
 
 // LLM

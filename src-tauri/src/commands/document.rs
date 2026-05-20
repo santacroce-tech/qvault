@@ -592,6 +592,7 @@ pub async fn reset_app_data(
             DELETE FROM entities;
             DELETE FROM document_pages;
             DELETE FROM redactions;
+            DELETE FROM annotations;
             DELETE FROM documents;
             DELETE FROM audit_log;
         ")
