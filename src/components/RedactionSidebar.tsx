@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { exportRedactedDocx, exportRedactedPdf, openFile } from "../lib/tauri-commands";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
@@ -39,6 +39,28 @@ export default function RedactionSidebar({
   } = redactionsHook;
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  // Pages that need OCR but were not scanned: export waits for the user to
+  // confirm (the backend refuses without that acknowledgement).
+  const [unscannedWarning, setUnscannedWarning] = useState<{ pages: number[]; message: string } | null>(null);
+  const [verifyProgress, setVerifyProgress] = useState<{ done: number; total: number } | null>(null);
+
+  useEffect(() => {
+    setUnscannedWarning(null);
+    let unlisten: (() => void) | undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { listen } = await import("@tauri-apps/api/event");
+        const u = await listen<{ documentId: string; done: number; total: number }>("export-progress", (e) => {
+          if (e.payload.documentId === documentId) setVerifyProgress({ done: e.payload.done, total: e.payload.total });
+        });
+        if (cancelled) u(); else unlisten = u;
+      } catch {
+        // Not running inside Tauri (browser preview).
+      }
+    })();
+    return () => { cancelled = true; unlisten?.(); };
+  }, [documentId]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
 
@@ -78,9 +100,11 @@ export default function RedactionSidebar({
   const pendingCount = redactions.filter((r) => r.status === "pending").length;
   const approvedCount = redactions.filter((r) => r.status === "approved").length;
 
-  const handleExport = async () => {
+  const handleExport = async (acknowledgeUnscanned = false) => {
     setExporting(true);
     setExportError(null);
+    setUnscannedWarning(null);
+    setVerifyProgress(null);
     try {
       if (approvedCount === 0) {
         setExportError(t('sidebar.exportErrorNoApproved'));
@@ -99,7 +123,7 @@ export default function RedactionSidebar({
         // strips metadata and refuses if anything approved would survive.
         const pages = await renderRedactedPages();
         console.log("[Qvault] Exporting redacted PDF:", pages.length, "page(s) rasterized");
-        outputPath = await exportRedactedPdf(documentId, pages);
+        outputPath = await exportRedactedPdf(documentId, pages, acknowledgeUnscanned);
       }
 
       console.log("[Qvault] Exported to:", outputPath);
@@ -108,10 +132,18 @@ export default function RedactionSidebar({
         console.error("Failed to open exported file:", e)
       );
     } catch (e) {
-      console.error("Export failed:", e);
-      setExportError(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      const m = /^OCR_UNSCANNED:([\d,]*)\|/.exec(msg);
+      if (m) {
+        const pages = m[1].split(",").filter(Boolean).map((p) => Number(p) + 1);
+        setUnscannedWarning({ pages, message: msg.slice(m[0].length) });
+      } else {
+        console.error("Export failed:", e);
+        setExportError(msg);
+      }
     } finally {
       setExporting(false);
+      setVerifyProgress(null);
     }
   };
 
@@ -136,13 +168,42 @@ export default function RedactionSidebar({
             {t('sidebar.approveAll')}
           </button>
           <button
-            onClick={handleExport}
+            onClick={() => handleExport(false)}
             disabled={exporting || approvedCount === 0}
             className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {exporting ? t('sidebar.exporting') : t('sidebar.exportClean')}
           </button>
         </div>
+
+        {exporting && verifyProgress && verifyProgress.done < verifyProgress.total && (
+          <p className="mt-2 text-xs text-gray-500">
+            {t('sidebar.verifyingOcr', { current: verifyProgress.done + 1, total: verifyProgress.total })}
+          </p>
+        )}
+
+        {unscannedWarning && (
+          <div className="mt-2 p-2 bg-amber-50 border border-amber-300 rounded text-amber-900 text-xs space-y-2" role="alert">
+            <p className="font-medium">
+              {t('sidebar.unscannedTitle', { count: unscannedWarning.pages.length, pages: unscannedWarning.pages.join(", ") })}
+            </p>
+            <p>{t('sidebar.unscannedBody')}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleExport(true)}
+                className="px-2 py-1 bg-amber-600 text-white rounded hover:bg-amber-700"
+              >
+                {t('sidebar.unscannedExportAnyway')}
+              </button>
+              <button
+                onClick={() => setUnscannedWarning(null)}
+                className="px-2 py-1 border border-amber-300 rounded hover:bg-amber-100"
+              >
+                {t('sidebar.unscannedCancel')}
+              </button>
+            </div>
+          </div>
+        )}
 
         {exportError && (
           <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs">

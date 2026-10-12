@@ -10,8 +10,8 @@
     "title": "Qvault",
     "subtitle": "Detect and redact PII from your documents. Everything stays on your computer.",
     "processing": "Processing document...",
-    "dropPrompt": "Drop a PDF or DOCX here, or click to browse",
-    "supportedFormats": "Supported: PDF (text-based), DOCX"
+    "dropPrompt": "Drop a PDF, DOCX or scanned image here, or click to browse",
+    "supportedFormats": "Supported: PDF, DOCX, PNG, JPEG, TIFF (scans are read with on-device OCR)"
   },
   "viewer": {
     "loading": "Loading document...",
@@ -25,7 +25,25 @@
     "noDocument": "No document selected. Upload a document first.",
     "aiLoading": "loading AI model",
     "layer3Skipped": "AI detection (Layer 3) was skipped: {{reason}}. Results come from Layers 1–2 only.",
-    "layer3Partial": "AI detection (Layer 3) did not cover the whole document: {{reason}}. Review carefully."
+    "layer3Partial": "AI detection (Layer 3) did not cover the whole document: {{reason}}. Review carefully.",
+    "ocrProgress": "Reading scanned page {{page}} with OCR ({{current}}/{{total}})…",
+    "ocrCancel": "Cancel OCR",
+    "ocrCancelling": "Cancelling…",
+    "ocrUnscannedTitle": "Page {{pages}} was not scanned for personal data.",
+    "ocrUnscannedTitle_other": "Pages {{pages}} were not scanned for personal data.",
+    "ocrModelsMissing": "These pages are images and need OCR, but the OCR models are not installed. Import them in Settings → AI Detection, then open the document again. Until then, check these pages yourself — nothing on them is detected or redacted automatically.",
+    "ocrNotBundled": "These pages are images and need OCR, but this build does not include the AI engine. Check these pages yourself — nothing on them is detected or redacted automatically.",
+    "ocrUnsupported": "These pages are images and need OCR, which is not available on this device. Check these pages yourself — nothing on them is detected or redacted automatically.",
+    "ocrEngineUnavailable": "These pages are images and need OCR, but the AI engine is not available right now (see Settings). Check these pages yourself — nothing on them is detected or redacted automatically.",
+    "ocrCancelledDetail": "OCR was cancelled. Open the document again to scan these pages, or check them yourself.",
+    "ocrFailedDetail": "OCR failed on these pages. Open the document again to retry, or check them yourself.",
+    "pageNotScannedUnavailable": "Not scanned for PII — OCR unavailable",
+    "pageNotScannedCancelled": "Not scanned for PII — OCR cancelled",
+    "pageNotScannedFailed": "Not scanned for PII — OCR failed",
+    "pageOcrRunning": "Reading text (OCR)…",
+    "pageOcrPending": "Waiting for OCR",
+    "pageOcrDone": "OCR · {{dpi}} DPI",
+    "pageOcrDoneTitle": "This page is an image; its text was read with on-device OCR. Highlights are approximate to the word."
   },
   "sidebar": {
     "title": "Redactions",
@@ -42,7 +60,13 @@
     "reject": "Reject",
     "editReplacement": "Edit replacement",
     "approveCount": "Approve {{count}}",
-    "exportErrorNoApproved": "No approved redactions to export. Approve at least one redaction first."
+    "exportErrorNoApproved": "No approved redactions to export. Approve at least one redaction first.",
+    "verifyingOcr": "Checking redacted scanned page {{current}}/{{total}} with OCR…",
+    "unscannedTitle": "Page {{pages}} was not scanned for personal data.",
+    "unscannedTitle_other": "Pages {{pages}} were not scanned for personal data.",
+    "unscannedBody": "They are images and OCR did not run on them, so anything on them will be exported exactly as it is. Export anyway?",
+    "unscannedExportAnyway": "Export anyway",
+    "unscannedCancel": "Cancel"
   },
   "history": {
     "title": "Document History",
@@ -152,7 +176,7 @@
     "layer3Review": "AI findings are added with 70% confidence and always wait for your review — nothing is applied automatically.",
     "detectionModels": "Detection models (Layer 3)",
     "ocrModels": "OCR models",
-    "ocrModelsDesc": "For scanned documents (coming in a later update). Import these files if you have them.",
+    "ocrModelsDesc": "Read scanned PDFs and images (PNG, JPEG, TIFF). Import these two files to enable OCR.",
     "recommended": "Recommended",
     "download": "Download ({{size}})",
     "downloadTitle": "Download AI model",
@@ -181,6 +205,13 @@
       "likely-too-large": "Likely too large for this computer",
       "unknown": "Fit unknown",
       "notChecked": "Fit not checked yet"
-    }
+    },
+    "ocrReady": "OCR is ready: scanned pages are read on this computer.",
+    "ocrNoEngine": "OCR is not available: this build does not include the AI engine.",
+    "ocrNotInstalled": "OCR models are not installed: scanned pages will be flagged as not scanned for PII. Use “Import from file” to add both files.",
+    "ocrEngineUnavailable": "OCR models are installed, but the AI engine is not available right now.",
+    "ocrDpi": "OCR resolution",
+    "ocrDpiDefault": "{{dpi}} DPI (recommended)",
+    "ocrDpiHelp": "Pages are rendered at this resolution for OCR. 200 DPI gave the best results on our tests; try 300–400 for very small print."
   }
 }

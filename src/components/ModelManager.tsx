@@ -9,6 +9,7 @@ import {
   deleteModel,
   setLayer3,
   runAiSelfTest,
+  setOcrDpi,
   type AiCapabilities,
   type ModelInfo,
   type SelfTestReport,
@@ -102,6 +103,8 @@ export default function ModelManager() {
       setProgress((p) => ({ ...p, [m.id]: { received: 0, total: m.size } }));
       await downloadModel(m.id);
     });
+
+  const handleOcrDpi = (dpi: number) => run("ocr-dpi", async () => { await setOcrDpi(dpi); });
 
   const handleCancel = (m: ModelInfo) => run(`cancel-${m.id}`, async () => { await cancelModelDownload(m.id); });
 
@@ -305,7 +308,35 @@ export default function ModelManager() {
       <div>
         <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("ai.ocrModels")}</h4>
         <p className="text-xs text-gray-500 mt-1">{t("ai.ocrModelsDesc")}</p>
+        <p
+          className={`text-xs mt-1 ${caps.ocrAvailable ? "text-green-700" : "text-amber-700"}`}
+          role="status"
+        >
+          {caps.ocrAvailable
+            ? t("ai.ocrReady")
+            : !caps.sidecarBundled
+            ? t("ai.ocrNoEngine")
+            : !caps.ocrInstalled
+            ? t("ai.ocrNotInstalled")
+            : t("ai.ocrEngineUnavailable")}
+        </p>
         <ul>{ocr.map(renderModel)}</ul>
+        <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
+          <span>{t("ai.ocrDpi")}</span>
+          <select
+            value={caps.ocrDpi}
+            onChange={(e) => handleOcrDpi(Number(e.target.value))}
+            disabled={busy !== null}
+            className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {[200, 300, 400].map((d) => (
+              <option key={d} value={d}>
+                {d === 200 ? t("ai.ocrDpiDefault", { dpi: d }) : `${d} DPI`}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="text-xs text-gray-500 mt-1">{t("ai.ocrDpiHelp")}</p>
       </div>
 
       <div className="flex flex-wrap gap-2">

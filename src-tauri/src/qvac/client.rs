@@ -105,6 +105,13 @@ impl std::error::Error for QvacError {}
 #[derive(Debug, Clone, Default)]
 pub struct CancelToken(Arc<AtomicBool>);
 
+impl From<Arc<AtomicBool>> for CancelToken {
+    /// Share an existing flag (e.g. a per-document OCR run's cancel flag).
+    fn from(flag: Arc<AtomicBool>) -> Self {
+        CancelToken(flag)
+    }
+}
+
 impl CancelToken {
     pub fn new() -> Self {
         Self::default()

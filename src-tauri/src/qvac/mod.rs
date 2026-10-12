@@ -77,6 +77,9 @@ impl SidecarPaths {
 pub struct AiSettings {
     pub layer3_enabled: bool,
     pub layer3_model: Option<String>,
+    /// OCR rasterisation resolution; `None` = [`crate::ocr::DEFAULT_OCR_DPI`].
+    #[serde(default)]
+    pub ocr_dpi: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -126,6 +129,9 @@ pub struct Capabilities {
     pub sidecar_version: Option<String>,
     pub unavailable_reason: Option<String>,
     pub ocr_installed: bool,
+    /// OCR can run now: sidecar bundled and not given up on, models installed.
+    pub ocr_available: bool,
+    pub ocr_dpi: u32,
     pub layer3_enabled: bool,
     pub layer3_model: Option<String>,
     pub layer3_ready: bool,
@@ -162,6 +168,9 @@ pub struct QvacService {
     last_used: AtomicU64,
     active: AtomicUsize,
     reaper_started: AtomicBool,
+    /// One OCR request at a time: results of concurrent requests on one OCR
+    /// model must never be able to cross (see `discard_engine_after_abandoned_ocr`).
+    ocr_lock: Mutex<()>,
 }
 
 fn now_secs() -> u64 {
@@ -181,6 +190,8 @@ impl QvacService {
         if sidecar.is_none() {
             log::warn!("qvac: sidecar not bundled; AI features (Layer 3, OCR) are unavailable");
         }
+        // Page images from an earlier session that ended abruptly.
+        let _ = std::fs::remove_dir_all(app_data.join("qvac-cache").join("pages"));
         Self {
             app_data: app_data.to_path_buf(),
             store,
@@ -194,6 +205,7 @@ impl QvacService {
             last_used: AtomicU64::new(0),
             active: AtomicUsize::new(0),
             reaper_started: AtomicBool::new(false),
+            ocr_lock: Mutex::new(()),
         }
     }
 
@@ -201,6 +213,24 @@ impl QvacService {
 
     pub fn settings(&self) -> AiSettings {
         self.settings.lock().unwrap().clone()
+    }
+
+    fn save_settings(&self, s: &AiSettings) -> Result<(), String> {
+        let bytes = serde_json::to_vec_pretty(s).unwrap_or_default();
+        std::fs::write(self.app_data.join("ai-settings.json"), bytes).map_err(|e| e.kind().to_string())
+    }
+
+    pub fn ocr_dpi(&self) -> u32 {
+        self.settings.lock().unwrap().ocr_dpi.unwrap_or(crate::ocr::DEFAULT_OCR_DPI)
+    }
+
+    pub fn set_ocr_dpi(&self, dpi: u32) -> Result<(), String> {
+        if !crate::ocr::ALLOWED_OCR_DPI.contains(&dpi) {
+            return Err(format!("unsupported OCR resolution {} DPI", dpi));
+        }
+        let mut s = self.settings.lock().unwrap();
+        s.ocr_dpi = Some(dpi);
+        self.save_settings(&s)
     }
 
     pub fn set_layer3(&self, enabled: bool, model: Option<String>) -> Result<(), String> {
@@ -214,8 +244,7 @@ impl QvacService {
         if model.is_some() {
             s.layer3_model = model;
         }
-        let bytes = serde_json::to_vec_pretty(&*s).unwrap_or_default();
-        std::fs::write(self.app_data.join("ai-settings.json"), bytes).map_err(|e| e.kind().to_string())?;
+        self.save_settings(&s)?;
         drop(s);
         if !enabled {
             self.unload_all_llms();
@@ -512,20 +541,109 @@ impl QvacService {
         if !self.ocr_installed() {
             return Err("OCR models are not installed".into());
         }
-        let (_, rec) = catalog::ocr_pair();
-        let (qid, _) = self.ensure_loaded(rec.id).map_err(|e| e.to_string())?;
-        let r = self
-            .call("ocr", json!({"modelId": qid, "image": image}), CallOptions::timeout(OCR_TIMEOUT))
-            .map_err(|e| e.to_string())?;
-        let blocks = r.get("blocks").and_then(|b| b.as_array()).cloned().unwrap_or_default();
-        Ok(blocks
-            .into_iter()
-            .map(|b| OcrBlock {
-                text: b.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-                bbox: b.get("bbox").and_then(|v| serde_json::from_value(v.clone()).ok()),
-                confidence: b.get("confidence").and_then(|v| v.as_f64()),
+        self.ocr_blocks(image, None)
+            .map(|blocks| {
+                blocks
+                    .into_iter()
+                    .map(|b| OcrBlock { text: b.text, bbox: Some(b.bbox), confidence: b.confidence })
+                    .collect()
             })
-            .collect())
+            .map_err(|e| e.to_string())
+    }
+
+    /// QVAC's OCR has no native cancel (its plugin declares
+    /// `cancel: {scope: 'none'}`, a soft cancel): an abandoned page keeps
+    /// running in the addon, and its output was observed being delivered as
+    /// the result of the *next* OCR request on the same model (page 1's
+    /// blocks returned for page 3). After a cancelled or timed-out OCR the
+    /// sidecar is therefore stopped, so the next page runs in a fresh
+    /// process. This is a stop, not a crash: it does not count towards the
+    /// restart cap.
+    fn discard_engine_after_abandoned_ocr(&self) {
+        log::info!("qvac: OCR request abandoned; restarting the sidecar before the next OCR");
+        let client = self.client.lock().unwrap().clone();
+        if let Some(c) = client {
+            c.stop();
+        }
+        self.loaded.lock().unwrap().clear();
+    }
+
+    /// App-private directory for page images sent to OCR (inside the
+    /// sidecar's cache dir; wiped at start-up, files deleted after each page).
+    pub fn page_work_dir(&self) -> Result<PathBuf, String> {
+        let dir = self.app_data.join("qvac-cache").join("pages");
+        std::fs::create_dir_all(&dir).map_err(|e| format!("cannot create OCR work dir: {}", e.kind()))?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o700));
+        }
+        Ok(dir)
+    }
+
+    /// OCR one image with cancellation, for the page pipeline. Every block
+    /// must carry a box: text we cannot place on the page could not be
+    /// redacted, so such a result fails the page instead.
+    pub fn ocr_blocks(&self, image: &Path, cancel: Option<CancelToken>) -> Result<Vec<crate::ocr::RawBlock>, crate::ocr::OcrFailure> {
+        use crate::ocr::OcrFailure;
+        if !self.is_bundled() {
+            return Err(OcrFailure::Unavailable("AI engine is not bundled in this build".into()));
+        }
+        if !self.ocr_installed() {
+            return Err(OcrFailure::Unavailable("OCR models are not installed".into()));
+        }
+        // Wait for any other OCR request to finish (cancellable).
+        let _one_at_a_time = loop {
+            match self.ocr_lock.try_lock() {
+                Ok(g) => break g,
+                Err(std::sync::TryLockError::Poisoned(p)) => break p.into_inner(),
+                Err(std::sync::TryLockError::WouldBlock) => {
+                    if cancel.as_ref().map(|c| c.is_cancelled()).unwrap_or(false) {
+                        return Err(OcrFailure::Cancelled);
+                    }
+                    std::thread::sleep(Duration::from_millis(25));
+                }
+            }
+        };
+        let (_, rec) = catalog::ocr_pair();
+        let qid = match self.ensure_loaded(rec.id) {
+            Ok((q, _)) => q,
+            Err(QvacError::Unavailable(r)) | Err(QvacError::Spawn(r)) => return Err(OcrFailure::Unavailable(r)),
+            Err(e) => return Err(OcrFailure::Failed(e.to_string())),
+        };
+        let opts = CallOptions { timeout: Some(OCR_TIMEOUT), cancel, on_event: None };
+        let r = match self.call("ocr", json!({"modelId": qid, "image": image}), opts) {
+            Ok(r) => r,
+            Err(QvacError::Cancelled) => {
+                self.discard_engine_after_abandoned_ocr();
+                return Err(OcrFailure::Cancelled);
+            }
+            Err(QvacError::Timeout) => {
+                self.discard_engine_after_abandoned_ocr();
+                return Err(OcrFailure::Failed("OCR timed out".into()));
+            }
+            Err(QvacError::Unavailable(r)) => return Err(OcrFailure::Unavailable(r)),
+            Err(QvacError::Remote { code, .. }) if code == "CANCELLED" => {
+                self.discard_engine_after_abandoned_ocr();
+                return Err(OcrFailure::Cancelled);
+            }
+            Err(QvacError::Remote { code, message }) if code == "MODEL_NOT_LOADED" => {
+                self.loaded.lock().unwrap().remove(rec.id);
+                return Err(OcrFailure::Failed(message));
+            }
+            Err(e) => return Err(OcrFailure::Failed(e.to_string())),
+        };
+        let mut out = Vec::new();
+        for b in r.get("blocks").and_then(|b| b.as_array()).cloned().unwrap_or_default() {
+            let text = b.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let bbox: Option<[f64; 4]> = b.get("bbox").and_then(|v| serde_json::from_value(v.clone()).ok());
+            match bbox {
+                Some(bbox) => out.push(crate::ocr::RawBlock { text, bbox, confidence: b.get("confidence").and_then(|v| v.as_f64()) }),
+                None if text.trim().is_empty() => {}
+                None => return Err(OcrFailure::Failed("OCR returned text without a position".into())),
+            }
+        }
+        Ok(out)
     }
 
     // ── model manager ────────────────────────────────────────────────────
@@ -603,6 +721,8 @@ impl QvacService {
                 .or_else(|| client.as_ref().and_then(|c| c.unavailable_reason()))
                 .or_else(|| (!self.is_bundled()).then(|| "AI engine is not bundled in this build".to_string())),
             ocr_installed: self.ocr_installed(),
+            ocr_available: available && self.ocr_installed(),
+            ocr_dpi: settings.ocr_dpi.unwrap_or(crate::ocr::DEFAULT_OCR_DPI),
             layer3_enabled: settings.layer3_enabled,
             layer3_ready: settings.layer3_enabled && layer3_model.is_some() && available,
             layer3_model,
@@ -762,6 +882,12 @@ impl QvacService {
             None => rep.layer3_error = Some("no LLM installed".into()),
         }
         rep
+    }
+}
+
+impl crate::ocr::PageOcr for QvacService {
+    fn ocr_image(&self, image: &Path) -> Result<Vec<crate::ocr::RawBlock>, crate::ocr::OcrFailure> {
+        self.ocr_blocks(image, None)
     }
 }
 

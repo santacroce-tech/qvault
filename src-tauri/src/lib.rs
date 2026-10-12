@@ -5,6 +5,7 @@ pub mod document;
 pub mod pipeline;
 pub mod storage;
 pub mod llm;
+pub mod ocr;
 #[cfg(desktop)]
 pub mod qvac;
 
@@ -15,6 +16,8 @@ use storage::database::Database;
 pub struct AppState {
     pub db: Database,
     pub storage_dir: PathBuf,
+    /// OCR runs in progress (cancellation, audit metadata).
+    pub ocr_runs: ocr::OcrRuns,
     /// QVAC sidecar + Model Manager (desktop only).
     #[cfg(desktop)]
     pub qvac: Arc<qvac::QvacService>,
@@ -61,6 +64,7 @@ pub fn run() {
             app.manage(AppState {
                 db,
                 storage_dir: app_data,
+                ocr_runs: ocr::OcrRuns::default(),
                 #[cfg(desktop)]
                 qvac,
             });
@@ -116,6 +120,16 @@ pub fn run() {
             commands::redaction::bulk_approve,
             commands::history::get_history,
             commands::history::search_history,
+            commands::ocr::classify_pdf_pages,
+            commands::ocr::ocr_status,
+            commands::ocr::ocr_finish,
+            commands::ocr::get_ocr_pages,
+            #[cfg(desktop)]
+            commands::ocr::ocr_page,
+            #[cfg(desktop)]
+            commands::ocr::ocr_cancel,
+            #[cfg(desktop)]
+            commands::ocr::ai_set_ocr_dpi,
             #[cfg(desktop)]
             commands::ai::ai_capabilities,
             #[cfg(desktop)]

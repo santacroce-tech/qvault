@@ -81,6 +81,22 @@ impl Database {
                 UNIQUE(document_id, page_number)
             );
 
+            -- OCR state per page of scanned PDFs / images. `layout` is the
+            -- OCR result (normalised text + page boxes, JSON); `status` is
+            -- done | unavailable | cancelled | failed.
+            CREATE TABLE IF NOT EXISTS ocr_pages (
+                document_id TEXT NOT NULL,
+                page INTEGER NOT NULL,
+                status TEXT NOT NULL,
+                reason TEXT,
+                dpi INTEGER,
+                layout TEXT,
+                blocks INTEGER,
+                duration_ms INTEGER,
+                updated_at TEXT NOT NULL,
+                PRIMARY KEY (document_id, page)
+            );
+
             CREATE TABLE IF NOT EXISTS audit_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id TEXT,
@@ -417,6 +433,52 @@ impl Database {
         rows.collect()
     }
 
+    // ─── OCR pages ───
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn upsert_ocr_page(
+        &self,
+        document_id: &str,
+        page: i32,
+        status: &str,
+        reason: Option<&str>,
+        dpi: Option<i64>,
+        layout: Option<&str>,
+        blocks: Option<i64>,
+        duration_ms: Option<i64>,
+    ) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        let now = chrono::Utc::now().to_rfc3339();
+        conn.execute(
+            "INSERT OR REPLACE INTO ocr_pages (document_id, page, status, reason, dpi, layout, blocks, duration_ms, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            params![document_id, page, status, reason, dpi, layout, blocks, duration_ms, now],
+        )?;
+        Ok(())
+    }
+
+    pub fn get_ocr_pages(&self, document_id: &str) -> Result<Vec<OcrPageRow>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT document_id, page, status, reason, dpi, layout, blocks, duration_ms, updated_at
+             FROM ocr_pages WHERE document_id = ?1 ORDER BY page",
+        )?;
+        let rows = stmt.query_map(params![document_id], |row| {
+            Ok(OcrPageRow {
+                document_id: row.get(0)?,
+                page: row.get(1)?,
+                status: row.get(2)?,
+                reason: row.get(3)?,
+                dpi: row.get(4)?,
+                layout: row.get(5)?,
+                blocks: row.get(6)?,
+                duration_ms: row.get(7)?,
+                updated_at: row.get(8)?,
+            })
+        })?;
+        rows.collect()
+    }
+
     // ─── History ───
 
     pub fn get_history(&self, offset: i64, limit: i64) -> Result<Vec<DocumentRow>> {
@@ -476,6 +538,7 @@ impl Database {
         let conn = self.conn.lock().unwrap();
         conn.execute("DELETE FROM entities WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM document_pages WHERE document_id = ?1", params![id])?;
+        conn.execute("DELETE FROM ocr_pages WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM redactions WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM documents WHERE id = ?1", params![id])?;
         Ok(())
@@ -548,6 +611,20 @@ pub struct EntitySummary {
     pub category: String,
     pub occurrence_count: i32,
     pub document_count: i32,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct OcrPageRow {
+    pub document_id: String,
+    pub page: i32,
+    pub status: String,
+    pub reason: Option<String>,
+    pub dpi: Option<i64>,
+    /// JSON of `ocr::layout::PageLayout` when status is `done`.
+    pub layout: Option<String>,
+    pub blocks: Option<i64>,
+    pub duration_ms: Option<i64>,
+    pub updated_at: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
