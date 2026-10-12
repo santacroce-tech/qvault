@@ -608,16 +608,62 @@ pub struct RedactedPageInput {
 
 /// Export a redacted PDF: pages with approved redactions are rasterized with
 /// the boxes burned in by Rust; other pages keep their content. Refuses if a
-/// redaction cannot be placed or approved text would survive.
+/// redaction cannot be placed or approved text would survive (in the text
+/// layer, or — for scanned pages — in OCR of the burned images). Pages that
+/// need OCR but were not scanned require `acknowledge_unscanned`.
 // TODO: On mobile, return path for share sheet integration
 #[tauri::command]
 pub async fn export_redacted_pdf(
     id: String,
     pages: Vec<RedactedPageInput>,
+    acknowledge_unscanned: Option<bool>,
     state: State<'_, AppState>,
+    app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
     use base64::Engine;
     let (file_bytes, redactions, path) = prepare_export(&id, "pdf", &state)?;
+
+    // ── Scanned pages: stored OCR layouts, and pages that were never scanned ──
+    let ocr_rows = state.db.get_ocr_pages(&id).map_err(|e| format!("Database error: {}", e))?;
+    let mut layouts = std::collections::BTreeMap::new();
+    let mut unscanned = std::collections::BTreeSet::new();
+    for row in &ocr_rows {
+        let page = row.page.max(0) as u32;
+        match (row.status.as_str(), row.layout.as_deref()) {
+            ("done", Some(json)) => {
+                let layout: crate::ocr::layout::PageLayout =
+                    serde_json::from_str(json).map_err(|_| format!("Export failed: bad OCR data for page {}.", page + 1))?;
+                layouts.insert(page, layout);
+            }
+            _ => {
+                unscanned.insert(page);
+            }
+        }
+    }
+    // Do not rely on the viewer having reported every page: re-classify here.
+    {
+        let mut pdf = lopdf::Document::load_mem(&file_bytes).map_err(|e| format!("Failed to load PDF: {}", e))?;
+        if pdf.is_encrypted() {
+            let _ = pdf.decrypt("");
+        }
+        for c in crate::ocr::classify::classify_pdf(&pdf, &[]) {
+            if c.needs_ocr && !layouts.contains_key(&c.page) {
+                unscanned.insert(c.page);
+            }
+        }
+    }
+    let acknowledged = acknowledge_unscanned.unwrap_or(false);
+    let unscanned_list = unscanned.iter().map(|p| (p + 1).to_string()).collect::<Vec<_>>().join(", ");
+    if !unscanned.is_empty() && !acknowledged {
+        // Machine-readable prefix for the viewer, then the message.
+        return Err(format!(
+            "OCR_UNSCANNED:{}|Page(s) {} are images that were not scanned for personal data (OCR was not \
+             available or was cancelled). Anything on them will be exported as is.",
+            unscanned.iter().map(|p| p.to_string()).collect::<Vec<_>>().join(","),
+            unscanned_list
+        ));
+    }
+
     let rasters = pages
         .into_iter()
         .map(|p| {
@@ -628,20 +674,48 @@ pub async fn export_redacted_pdf(
         })
         .collect::<Result<Vec<_>, String>>()?;
 
-    let summary =
-        crate::document::redactor::export_flattened_pdf(&file_bytes, &redactions, &rasters, &path)?;
+    #[cfg(desktop)]
+    let engine_svc = std::sync::Arc::clone(&state.qvac);
+    #[cfg(desktop)]
+    let work_dir = engine_svc.page_work_dir()?;
+    #[cfg(not(desktop))]
+    let work_dir = state.storage_dir.join("ocr-tmp");
+    let out_path = path.clone();
+    let progress_app = app_handle.clone();
+    let progress_id = id.clone();
+    let summary = tauri::async_runtime::spawn_blocking(move || {
+        let progress = move |done: usize, total: usize| {
+            let _ = progress_app.emit(
+                "export-progress",
+                serde_json::json!({"documentId": progress_id, "phase": "ocr-verify", "done": done, "total": total}),
+            );
+        };
+        #[cfg(desktop)]
+        let engine: Option<&dyn crate::ocr::PageOcr> =
+            (engine_svc.is_bundled() && engine_svc.ocr_installed()).then_some(&*engine_svc as &dyn crate::ocr::PageOcr);
+        #[cfg(not(desktop))]
+        let engine: Option<&dyn crate::ocr::PageOcr> = None;
+        let ocr = crate::document::redactor::OcrExport { layouts, engine, work_dir, on_progress: Some(&progress) };
+        crate::document::redactor::export_flattened_pdf_ocr(&file_bytes, &redactions, &rasters, &out_path, Some(&ocr))
+    })
+    .await
+    .map_err(|e| format!("Export failed: {}", e))??;
+
     let name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
-    record_export(
-        &id,
-        &path,
-        &format!(
-            "Exported redacted PDF: {} ({} of {} pages rasterized)",
-            name,
-            summary.rasterized_pages.len(),
-            summary.page_count
-        ),
-        &state,
-    )
+    let mut detail = format!(
+        "Exported redacted PDF: {} ({} of {} pages rasterized",
+        name,
+        summary.rasterized_pages.len(),
+        summary.page_count
+    );
+    if !summary.ocr_verified_pages.is_empty() {
+        detail.push_str(&format!(", {} scanned page(s) verified with OCR", summary.ocr_verified_pages.len()));
+    }
+    if !unscanned.is_empty() {
+        detail.push_str(&format!(", user acknowledged unscanned page(s) {}", unscanned_list));
+    }
+    detail.push(')');
+    record_export(&id, &path, &detail, &state)
 }
 
 #[tauri::command]

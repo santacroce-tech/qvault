@@ -7,7 +7,9 @@
 use crate::storage::database::RedactionRow;
 
 pub use super::docx_redact::export_redacted_docx;
-pub use super::pdf_redact::{export_flattened_pdf, PageRaster, PdfExportSummary, PixelRect};
+pub use super::pdf_redact::{
+    export_flattened_pdf, export_flattened_pdf_ocr, OcrExport, PageRaster, PdfExportSummary, PixelRect,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub enum RedactionMode {

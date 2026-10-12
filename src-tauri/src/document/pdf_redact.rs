@@ -20,16 +20,27 @@
 //!   approved string is still extractable.
 //!
 //! Pages without approved redactions keep their original content stream.
+//!
+//! **Scanned (OCR'd) pages** ([`OcrExport`]): their text exists only as
+//! pixels, so the checks above cannot see it. For those pages this module
+//! also places the boxes itself, from the stored OCR layout (every
+//! occurrence of every approved string, loose OCR matching), refuses if an
+//! approved string appears on a scanned page without approved redactions,
+//! and after saving runs OCR again on the burned page images it actually
+//! wrote, failing the export if any approved string is still recognisable.
+//! Nothing is ever added to a page but the image: no OCR text layer.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use lopdf::content::{Content, Operation};
 use lopdf::{dictionary, Dictionary, Document, Object, ObjectId, Stream};
 use serde::Deserialize;
 
 use super::pdf_text::{extract_page_text, extract_page_texts};
-use super::text_match::{Folded, Needle};
+use super::text_match::{Folded, Needle, OcrNeedle};
+use crate::ocr::layout::{build_layout, PageLayout};
+use crate::ocr::{OcrFailure, PageOcr};
 use crate::storage::database::RedactionRow;
 
 /// A rectangle to black out, in pixel coordinates of the page image
@@ -62,6 +73,22 @@ pub struct PdfExportSummary {
     pub page_count: usize,
     /// 0-based indexes of pages that were rasterized.
     pub rasterized_pages: Vec<u32>,
+    /// 0-based indexes of burned pages that were re-read with OCR.
+    pub ocr_verified_pages: Vec<u32>,
+}
+
+/// The OCR side of an export.
+pub struct OcrExport<'a> {
+    /// Stored OCR layouts of the pages that were OCR'd (0-based index).
+    pub layouts: BTreeMap<u32, PageLayout>,
+    /// Engine used to re-read burned pages. `None` means OCR is not
+    /// available now; the export is then refused if a scanned page would
+    /// have to be verified.
+    pub engine: Option<&'a dyn PageOcr>,
+    /// App-private directory for the temporary page images.
+    pub work_dir: PathBuf,
+    /// Called with (pages verified, pages to verify).
+    pub on_progress: Option<&'a (dyn Fn(usize, usize) + Sync)>,
 }
 
 const IMAGE_NAME: &[u8] = b"QvRedactedPage";
@@ -93,11 +120,30 @@ pub fn export_flattened_pdf(
     pages: &[PageRaster],
     output_path: &Path,
 ) -> Result<PdfExportSummary, String> {
-    let result = export_inner(pdf_bytes, redactions, pages, output_path);
+    export_flattened_pdf_ocr(pdf_bytes, redactions, pages, output_path, None)
+}
+
+/// [`export_flattened_pdf`] for documents with OCR'd pages.
+pub fn export_flattened_pdf_ocr(
+    pdf_bytes: &[u8],
+    redactions: &[RedactionRow],
+    pages: &[PageRaster],
+    output_path: &Path,
+    ocr: Option<&OcrExport>,
+) -> Result<PdfExportSummary, String> {
+    let result = export_inner(pdf_bytes, redactions, pages, output_path, ocr);
     if result.is_err() {
         let _ = std::fs::remove_file(output_path);
     }
     result
+}
+
+/// Occurrences of one approved string on one OCR'd page.
+struct OcrHits {
+    /// Number of occurrences in the page's OCR text.
+    count: usize,
+    /// (occurrence, rectangle in page points) — one per occurrence and line.
+    rects: Vec<(u32, [f64; 4])>,
 }
 
 fn export_inner(
@@ -105,6 +151,7 @@ fn export_inner(
     redactions: &[RedactionRow],
     pages: &[PageRaster],
     output_path: &Path,
+    ocr: Option<&OcrExport>,
 ) -> Result<PdfExportSummary, String> {
     let mut doc = Document::load_mem(pdf_bytes).map_err(|e| format!("Failed to load PDF: {}", e))?;
     if doc.is_encrypted() {
@@ -119,15 +166,36 @@ fn export_inner(
     // ── Approved redactions and their normalized strings ──
     let mut approved: Vec<Approved> = Vec::new();
     let mut set = NeedleSet { needles: BTreeMap::new(), category: HashMap::new() };
+    let mut ocr_needles: BTreeMap<String, OcrNeedle> = BTreeMap::new();
     for row in redactions.iter().filter(|r| r.status == "approved") {
         let Some(needle) = Needle::new(&row.original_text) else { continue };
         let key = needle.key();
         set.category.entry(key.clone()).or_insert(row.category.as_str());
         set.needles.entry(key.clone()).or_insert(needle);
+        if let Some(n) = OcrNeedle::new(&row.original_text) {
+            ocr_needles.entry(key.clone()).or_insert(n);
+        }
         approved.push(Approved { row, key });
     }
     let key_of_id: HashMap<&str, &str> =
         approved.iter().map(|a| (a.row.id.as_str(), a.key.as_str())).collect();
+
+    // ── OCR'd pages: every occurrence of every approved string ──
+    let no_layouts = BTreeMap::new();
+    let layouts = ocr.map(|o| &o.layouts).unwrap_or(&no_layouts);
+    if let Some(&p) = layouts.keys().find(|&&p| p as usize >= page_count) {
+        return Err(format!("Export failed: OCR data for page {} but the document has {} pages.", p + 1, page_count));
+    }
+    let mut ocr_hits: BTreeMap<u32, BTreeMap<&str, OcrHits>> = BTreeMap::new();
+    for (&idx, layout) in layouts {
+        let hits = ocr_hits.entry(idx).or_default();
+        for (key, needle) in &ocr_needles {
+            let count = needle.find_all(&layout.text).len();
+            if count > 0 {
+                hits.insert(key.as_str(), OcrHits { count, rects: layout.occurrence_rects(needle) });
+            }
+        }
+    }
 
     // ── Validate the rasters ──
     let mut rasters: BTreeMap<u32, &PageRaster> = BTreeMap::new();
@@ -150,11 +218,16 @@ fn export_inner(
     // ── 1. Every approved redaction must have at least one rect on its page ──
     let mut unmapped: Vec<(i32, &str)> = Vec::new();
     for a in &approved {
-        let covered = rasters.get(&(a.row.page.max(0) as u32)).map_or(false, |p| {
+        let page = a.row.page.max(0) as u32;
+        let covered = rasters.get(&page).map_or(false, |p| {
             a.row.page >= 0
-                && p.rects
+                && (p.rects
                     .iter()
                     .any(|r| rect_ok(r) && key_of_id.get(r.redaction_id.as_str()) == Some(&a.key.as_str()))
+                    || ocr_hits
+                        .get(&page)
+                        .and_then(|h| h.get(a.key.as_str()))
+                        .map_or(false, |h| !h.rects.is_empty()))
         });
         if !covered {
             unmapped.push((a.row.page, a.row.id.as_str()));
@@ -209,6 +282,23 @@ fn export_inner(
             }
         }
     }
+    // Scanned pages: the boxes come from the OCR layout, so each occurrence
+    // needs at least one box there; and a scanned page without approved
+    // redactions must not contain approved text either.
+    for (&idx, hits) in &ocr_hits {
+        for (key, h) in hits {
+            if rasters.contains_key(&idx) {
+                let placed: BTreeSet<u32> = h.rects.iter().map(|(o, _)| *o).collect();
+                if placed.len() < h.count {
+                    short_pages.insert(idx);
+                    short_cats.insert(set.category[*key]);
+                }
+            } else {
+                missed_pages.insert(idx);
+                missed_cats.insert(set.category[*key]);
+            }
+        }
+    }
     if !short_pages.is_empty() {
         return Err(format!(
             "Export refused: page(s) {} contain more occurrences of approved text ({}) than could be \
@@ -231,7 +321,11 @@ fn export_inner(
             .iter()
             .filter(|r| rect_ok(r) && key_of_id.contains_key(r.redaction_id.as_str()))
             .collect();
-        let (jpeg, px_w, px_h) = burn_page(&raster.image, &rects, w_pt, h_pt, idx)?;
+        let ocr_rects = match layouts.get(&idx) {
+            Some(layout) => ocr_pixel_rects(&raster.image, layout, ocr_hits.get(&idx), idx)?,
+            None => Vec::new(),
+        };
+        let (jpeg, px_w, px_h) = burn_page(&raster.image, &rects, &ocr_rects, w_pt, h_pt, idx)?;
         replace_page_with_image(&mut doc, page_id, jpeg, px_w, px_h, w_pt, h_pt)?;
     }
 
@@ -251,7 +345,151 @@ fn export_inner(
     let rasterized: BTreeSet<u32> = rasters.keys().copied().collect();
     verify_output(output_path, &set, &rasterized, page_count)?;
 
-    Ok(PdfExportSummary { page_count, rasterized_pages: rasterized.into_iter().collect() })
+    // ── 6. Scanned pages: OCR the burned images we wrote ──
+    let to_check: Vec<u32> = rasterized.iter().copied().filter(|p| layouts.contains_key(p)).collect();
+    let ocr_verified_pages = match ocr {
+        Some(o) if !to_check.is_empty() => verify_with_ocr(output_path, &to_check, layouts, &ocr_needles, &set, o)?,
+        _ => Vec::new(),
+    };
+
+    Ok(PdfExportSummary { page_count, rasterized_pages: rasterized.into_iter().collect(), ocr_verified_pages })
+}
+
+/// Pixel rectangles (x0, y0, x1, y1) for an OCR'd page from its layout.
+fn ocr_pixel_rects(
+    image: &[u8],
+    layout: &PageLayout,
+    hits: Option<&BTreeMap<&str, OcrHits>>,
+    idx: u32,
+) -> Result<Vec<[f64; 4]>, String> {
+    let (w, h) = image_dimensions(image)
+        .ok_or_else(|| format!("Export failed: could not read the image of page {}.", idx + 1))?;
+    if layout.width_pt <= 0.0 || layout.height_pt <= 0.0 {
+        return Err(format!("Export failed: bad OCR data for page {}.", idx + 1));
+    }
+    // The burned page is OCR'd again after export, so it must be rendered
+    // at (about) the resolution it was scanned at.
+    let dpi = w as f64 / layout.width_pt * 72.0;
+    if dpi < layout.dpi as f64 * 0.9 {
+        return Err(format!(
+            "Export failed: scanned page {} was rendered at {:.0} DPI, below its OCR resolution ({} DPI).",
+            idx + 1,
+            dpi,
+            layout.dpi
+        ));
+    }
+    let sx = w as f64 / layout.width_pt;
+    let sy = h as f64 / layout.height_pt;
+    Ok(hits
+        .into_iter()
+        .flat_map(|m| m.values())
+        .flat_map(|h| h.rects.iter())
+        .map(|(_, r)| [r[0] * sx, r[1] * sy, r[2] * sx, r[3] * sy])
+        .collect())
+}
+
+fn image_dimensions(bytes: &[u8]) -> Option<(u32, u32)> {
+    image::ImageReader::new(std::io::Cursor::new(bytes))
+        .with_guessed_format()
+        .ok()
+        .and_then(|r| r.into_dimensions().ok())
+}
+
+/// The image of a page we rasterized, as stored in the output (JPEG).
+fn stored_page_image(doc: &Document, page_id: ObjectId) -> Option<Vec<u8>> {
+    let page = doc.get_dictionary(page_id).ok()?;
+    let res = page.get(b"Resources").ok()?.as_dict().ok()?;
+    let xo = res.get(b"XObject").ok()?.as_dict().ok()?;
+    let id = xo.get(IMAGE_NAME).ok()?.as_reference().ok()?;
+    match doc.get_object(id).ok()? {
+        Object::Stream(s) if s.dict.get(b"Filter").and_then(Object::as_name).ok() == Some(b"DCTDecode") => {
+            Some(s.content.clone())
+        }
+        _ => None,
+    }
+}
+
+/// Re-read burned scanned pages with OCR; fail if any approved string is
+/// still recognisable. Returns the pages checked.
+fn verify_with_ocr(
+    path: &Path,
+    pages: &[u32],
+    layouts: &BTreeMap<u32, PageLayout>,
+    needles: &BTreeMap<String, OcrNeedle>,
+    set: &NeedleSet,
+    ocr: &OcrExport,
+) -> Result<Vec<u32>, String> {
+    let list: BTreeSet<u32> = pages.iter().copied().collect();
+    let engine = ocr.engine.ok_or_else(|| {
+        format!(
+            "Export refused: scanned page(s) {} must be checked with OCR after redaction, but OCR is not \
+             available right now. Check the AI engine and OCR models in Settings, then export again.",
+            pages_list(&list)
+        )
+    })?;
+    let doc = Document::load(path).map_err(|e| format!("Export failed: output is not readable: {}", e))?;
+    let page_ids: Vec<ObjectId> = doc.get_pages().values().copied().collect();
+    std::fs::create_dir_all(&ocr.work_dir).map_err(|e| format!("Export failed: OCR work dir: {}", e.kind()))?;
+    let mut leak_pages = BTreeSet::new();
+    let mut leak_cats = BTreeSet::new();
+    for (i, &idx) in pages.iter().enumerate() {
+        if let Some(cb) = ocr.on_progress {
+            cb(i, pages.len());
+        }
+        let jpeg = stored_page_image(&doc, page_ids[idx as usize])
+            .ok_or_else(|| format!("Export failed: internal check could not read redacted page {}.", idx + 1))?;
+        let (w, h) = image_dimensions(&jpeg)
+            .ok_or_else(|| format!("Export failed: internal check could not decode redacted page {}.", idx + 1))?;
+        let file = ocr.work_dir.join(format!("verify-{}.jpg", uuid::Uuid::new_v4()));
+        let result = match write_private(&file, &jpeg) {
+            Ok(()) => engine.ocr_image(&file),
+            Err(e) => Err(OcrFailure::Failed(e)),
+        };
+        let _ = std::fs::remove_file(&file);
+        let blocks = result.map_err(|e| {
+            format!(
+                "Export failed: redacted scanned page {} could not be checked with OCR ({}). Nothing was exported.",
+                idx + 1,
+                e
+            )
+        })?;
+        let dpi = layouts.get(&idx).map(|l| l.dpi).unwrap_or(0);
+        let text = build_layout(&blocks, w, h, w as f64, h as f64, dpi).text;
+        for (key, needle) in needles {
+            if !needle.find_all(&text).is_empty() {
+                leak_pages.insert(idx);
+                leak_cats.insert(set.category[key]);
+            }
+        }
+    }
+    if let Some(cb) = ocr.on_progress {
+        cb(pages.len(), pages.len());
+    }
+    if !leak_pages.is_empty() {
+        log::error!("PDF export verification: OCR still reads approved text on page(s) {}", pages_list(&leak_pages));
+        return Err(format!(
+            "Export failed: approved text ({}) is still readable by OCR on redacted scanned page(s) {}. \
+             Nothing was exported. Review those pages (advanced mode lets you add a redaction by \
+             selecting the OCR text), then export again.",
+            leak_cats.into_iter().collect::<Vec<_>>().join(", "),
+            pages_list(&leak_pages)
+        ));
+    }
+    Ok(pages.to_vec())
+}
+
+fn write_private(path: &Path, bytes: &[u8]) -> Result<(), String> {
+    use std::io::Write;
+    let mut opts = std::fs::OpenOptions::new();
+    opts.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        opts.mode(0o600);
+    }
+    opts.open(path)
+        .and_then(|mut f| f.write_all(bytes))
+        .map_err(|e| format!("cannot write temporary page image: {}", e.kind()))
 }
 
 fn missed_message(pages: &BTreeSet<u32>, cats: &BTreeSet<&str>) -> String {
@@ -327,6 +565,7 @@ pub(crate) fn displayed_size(doc: &Document, page_id: ObjectId) -> (f64, f64) {
 fn burn_page(
     image_bytes: &[u8],
     rects: &[&PixelRect],
+    ocr_rects: &[[f64; 4]],
     page_w_pt: f64,
     page_h_pt: f64,
     page_idx: u32,
@@ -370,6 +609,30 @@ fn burn_page(
                 "Export refused: a redaction box on page {} lies outside the page image (id {}).",
                 page_idx + 1,
                 r.redaction_id
+            ));
+        }
+        for y in y0..y1 {
+            for x in x0..x1 {
+                rgb.put_pixel(x, y, image::Rgb([0, 0, 0]));
+            }
+        }
+    }
+
+    // OCR boxes already enclose the glyphs (and split word boxes carry a
+    // margin), so they get a small uniform pad only.
+    for r in ocr_rects {
+        if !r.iter().all(|v| v.is_finite()) || r[2] <= r[0] || r[3] <= r[1] {
+            return Err(format!("Export refused: a redaction box on scanned page {} is invalid.", page_idx + 1));
+        }
+        let pad = ((r[3] - r[1]) * 0.08).max(2.0);
+        let x0 = (r[0] - pad).floor().clamp(0.0, w as f64) as u32;
+        let y0 = (r[1] - pad).floor().clamp(0.0, h as f64) as u32;
+        let x1 = (r[2] + pad).ceil().clamp(0.0, w as f64) as u32;
+        let y1 = (r[3] + pad).ceil().clamp(0.0, h as f64) as u32;
+        if x0 >= x1 || y0 >= y1 {
+            return Err(format!(
+                "Export refused: a redaction box on scanned page {} lies outside the page image.",
+                page_idx + 1
             ));
         }
         for y in y0..y1 {
