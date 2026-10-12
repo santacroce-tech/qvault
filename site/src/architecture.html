@@ -30,7 +30,7 @@
   <h2 id="pipeline">Document pipeline</h2>
   <ol>
     <li><strong>Extraction.</strong> PDFs are rendered with PDF.js, which also provides each piece of text with its position on the page. DOCX files are read as the ZIP of XML parts they are: the main document, headers, footers, footnotes, endnotes and comments, with tracked changes resolved so that the scanner and the redactor see exactly the same text.</li>
-    <li><strong>OCR.</strong> Pages without a text layer, and PNG, JPG and TIFF images, are rendered to images and sent to the sidecar for OCR. The recognised words and their boxes take the place of the missing text layer.</li>
+    <li><strong>OCR.</strong> Pages without a text layer, and PNG, JPG and TIFF images, are rendered to images and sent to the sidecar for OCR. Pages count as scanned when they have fewer than 32 visible characters or images cover at least half the page; they are rendered with PDF.js at 200 DPI by default (configurable). The recognised words and their boxes are used for detection, the review highlights and placing redaction boxes. They are never written into an exported file: redacted scanned pages are burned in and re-checked with OCR, and no invisible text layer is added.</li>
     <li><strong>Detection.</strong> Layers 1 and 2 always run; Layer 3 runs if it is enabled and a model is installed.</li>
     <li><strong>Review.</strong> Findings are stored with their category, confidence, source layer and status (pending, approved, rejected). Nothing is applied until you approve it.</li>
     <li><strong>Export.</strong> Approved redactions are applied and the result is verified before it is kept.</li>
