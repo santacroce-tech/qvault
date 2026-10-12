@@ -427,145 +427,110 @@ pub async fn get_document_pages(
         .map_err(|e| format!("Database error: {}", e))
 }
 
-#[derive(Debug, Deserialize)]
-pub struct RedactionRect {
-    pub page: u32,
-    pub x: f64,
-    pub y: f64,
-    pub width: f64,
-    pub height: f64,
-    pub replacement: Option<String>,
-    pub category: Option<String>,
+/// Load a document's decrypted bytes, its redactions and the path its clean
+/// export should be written to.
+fn prepare_export(
+    id: &str,
+    expected_type: &str,
+    state: &AppState,
+) -> Result<(Vec<u8>, Vec<crate::storage::database::RedactionRow>, std::path::PathBuf), String> {
+    let doc = state
+        .db
+        .get_document(id)
+        .map_err(|e| format!("Database error: {}", e))?
+        .ok_or_else(|| "Document not found".to_string())?;
+    if doc.file_type != expected_type {
+        return Err(format!("Not a {} document", expected_type.to_uppercase()));
+    }
+    let file_bytes = encryption::decrypt_file(Path::new(&doc.original_path))?;
+    let redactions = state
+        .db
+        .get_redactions(id)
+        .map_err(|e| format!("Database error: {}", e))?;
+
+    let clean_dir = state.storage_dir.join("clean");
+    std::fs::create_dir_all(&clean_dir)
+        .map_err(|e| format!("Failed to create clean dir: {}", e))?;
+    let base_name = doc.filename.rsplit_once('.').map(|(n, _)| n).unwrap_or(&doc.filename);
+    let path = clean_dir.join(format!("{}_redacted.{}", base_name, expected_type));
+    Ok((file_bytes, redactions, path))
 }
 
+fn record_export(id: &str, path: &Path, detail: &str, state: &AppState) -> Result<String, String> {
+    state
+        .db
+        .update_document_clean_path(id, path.to_str().unwrap_or(""))
+        .map_err(|e| format!("Database error: {}", e))?;
+    let _ = state.db.insert_audit_log(Some(id), "export", Some(detail));
+    Ok(path.to_string_lossy().to_string())
+}
+
+/// Export a redacted DOCX (run-aware rewrite of every text-bearing part,
+/// verified before returning).
 // TODO: On mobile, return path for share sheet integration
 #[tauri::command]
-pub async fn export_clean(
+pub async fn export_redacted_docx(
     id: String,
-    redaction_rects: Vec<RedactionRect>,
     redaction_mode: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
     let mode = match redaction_mode.as_deref() {
-        Some("text_replace") => crate::document::redactor::RedactionMode::TextReplace,
-        _ => crate::document::redactor::RedactionMode::BlackBar,
+        Some("black_bar") => crate::document::redactor::RedactionMode::BlackBar,
+        _ => crate::document::redactor::RedactionMode::TextReplace,
     };
-
-    let doc = state
-        .db
-        .get_document(&id)
-        .map_err(|e| format!("Database error: {}", e))?
-        .ok_or_else(|| "Document not found".to_string())?;
-
-    let file_bytes = encryption::decrypt_file(Path::new(&doc.original_path))?;
-
-    let clean_dir = state.storage_dir.join("clean");
-    std::fs::create_dir_all(&clean_dir)
-        .map_err(|e| format!("Failed to create clean dir: {}", e))?;
-
-    let base_name = doc.filename.rsplit_once('.').map(|(n, _)| n).unwrap_or(&doc.filename);
-
-    // For DOCX files: replace text directly in the DOCX XML (preserves formatting)
-    // For PDF files: overlay redaction rectangles
-    let clean_path = if doc.file_type == "docx" {
-        let clean_filename = format!("{}_redacted.docx", base_name);
-        let path = clean_dir.join(&clean_filename);
-
-        let redactions = state.db.get_redactions(&id)
-            .map_err(|e| format!("Database error: {}", e))?;
-
-        crate::document::redactor::export_redacted_docx(&file_bytes, &redactions, &path, mode)?;
-        path
-    } else {
-        let clean_filename = format!("{}_redacted.pdf", base_name);
-        let path = clean_dir.join(&clean_filename);
-
-        crate::document::redactor::export_redacted_pdf(&file_bytes, &redaction_rects, &path, mode)?;
-        path
-    };
-
-    state
-        .db
-        .update_document_clean_path(&id, clean_path.to_str().unwrap_or(""))
-        .map_err(|e| format!("Database error: {}", e))?;
-
-    let clean_filename = clean_path.file_name()
-        .map(|n| n.to_string_lossy().to_string())
-        .unwrap_or_default();
-
-    // Audit log
-    let _ = state.db.insert_audit_log(
-        Some(&id),
-        "export",
-        Some(&format!("Exported redacted version: {}", clean_filename)),
-    );
-
-    Ok(clean_path.to_string_lossy().to_string())
+    let (file_bytes, redactions, path) = prepare_export(&id, "docx", &state)?;
+    crate::document::redactor::export_redacted_docx(&file_bytes, &redactions, &path, mode)?;
+    let name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+    record_export(&id, &path, &format!("Exported redacted DOCX: {}", name), &state)
 }
 
+/// One page to rasterize, as rendered by PDF.js, with the boxes to burn in.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PageImageData {
-    pub jpeg_base64: String,
-    pub width: u32,
-    pub height: u32,
-    pub page_width: f64,
-    pub page_height: f64,
+pub struct RedactedPageInput {
+    /// 0-based page index.
+    pub page: u32,
+    /// PNG or JPEG, base64.
+    pub image_base64: String,
+    pub rects: Vec<crate::document::redactor::PixelRect>,
 }
 
+/// Export a redacted PDF: pages with approved redactions are rasterized with
+/// the boxes burned in by Rust; other pages keep their content. Refuses if a
+/// redaction cannot be placed or approved text would survive.
 // TODO: On mobile, return path for share sheet integration
 #[tauri::command]
-pub async fn export_clean_flat(
+pub async fn export_redacted_pdf(
     id: String,
-    pages: Vec<PageImageData>,
+    pages: Vec<RedactedPageInput>,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    let doc = state
-        .db
-        .get_document(&id)
-        .map_err(|e| format!("Database error: {}", e))?
-        .ok_or_else(|| "Document not found".to_string())?;
-
-    let clean_dir = state.storage_dir.join("clean");
-    std::fs::create_dir_all(&clean_dir)
-        .map_err(|e| format!("Failed to create clean dir: {}", e))?;
-
-    let base_name = doc.filename.rsplit_once('.').map(|(n, _)| n).unwrap_or(&doc.filename);
-    let clean_filename = format!("{}_redacted.pdf", base_name);
-    let clean_path = clean_dir.join(&clean_filename);
-
-    // Decode base64 JPEG images
     use base64::Engine;
-    let page_images: Vec<crate::document::redactor::PageImage> = pages
-        .iter()
+    let (file_bytes, redactions, path) = prepare_export(&id, "pdf", &state)?;
+    let rasters = pages
+        .into_iter()
         .map(|p| {
-            let jpeg_bytes = base64::engine::general_purpose::STANDARD
-                .decode(&p.jpeg_base64)
-                .map_err(|e| format!("Failed to decode image: {}", e))?;
-            Ok(crate::document::redactor::PageImage {
-                jpeg_bytes,
-                width: p.width,
-                height: p.height,
-                page_width: p.page_width,
-                page_height: p.page_height,
-            })
+            let image = base64::engine::general_purpose::STANDARD
+                .decode(&p.image_base64)
+                .map_err(|e| format!("Failed to decode page image: {}", e))?;
+            Ok(crate::document::redactor::PageRaster { page_index: p.page, image, rects: p.rects })
         })
         .collect::<Result<Vec<_>, String>>()?;
 
-    crate::document::redactor::create_pdf_from_images(&page_images, &clean_path)?;
-
-    state
-        .db
-        .update_document_clean_path(&id, clean_path.to_str().unwrap_or(""))
-        .map_err(|e| format!("Database error: {}", e))?;
-
-    let _ = state.db.insert_audit_log(
-        Some(&id),
-        "export",
-        Some(&format!("Exported flattened redacted version: {}", clean_filename)),
-    );
-
-    Ok(clean_path.to_string_lossy().to_string())
+    let summary =
+        crate::document::redactor::export_flattened_pdf(&file_bytes, &redactions, &rasters, &path)?;
+    let name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+    record_export(
+        &id,
+        &path,
+        &format!(
+            "Exported redacted PDF: {} ({} of {} pages rasterized)",
+            name,
+            summary.rasterized_pages.len(),
+            summary.page_count
+        ),
+        &state,
+    )
 }
 
 #[tauri::command]

@@ -35,6 +35,8 @@ uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 hex = "0.4"
 base64 = "0.22"
+# Raster burn-in for PDF export (decode PDF.js page renders, draw boxes, re-encode).
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 tauri-plugin-opener = "2"
 # ort + ort-tract: pure-Rust ONNX runtime, no native binary download.
 # Works on every target (incl. x86_64-apple-darwin). CPU-only.
