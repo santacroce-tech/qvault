@@ -17,6 +17,11 @@ concurrency:
 
 jobs:
   build:
+    # Only app releases build the app. Asset-only releases such as
+    # `ocr-models-v1` (OCR model files for manual import) must not trigger it.
+    if: >-
+      github.event_name != 'release' ||
+      !startsWith(github.event.release.tag_name, 'ocr-models-')
     permissions:
       contents: write
     strategy:
