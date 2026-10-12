@@ -1,0 +1,110 @@
+<!-- title: Modelos e instalación
+     description: Configure la detección con IA y el OCR de Qvault en su propio equipo: enlaces de descarga, tamaños, sumas SHA-256 y pasos de importación, también para equipos aislados de la red. -->
+<article class="wrap doc">
+  <h1>Modelos e instalación</h1>
+  <p class="lead">Qvault funciona desde el primer momento con detección por patrones y heurística. Dos funciones opcionales necesitan archivos de modelo en su ordenador: la detección con IA (capa 3) y el OCR para documentos escaneados. Esta página explica de dónde proceden esos archivos y cómo instalarlos.</p>
+
+  <nav class="toc" aria-label="En esta página">
+    <ol>
+      <li><a href="#overview">Qué necesita un modelo</a></li>
+      <li><a href="#llm">Modelos de detección con IA (capa 3)</a></li>
+      <li><a href="#ocr">Modelos de OCR: descarga e importación</a></li>
+      <li><a href="#verify">Comprobar las sumas de verificación</a></li>
+      <li><a href="#airgap">Equipos aislados de la red</a></li>
+      <li><a href="#trouble">Solución de problemas</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="overview">Qué necesita un modelo</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Función</th><th>Modelo</th><th>Cómo obtenerlo</th></tr></thead>
+      <tbody>
+        <tr><td>Capas 1–2 (patrones, heurística)</td><td>Ninguno</td><td>Incluidas</td></tr>
+        <tr><td>Capa 3 (IA local)</td><td>Qwen2.5-0.5B-Instruct (por defecto) o 1.5B</td><td>Descarga desde la aplicación o importación desde archivo</td></tr>
+        <tr><td>OCR (PDF escaneados, PNG, JPG, TIFF)</td><td>Detector CRAFT + reconocedor latino</td><td>Descarga manual e importación</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Todos los modelos se gestionan en <strong>Configuración → Detección por IA</strong> (el gestor de modelos). Se guardan en la carpeta de datos de Qvault, se comprueban contra un SHA-256 fijado antes de su primer uso en cada sesión y pueden borrarse en cualquier momento. La IA y el OCR solo están disponibles en la aplicación de escritorio.</p>
+
+  <h2 id="llm">Modelos de detección con IA (capa 3)</h2>
+  <p>En el gestor de modelos, pulse <strong>Descargar</strong> junto a un modelo. Qvault muestra el tamaño y el servidor de origen antes de transferir nada. La descarga procede directamente de Hugging Face por HTTPS (nunca de redes entre pares), muestra el progreso real, puede cancelarse y se comprueba contra el tamaño y el SHA-256 indicados abajo antes de darla por buena.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Modelo</th><th>Archivo</th><th>Tamaño</th><th>Licencia</th></tr></thead>
+      <tbody>
+        <tr><td>Qwen2.5 0.5B Instruct (Q4_K_M), recomendado</td><td><code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code></td><td>491.400.032 bytes (≈ 491 MB)</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen2.5 1.5B Instruct (Q4_K_M)</td><td><code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code></td><td>1.117.320.736 bytes (≈ 1,1 GB)</td><td>Apache-2.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">SHA-256 (0.5B): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
+  SHA-256 (1.5B): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
+  <p>A continuación, active <strong>Usar detección con IA (capa 3) al escanear</strong>. Los hallazgos de la IA se añaden con un 70 % de confianza y siempre quedan pendientes de su revisión. Si el motor de IA no está disponible o un fragmento falla, el análisis termina igualmente con las capas 1–2 y el visor indica qué se ha omitido.</p>
+
+  <h2 id="ocr">Modelos de OCR: descarga e importación</h2>
+  <p>La aplicación no descarga los modelos de OCR. Descargue usted mismo los dos archivos siguientes, compruébelos e impórtelos. Solo hay que hacerlo una vez por equipo.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Archivo</th><th>Función</th><th>Tamaño</th><th>Licencia</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><a href="https://github.com/santacroce-tech/qvault/releases/download/ocr-models-v1/craft_mlt_25k.gguf"><code>craft_mlt_25k.gguf</code></a></td>
+          <td>Detector de texto CRAFT (localiza el texto en la página)</td>
+          <td>83.133.856 bytes (≈ 83 MB)</td>
+          <td>MIT (pesos, NAVER Clova AI); conversión GGUF Apache-2.0</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/santacroce-tech/qvault/releases/download/ocr-models-v1/latin_g2.gguf"><code>latin_g2.gguf</code></a></td>
+          <td>Reconocedor latino de EasyOCR (lee el texto)</td>
+          <td>15.396.512 bytes (≈ 15 MB)</td>
+          <td>Apache-2.0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">SHA-256 (<code>craft_mlt_25k.gguf</code>): <span class="hash">74501993caf4581ce09b280f49a1b3d249c0f5a78496e047718b398457a875aa</span><br>
+  SHA-256 (<code>latin_g2.gguf</code>): <span class="hash">dd1c7a436e9175904e63683e939635892f45c8c6377d5e14e87cf8b175e10768</span></p>
+
+  <ol class="steps">
+    <li><strong>Descargue los dos archivos en una misma carpeta</strong>, por ejemplo <code>Descargas/qvault-ocr</code>, con los enlaces de la tabla. No cambie los nombres de los archivos.</li>
+    <li><strong>Compruebe las sumas de verificación</strong> (véase <a href="#verify">más abajo</a>). Cada hash debe coincidir exactamente con el de la tabla.</li>
+    <li><strong>Abra Qvault → Configuración → Detección por IA</strong> y busque <strong>Modelos OCR</strong>.</li>
+    <li><strong>Pulse <em>Importar desde archivo…</em></strong> y elija <code>craft_mlt_25k.gguf</code>. Repita con <code>latin_g2.gguf</code>. Qvault reconoce cada archivo por su SHA-256 y lo copia en su carpeta de modelos.</li>
+    <li><strong>Opcional:</strong> pulse <em>Probar motor de IA</em> para ejecutar el OCR sobre una imagen de prueba incluida. Después puede borrar las copias descargadas.</li>
+  </ol>
+
+  <h2 id="verify">Comprobar las sumas de verificación</h2>
+  <p>Qvault comprueba el hash al importar, así que un archivo dañado o alterado se rechaza en cualquier caso. Comprobarlo usted antes es una buena práctica y es la forma de confirmar que un archivo copiado en un soporte extraíble está íntegro.</p>
+  <h3>macOS y Linux</h3>
+<pre><code>cd ~/Downloads/qvault-ocr
+shasum -a 256 craft_mlt_25k.gguf latin_g2.gguf
+# En Linux también: sha256sum craft_mlt_25k.gguf latin_g2.gguf</code></pre>
+  <h3>Windows (símbolo del sistema)</h3>
+<pre><code>cd %USERPROFILE%\Downloads\qvault-ocr
+certutil -hashfile craft_mlt_25k.gguf SHA256
+certutil -hashfile latin_g2.gguf SHA256</code></pre>
+  <p class="small">En PowerShell puede usar <code>Get-FileHash .\craft_mlt_25k.gguf -Algorithm SHA256</code>. Windows muestra el hash en mayúsculas; compárelo sin tener en cuenta mayúsculas y minúsculas.</p>
+  <p>Resultado esperado:</p>
+<pre><code>74501993caf4581ce09b280f49a1b3d249c0f5a78496e047718b398457a875aa  craft_mlt_25k.gguf
+dd1c7a436e9175904e63683e939635892f45c8c6377d5e14e87cf8b175e10768  latin_g2.gguf</code></pre>
+
+  <h2 id="airgap">Equipos aislados de la red</h2>
+  <p>Muchos despachos revisan documentos en equipos sin conexión. Qvault lo admite plenamente:</p>
+  <ol>
+    <li>En un equipo con conexión, descargue el instalador de Qvault desde <a href="{{releases}}">GitHub Releases</a>, los dos archivos de OCR y, si quiere usar la capa 3, un modelo Qwen desde los enlaces de abajo.</li>
+    <li>Compruebe todas las sumas de verificación en ese equipo.</li>
+    <li>Copie los archivos en un soporte extraíble y llévelos al equipo aislado. Vuelva a comprobar las sumas allí.</li>
+    <li>Instale Qvault e importe cada modelo con <em>Importar desde archivo…</em>. No hace falta conexión en ningún momento.</li>
+  </ol>
+  <p class="small">Archivos Qwen en las revisiones fijadas: <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf">qwen2.5-0.5b-instruct-q4_k_m.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf">qwen2.5-1.5b-instruct-q4_k_m.gguf</a></p>
+
+  <h2 id="trouble">Solución de problemas</h2>
+  <ul>
+    <li><strong>«Archivo de modelo no reconocido».</strong> El hash del archivo no coincide con ningún modelo conocido por Qvault. Suele tratarse de una descarga incompleta: vuelva a descargarlo y compruebe de nuevo el hash. No acepte un archivo desconocido como modelo de OCR.</li>
+    <li><strong>«El motor de IA no está incluido en esta compilación».</strong> Está usando una compilación sin el proceso auxiliar de QVAC (por ejemplo, un <code>cargo build</code> sin más). Las capas 1–2 siguen funcionando; use una versión oficial para la IA y el OCR.</li>
+    <li><strong>«Probablemente demasiado grande para este equipo».</strong> Qvault comprueba si un modelo cabe en la memoria antes de cargarlo. Use el modelo 0.5B.</li>
+    <li><strong>Windows.</strong> El motor de QVAC necesita un controlador Vulkan reciente incluso para inferencia en CPU. En máquinas virtuales o con gráficos muy antiguos, la IA y el OCR pueden no estar disponibles; las capas 1–2 no se ven afectadas.</li>
+  </ul>
+</article>

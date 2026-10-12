@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <title>{{title}}</title>
+  <meta name="description" content="{{description}}">
+  <meta property="og:title" content="{{title}}">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:type" content="website">
+  {{alternates}}
+  <link rel="icon" href="{{root}}assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="{{root}}assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">{{skip}}</a>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="brand" href="{{homeHref}}">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 2 4 6.5v8.8c0 7.3 5 13.2 12 14.7 7-1.5 12-7.4 12-14.7V6.5L16 2Z" fill="currentColor"/><circle cx="15.5" cy="15" r="5.2" class="cut"/><path class="cut" d="m18.6 18.4 4 4.2"/></svg>
+        <span>Qvault</span>
+      </a>
+      <nav class="lang" aria-label="{{language}}">{{langLinks}}</nav>
+      <a class="btn btn-small" href="{{releases}}">{{download}}</a>
+    </div>
+    <nav class="wrap main-nav" aria-label="{{menu}}">
+      {{nav}}
+    </nav>
+  </header>
+  <main id="main">
+{{content}}
+  </main>
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand-line"><strong>Qvault</strong> · {{tagline}}</p>
+        <p>{{license}} © {{year}} Santacroce SL. {{by}} <a href="https://santacroce.es">Santacroce SL</a>, Madrid.</p>
+        <p class="muted">{{noTracking}}</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        {{footerLinks}}
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

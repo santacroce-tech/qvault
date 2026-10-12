@@ -1,0 +1,110 @@
+<!-- title: Models and setup
+     description: Set up Qvault's optional on-device AI detection and OCR: download links, sizes, SHA-256 checksums and import steps, including for air-gapped machines. -->
+<article class="wrap doc">
+  <h1>Models and setup</h1>
+  <p class="lead">Qvault works out of the box with pattern and heuristic detection. Two optional features need model files on your computer: AI detection (Layer 3) and OCR for scanned documents. This page explains where the files come from and how to install them.</p>
+
+  <nav class="toc" aria-label="On this page">
+    <ol>
+      <li><a href="#overview">What needs a model</a></li>
+      <li><a href="#llm">AI detection models (Layer 3)</a></li>
+      <li><a href="#ocr">OCR models: download and import</a></li>
+      <li><a href="#verify">Verifying checksums</a></li>
+      <li><a href="#airgap">Air-gapped machines</a></li>
+      <li><a href="#trouble">Troubleshooting</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="overview">What needs a model</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Feature</th><th>Model</th><th>How to get it</th></tr></thead>
+      <tbody>
+        <tr><td>Layers 1–2 (patterns, heuristics)</td><td>None</td><td>Built in</td></tr>
+        <tr><td>Layer 3 (local AI)</td><td>Qwen2.5-0.5B-Instruct (default) or 1.5B</td><td>Download in the app, or import from a file</td></tr>
+        <tr><td>OCR (scanned PDFs, PNG, JPG, TIFF)</td><td>CRAFT detector + Latin recognizer</td><td>Download manually, then import</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>All models are managed in <strong>Settings → AI Detection</strong> (the Model Manager). Models are stored in Qvault’s app data folder, are checked against a pinned SHA-256 before first use in each session, and can be deleted at any time. AI and OCR are available in the desktop app only.</p>
+
+  <h2 id="llm">AI detection models (Layer 3)</h2>
+  <p>In the Model Manager, click <strong>Download</strong> next to a model. Qvault shows the size and the source host before anything is transferred. The download comes straight from Hugging Face over HTTPS (never peer-to-peer), shows real progress, can be cancelled, and is verified against the size and SHA-256 below before it is moved into place.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Model</th><th>File</th><th>Size</th><th>Licence</th></tr></thead>
+      <tbody>
+        <tr><td>Qwen2.5 0.5B Instruct (Q4_K_M), recommended</td><td><code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code></td><td>491,400,032 bytes (≈ 491 MB)</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen2.5 1.5B Instruct (Q4_K_M)</td><td><code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code></td><td>1,117,320,736 bytes (≈ 1.1 GB)</td><td>Apache-2.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">SHA-256 (0.5B): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
+  SHA-256 (1.5B): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
+  <p>Then turn on <strong>Use AI detection (Layer 3) when scanning</strong>. AI findings are added at 70% confidence and always wait for your review. If the AI engine is unavailable or a chunk fails, the scan still completes with Layers 1–2 and the viewer tells you what was skipped.</p>
+
+  <h2 id="ocr">OCR models: download and import</h2>
+  <p>The OCR models are not downloaded by the app. Download the two files below yourself, check them, and import them. You only need to do this once per computer.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>File</th><th>Purpose</th><th>Size</th><th>Licence</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><a href="https://github.com/santacroce-tech/qvault/releases/download/ocr-models-v1/craft_mlt_25k.gguf"><code>craft_mlt_25k.gguf</code></a></td>
+          <td>CRAFT text detector (finds text on the page)</td>
+          <td>83,133,856 bytes (≈ 83 MB)</td>
+          <td>MIT (weights, NAVER Clova AI); GGUF conversion Apache-2.0</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/santacroce-tech/qvault/releases/download/ocr-models-v1/latin_g2.gguf"><code>latin_g2.gguf</code></a></td>
+          <td>EasyOCR Latin recognizer (reads the text)</td>
+          <td>15,396,512 bytes (≈ 15 MB)</td>
+          <td>Apache-2.0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">SHA-256 (<code>craft_mlt_25k.gguf</code>): <span class="hash">74501993caf4581ce09b280f49a1b3d249c0f5a78496e047718b398457a875aa</span><br>
+  SHA-256 (<code>latin_g2.gguf</code>): <span class="hash">dd1c7a436e9175904e63683e939635892f45c8c6377d5e14e87cf8b175e10768</span></p>
+
+  <ol class="steps">
+    <li><strong>Download both files into one folder</strong>, for example <code>Downloads/qvault-ocr</code>. Use the links in the table above. Keep the file names unchanged.</li>
+    <li><strong>Verify the checksums</strong> (see <a href="#verify">below</a>). Each printed hash must match the table exactly.</li>
+    <li><strong>Open Qvault → Settings → AI Detection</strong> and find <strong>OCR models</strong>.</li>
+    <li><strong>Click <em>Import from file…</em></strong> and choose <code>craft_mlt_25k.gguf</code>. Repeat for <code>latin_g2.gguf</code>. Qvault recognises each file by its SHA-256 and copies it into its model folder.</li>
+    <li><strong>Optional:</strong> click <em>Test AI engine</em> to run OCR on a built-in sample image. You can then delete the downloaded copies.</li>
+  </ol>
+
+  <h2 id="verify">Verifying checksums</h2>
+  <p>Qvault checks the hash itself on import, so a damaged or altered file is rejected either way. Checking it yourself first is good practice, and it is how you confirm that a file copied onto removable media is intact.</p>
+  <h3>macOS and Linux</h3>
+<pre><code>cd ~/Downloads/qvault-ocr
+shasum -a 256 craft_mlt_25k.gguf latin_g2.gguf
+# Linux also has: sha256sum craft_mlt_25k.gguf latin_g2.gguf</code></pre>
+  <h3>Windows (Command Prompt)</h3>
+<pre><code>cd %USERPROFILE%\Downloads\qvault-ocr
+certutil -hashfile craft_mlt_25k.gguf SHA256
+certutil -hashfile latin_g2.gguf SHA256</code></pre>
+  <p class="small">In PowerShell you can use <code>Get-FileHash .\craft_mlt_25k.gguf -Algorithm SHA256</code>. Windows prints the hash in upper case; compare it ignoring case.</p>
+  <p>Expected output:</p>
+<pre><code>74501993caf4581ce09b280f49a1b3d249c0f5a78496e047718b398457a875aa  craft_mlt_25k.gguf
+dd1c7a436e9175904e63683e939635892f45c8c6377d5e14e87cf8b175e10768  latin_g2.gguf</code></pre>
+
+  <h2 id="airgap">Air-gapped machines</h2>
+  <p>Many firms keep document review machines off the network. Qvault supports this fully:</p>
+  <ol>
+    <li>On a connected computer, download the Qvault installer from <a href="{{releases}}">GitHub Releases</a>, the two OCR files above and, if you want Layer 3, a Qwen model file from the links below.</li>
+    <li>Verify every checksum on the connected computer.</li>
+    <li>Copy the files to removable media and onto the air-gapped machine. Verify the checksums again there.</li>
+    <li>Install Qvault and import each model with <em>Import from file…</em>. No network connection is needed at any point.</li>
+  </ol>
+  <p class="small">Qwen files at the pinned revisions: <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf">qwen2.5-0.5b-instruct-q4_k_m.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf">qwen2.5-1.5b-instruct-q4_k_m.gguf</a></p>
+
+  <h2 id="trouble">Troubleshooting</h2>
+  <ul>
+    <li><strong>“Unrecognised model file”.</strong> The file’s hash does not match any model Qvault knows. It is usually an incomplete download: download it again and re-check the hash. Do not accept an unknown file for OCR.</li>
+    <li><strong>“AI engine is not included in this build”.</strong> You are running a build without the bundled QVAC helper (for example a plain <code>cargo build</code>). Layers 1–2 still work; use an official release for AI and OCR.</li>
+    <li><strong>“Likely too large for this computer”.</strong> Qvault checks whether a model fits your memory before loading it. Use the 0.5B model.</li>
+    <li><strong>Windows.</strong> The QVAC runtime needs a recent Vulkan driver even for CPU inference. On virtual machines or very old graphics hardware, AI and OCR may be unavailable; Layers 1–2 are unaffected.</li>
+  </ul>
+</article>

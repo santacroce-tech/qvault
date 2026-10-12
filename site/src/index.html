@@ -1,0 +1,233 @@
+<!-- title: Qvault: local PII detection and redaction for legal documents
+     description: Qvault finds personal data in PDFs, Word files and scans, lets you review every finding, and exports redacted copies. Everything runs on your computer. Free and MIT-licensed. -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Free · open source · runs on your computer</span>
+      <h1>Redact client documents without sending them anywhere.</h1>
+      <p class="lead">Qvault finds names, ID numbers, addresses, bank details and other personal data in PDFs, Word files and scanned pages. You review every finding, then export a copy where the redacted text is really gone.</p>
+      <div class="btn-row">
+        <a class="btn" href="{{releases}}">Download Qvault</a>
+        <a class="btn btn-ghost" href="#how">How it works</a>
+      </div>
+      <p class="hero-note">macOS, Windows and Linux · MIT License · no account, no licence key, no telemetry</p>
+    </div>
+    <figure class="shot">
+      <img src="{{root}}assets/screenshots/review-view.jpg" width="1600" height="1000" alt="Qvault review screen: a services agreement on the left with detected personal data highlighted, and a list of redactions with approve and reject buttons on the right.">
+    </figure>
+  </div>
+</section>
+
+<section class="alt" id="privacy">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Privacy model</span>
+      <h2>Your documents stay on your device.</h2>
+      <p>Documents are opened, scanned, reviewed and exported locally. No document, extracted text or detection result is ever sent to us or to anyone else. There is no cloud service behind Qvault.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3>No document data leaves the device</h3>
+        <p>Text extraction, OCR, detection and export all run on your computer. Stored documents are encrypted on disk with AES-256-GCM.</p>
+      </div>
+      <div class="card">
+        <h3>Network only for models you ask for</h3>
+        <p>The only network use is an optional model download that you start yourself. Qvault shows the file size first, downloads over HTTPS, and checks the SHA-256 before the model is used.</p>
+      </div>
+      <div class="card">
+        <h3>Works fully offline</h3>
+        <p>Layers 1 and 2 need no model at all. AI models can be imported from a file, so air-gapped machines can use every feature.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>Open, review, export.</h2>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3><span class="num">1</span> Open a document</h3>
+        <p>Drop in a PDF, a DOCX, or a scanned page (PNG, JPG, TIFF). Qvault extracts the text, using on-device OCR where there is no text layer, and scans it for personal data.</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">2</span> Review every finding</h3>
+        <p>Each detection is highlighted in the document with its category, confidence and the layer that found it. Approve, reject or edit it, or select text to add your own.</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">3</span> Export a clean copy</h3>
+        <p>Only approved redactions are applied. Qvault re-reads the exported file and refuses to save it if any approved text can still be found in it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="layers">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Detection</span>
+      <h2>Three layers, each one optional to trust.</h2>
+      <p>Each layer catches things the previous one misses. Later layers skip text that an earlier layer already matched.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3><span class="num">1</span> Patterns</h3>
+        <p>Regular expressions for structured data: email addresses, phone numbers, card numbers, IBANs, IP addresses, URLs, dates and amounts, plus jurisdiction sets for the US (SSN, EIN), the EU (VAT numbers), Brazil (CPF, CNPJ) and Germany (Steuernummer).</p>
+        <p class="meta">Pattern sets: Global, US, EU, BR, DE</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">2</span> Heuristics</h3>
+        <p>Context rules for what patterns cannot describe: names of people (titles, roles, “represented by”), company names with legal suffixes (LLC, Inc, GmbH, LTDA, EIRELI…) and addresses.</p>
+        <p class="meta">No model needed</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">3</span> Local AI <span class="tag">optional</span></h3>
+        <p>A small language model reads the text in chunks and suggests personal data that rules miss. It runs through Tether’s <a href="https://github.com/tetherto/qvac">QVAC</a> SDK in a bundled helper process that talks to Qvault over standard input/output and opens no network sockets.</p>
+        <p class="meta">Qwen2.5-0.5B-Instruct by default, 1.5B optional · desktop only</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="review">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Review first</span>
+      <h2>Nothing is redacted automatically.</h2>
+      <p>Detection tools make mistakes in both directions. Qvault treats every finding as a suggestion: it lists the text, the category, the confidence and the layer (pattern, heuristic or AI) so you can judge it, and it applies only what you approve.</p>
+      <ul class="checks">
+        <li>Approve or reject one finding, all occurrences, or everything at once.</li>
+        <li>Advanced mode: select any text in the document to add a manual redaction.</li>
+        <li>An entity overview shows which names and numbers recur across your documents.</li>
+        <li>An audit log records actions (uploads, scans, approvals, exports, model changes) without document text.</li>
+      </ul>
+    </div>
+    <figure class="shot">
+      <img src="{{root}}assets/screenshots/entity-view.jpg" width="1600" height="1000" loading="lazy" alt="Sensitive data overview: counts of documents, unique entities and occurrences, a breakdown by category and a searchable table of entities.">
+    </figure>
+  </div>
+</section>
+
+<section class="alt" id="ocr">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">OCR</span>
+      <h2>Scanned PDFs and images, read on your computer.</h2>
+      <p>Many legal files are scans with no text layer. Qvault runs optical character recognition locally with QVAC OCR: an EasyOCR-style CRAFT text detector and a Latin-script recognizer, both as GGUF models on your machine.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>What it covers</h3>
+        <ul class="checks">
+          <li>Scanned or image-only PDF pages.</li>
+          <li>PNG, JPG and TIFF images.</li>
+          <li>Latin-script languages such as English, Spanish, Portuguese, German and French.</li>
+          <li>Recognised text goes through the same three layers and the same review.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>What to expect</h3>
+        <p>OCR runs on the CPU and takes seconds per page, not milliseconds. Recognition is never perfect: check scans with extra care, especially email addresses and numbers broken across lines.</p>
+        <p>The two OCR model files are a one-time manual download. <a href="{{models}}">See the setup steps and checksums.</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="export">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Export</span>
+      <h2>Redactions that cannot be copied back out.</h2>
+      <p>A black box drawn over text is not a redaction if the text is still underneath. Qvault removes it.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>PDF</h3>
+        <ul class="checks">
+          <li>Every page with an approved redaction is turned into an image and the boxes are burned into the pixels. The old text, fonts and annotations of that page are dropped.</li>
+          <li>Document metadata, XMP, outlines, forms, attachments and scripts are stripped from the whole file.</li>
+          <li>Export is refused if an approved redaction could not be placed on the page, or if approved text appears on a page that is not being redacted.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Word (DOCX)</h3>
+        <ul class="checks">
+          <li>Run-aware redaction: text split across formatting runs is still found and replaced.</li>
+          <li>Body, headers, footers, footnotes, endnotes, comments and tracked changes are all covered; deleted revision text is removed.</li>
+          <li>Comment and revision authors and document properties are blanked; the page thumbnail is removed.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="callout"><strong>Every export is verified.</strong> After writing the file, Qvault extracts its text again. If any approved string survives, the file is deleted and the export fails with an explanation.</p>
+  </div>
+</section>
+
+<section class="alt" id="screenshots">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Screenshots</span>
+      <h2>A desktop app built for review work.</h2>
+    </div>
+    <div class="shots">
+      <figure>
+        <div class="shot"><img src="{{root}}assets/screenshots/review-view.jpg" width="1600" height="1000" loading="lazy" alt="Review screen with highlighted findings in the document and the redaction list."></div>
+        <figcaption>Review: findings are highlighted in place, with category and confidence.</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="{{root}}assets/screenshots/entity-view.jpg" width="1600" height="1000" loading="lazy" alt="Entity overview table."></div>
+        <figcaption>Entity overview across documents.</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="{{root}}assets/screenshots/history-view.jpg" width="1600" height="1000" loading="lazy" alt="Document history list with status and number of findings."></div>
+        <figcaption>Document history and status.</figcaption>
+      </figure>
+    </div>
+    <p class="muted small">Screenshots are from an earlier version; the current Settings screen adds the AI Model Manager.</p>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Sample</span>
+      <h2>Before and after.</h2>
+      <p>A fictitious three-page professional services agreement full of personal data, and a redacted version of it. Try the original in Qvault and compare.</p>
+    </div>
+    <div class="demo-grid">
+      <figure>
+        <div class="shot"><img src="{{root}}assets/demo/demo-p1.jpg" width="680" height="880" loading="lazy" alt="Page 1 of the sample agreement with names, addresses, emails and phone numbers visible."></div>
+        <figcaption>Original · <a href="{{root}}assets/demo/demo.pdf">download demo.pdf</a> (PDF, 10 KB)</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="{{root}}assets/demo/demo-cleaned-p1.jpg" width="680" height="880" loading="lazy" alt="Page 1 of the sample agreement with personal data replaced by labels such as [PERSON NAME] and [EMAIL]."></div>
+        <figcaption>Redacted, label style · <a href="{{root}}assets/demo/demo-cleaned.pdf">download demo-cleaned.pdf</a> (PDF, 9 KB)</figcaption>
+      </figure>
+    </div>
+    <p class="muted small">The redacted sample illustrates the result of a full review with category labels. A real PDF export from Qvault burns black boxes into page images, as described above. What Qvault finds on its own depends on the layers you enable; some items in this sample, such as routing and SWIFT codes, may need a manual redaction.</p>
+  </div>
+</section>
+
+<section class="alt download" id="download">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Download</span>
+      <h2>Free for everyone, forever.</h2>
+      <p>Qvault is released under the MIT License by Santacroce SL. Installers for every platform are published on GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a class="btn" href="{{releases}}">Get the latest release</a>
+      <a class="btn btn-ghost" href="{{models}}">Set up AI and OCR models</a>
+    </div>
+    <ul class="platforms">
+      <li>macOS (Apple Silicon and Intel)</li>
+      <li>Windows</li>
+      <li>Linux (.deb, AppImage)</li>
+    </ul>
+    <p class="muted small">Installers are not yet code-signed. macOS may say the app “can’t be checked”: open System Settings → Privacy &amp; Security and click <em>Open Anyway</em>. On Windows, choose <em>More info → Run anyway</em> in SmartScreen.</p>
+    <p class="muted small">Mobile builds exist in the source code, but the AI and OCR features are desktop-only. Need help rolling Qvault out at a firm? Write to <a href="mailto:info@santacroce.es">info@santacroce.es</a>.</p>
+  </div>
+</section>
