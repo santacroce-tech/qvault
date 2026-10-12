@@ -168,6 +168,9 @@ pub struct QvacService {
     last_used: AtomicU64,
     active: AtomicUsize,
     reaper_started: AtomicBool,
+    /// One OCR request at a time: results of concurrent requests on one OCR
+    /// model must never be able to cross (see `discard_engine_after_abandoned_ocr`).
+    ocr_lock: Mutex<()>,
 }
 
 fn now_secs() -> u64 {
@@ -202,6 +205,7 @@ impl QvacService {
             last_used: AtomicU64::new(0),
             active: AtomicUsize::new(0),
             reaper_started: AtomicBool::new(false),
+            ocr_lock: Mutex::new(()),
         }
     }
 
@@ -537,20 +541,31 @@ impl QvacService {
         if !self.ocr_installed() {
             return Err("OCR models are not installed".into());
         }
-        let (_, rec) = catalog::ocr_pair();
-        let (qid, _) = self.ensure_loaded(rec.id).map_err(|e| e.to_string())?;
-        let r = self
-            .call("ocr", json!({"modelId": qid, "image": image}), CallOptions::timeout(OCR_TIMEOUT))
-            .map_err(|e| e.to_string())?;
-        let blocks = r.get("blocks").and_then(|b| b.as_array()).cloned().unwrap_or_default();
-        Ok(blocks
-            .into_iter()
-            .map(|b| OcrBlock {
-                text: b.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-                bbox: b.get("bbox").and_then(|v| serde_json::from_value(v.clone()).ok()),
-                confidence: b.get("confidence").and_then(|v| v.as_f64()),
+        self.ocr_blocks(image, None)
+            .map(|blocks| {
+                blocks
+                    .into_iter()
+                    .map(|b| OcrBlock { text: b.text, bbox: Some(b.bbox), confidence: b.confidence })
+                    .collect()
             })
-            .collect())
+            .map_err(|e| e.to_string())
+    }
+
+    /// QVAC's OCR has no native cancel (its plugin declares
+    /// `cancel: {scope: 'none'}`, a soft cancel): an abandoned page keeps
+    /// running in the addon, and its output was observed being delivered as
+    /// the result of the *next* OCR request on the same model (page 1's
+    /// blocks returned for page 3). After a cancelled or timed-out OCR the
+    /// sidecar is therefore stopped, so the next page runs in a fresh
+    /// process. This is a stop, not a crash: it does not count towards the
+    /// restart cap.
+    fn discard_engine_after_abandoned_ocr(&self) {
+        log::info!("qvac: OCR request abandoned; restarting the sidecar before the next OCR");
+        let client = self.client.lock().unwrap().clone();
+        if let Some(c) = client {
+            c.stop();
+        }
+        self.loaded.lock().unwrap().clear();
     }
 
     /// App-private directory for page images sent to OCR (inside the
@@ -577,6 +592,19 @@ impl QvacService {
         if !self.ocr_installed() {
             return Err(OcrFailure::Unavailable("OCR models are not installed".into()));
         }
+        // Wait for any other OCR request to finish (cancellable).
+        let _one_at_a_time = loop {
+            match self.ocr_lock.try_lock() {
+                Ok(g) => break g,
+                Err(std::sync::TryLockError::Poisoned(p)) => break p.into_inner(),
+                Err(std::sync::TryLockError::WouldBlock) => {
+                    if cancel.as_ref().map(|c| c.is_cancelled()).unwrap_or(false) {
+                        return Err(OcrFailure::Cancelled);
+                    }
+                    std::thread::sleep(Duration::from_millis(25));
+                }
+            }
+        };
         let (_, rec) = catalog::ocr_pair();
         let qid = match self.ensure_loaded(rec.id) {
             Ok((q, _)) => q,
@@ -586,10 +614,17 @@ impl QvacService {
         let opts = CallOptions { timeout: Some(OCR_TIMEOUT), cancel, on_event: None };
         let r = match self.call("ocr", json!({"modelId": qid, "image": image}), opts) {
             Ok(r) => r,
-            Err(QvacError::Cancelled) => return Err(OcrFailure::Cancelled),
+            Err(QvacError::Cancelled) => {
+                self.discard_engine_after_abandoned_ocr();
+                return Err(OcrFailure::Cancelled);
+            }
+            Err(QvacError::Timeout) => {
+                self.discard_engine_after_abandoned_ocr();
+                return Err(OcrFailure::Failed("OCR timed out".into()));
+            }
             Err(QvacError::Unavailable(r)) => return Err(OcrFailure::Unavailable(r)),
-            Err(QvacError::Remote { code, message }) if code == "CANCELLED" => {
-                let _ = message;
+            Err(QvacError::Remote { code, .. }) if code == "CANCELLED" => {
+                self.discard_engine_after_abandoned_ocr();
                 return Err(OcrFailure::Cancelled);
             }
             Err(QvacError::Remote { code, message }) if code == "MODEL_NOT_LOADED" => {

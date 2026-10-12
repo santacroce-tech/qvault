@@ -446,3 +446,41 @@ fn scanned_export_leaves_nothing_readable() {
         let _ = std::fs::remove_dir_all(&app_data);
     }
 }
+
+#[test]
+fn ocr_cancel_stops_the_page_and_the_engine_recovers() {
+    if !enabled() {
+        eprintln!("skipping: set QVAC_SIDECAR_IT=1 (and QVAC_MODELS_DIR) to run");
+        return;
+    }
+    let (svc, app_data) = service("cancel");
+    let dpi = app_lib::ocr::DEFAULT_OCR_DPI;
+    let pages = rasterize(&manifest().join("tests/fixtures/demo-scanned.pdf"), dpi, &app_data.join("cancel"));
+    // Warm up (load the models) so the cancel hits the OCR itself.
+    let reference = svc.ocr_blocks(&pages[2], None).expect("warm-up OCR");
+
+    let flag = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let token: app_lib::qvac::client::CancelToken = flag.clone().into();
+    let svc2 = Arc::clone(&svc);
+    let img = pages[0].clone();
+    let t = Instant::now();
+    let h = std::thread::spawn(move || svc2.ocr_blocks(&img, Some(token)));
+    std::thread::sleep(std::time::Duration::from_millis(1500));
+    flag.store(true, std::sync::atomic::Ordering::SeqCst);
+    let r = h.join().unwrap();
+    let cancelled_after = t.elapsed();
+    eprintln!("cancelled after {:?}: {:?}", cancelled_after, r.as_ref().map(|b| b.len()));
+    assert_eq!(r.err(), Some(app_lib::ocr::OcrFailure::Cancelled));
+    assert!(cancelled_after.as_secs() < 5, "cancel returns promptly");
+
+    // The next page works and gets *its own* result. QVAC's OCR cancel is
+    // only a soft cancel: before the sidecar was restarted after a cancel,
+    // this call returned the abandoned page 1's blocks for page 3.
+    let t = Instant::now();
+    let blocks = svc.ocr_blocks(&pages[2], None).expect("OCR after cancel");
+    eprintln!("OCR after cancel: {} blocks in {:?} (reference {})", blocks.len(), t.elapsed(), reference.len());
+    let texts = |b: &[app_lib::ocr::RawBlock]| b.iter().map(|x| x.text.clone()).collect::<Vec<_>>();
+    assert_eq!(texts(&blocks), texts(&reference), "OCR after a cancel must return this page's text");
+    svc.shutdown();
+    let _ = std::fs::remove_dir_all(&app_data);
+}

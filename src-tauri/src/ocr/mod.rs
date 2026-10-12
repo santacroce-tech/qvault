@@ -122,3 +122,29 @@ impl OcrRuns {
         self.runs.lock().unwrap().remove(doc)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::Ordering;
+
+    #[test]
+    fn runs_track_pages_and_cancel_per_document() {
+        let runs = OcrRuns::default();
+        assert!(!runs.cancel("doc"), "nothing to cancel yet");
+        let a = runs.begin("doc", 200);
+        let b = runs.begin("other", 300);
+        runs.record_page("doc", 0, 120, 1500);
+        runs.record_page("doc", 2, 30, 900);
+        assert!(runs.cancel("doc"));
+        assert!(a.cancel.load(Ordering::SeqCst), "the shared flag is set");
+        assert!(!b.cancel.load(Ordering::SeqCst), "other documents are unaffected");
+        // A second begin while the run exists returns the same (cancelled) run.
+        assert!(runs.begin("doc", 200).cancel.load(Ordering::SeqCst));
+        let done = runs.finish("doc").unwrap();
+        assert_eq!(done.pages_done, vec![0, 2]);
+        assert_eq!((done.blocks, done.ocr_ms, done.dpi), (150, 2400, 200));
+        // After finish, a new run starts uncancelled.
+        assert!(!runs.begin("doc", 200).cancel.load(Ordering::SeqCst));
+    }
+}
