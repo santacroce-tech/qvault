@@ -23,11 +23,13 @@ use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
 
-/// Default rasterisation resolution for OCR. See docs §10.2 for the 200 vs
-/// 300 DPI measurements behind this value.
-pub const DEFAULT_OCR_DPI: u32 = 300;
-/// Resolutions offered in Settings.
-pub const ALLOWED_OCR_DPI: [u32; 4] = [150, 200, 300, 400];
+/// Default rasterisation resolution for OCR. 200 DPI beat 300 DPI on the
+/// scanned fixture (recall of text-layer detections 97.7 % vs 90.9 %, same
+/// time per page: QVAC's detector works on a bounded canvas); 150 DPI fell
+/// below the recall bar. See docs/qvac-integration.md §10.2.
+pub const DEFAULT_OCR_DPI: u32 = 200;
+/// Resolutions offered in Settings (higher ones for small print).
+pub const ALLOWED_OCR_DPI: [u32; 3] = [200, 300, 400];
 
 /// One block as returned by the OCR engine, in pixels of the input image.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

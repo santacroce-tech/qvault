@@ -4,6 +4,8 @@ pub mod redactor;
 pub mod text_match;
 pub mod pdf_text;
 pub(crate) mod pdf_redact;
+/// Size in points of a PDF page as displayed (crop box, after /Rotate).
+pub use pdf_redact::displayed_size as page_displayed_size;
 mod docx_redact;
 
 use pdf_parser::PageText;

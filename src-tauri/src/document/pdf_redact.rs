@@ -542,7 +542,7 @@ pub(crate) fn as_rect(doc: &Document, obj: &Object) -> Option<[f64; 4]> {
 
 /// Size in points of the page as displayed (crop box, after /Rotate), which is
 /// what PDF.js renders at scale 1.
-pub(crate) fn displayed_size(doc: &Document, page_id: ObjectId) -> (f64, f64) {
+pub fn displayed_size(doc: &Document, page_id: ObjectId) -> (f64, f64) {
     let media = inherited(doc, page_id, b"MediaBox")
         .and_then(|o| as_rect(doc, o))
         .unwrap_or([0.0, 0.0, 612.0, 792.0]);
