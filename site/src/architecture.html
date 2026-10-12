@@ -1,0 +1,94 @@
+<!-- title: Architecture
+     description: How Qvault processes, detects and redacts personal data on your computer: Tauri and Rust, the three detection layers, the QVAC sidecar, verified export, and the current limits. -->
+<article class="wrap doc">
+  <h1>Architecture</h1>
+  <p class="lead">How Qvault keeps documents on your machine, how detection and export work, and what it does not (yet) do. This page describes the current design; the detailed engineering notes are in <a href="{{repo}}/blob/main/docs/qvac-integration.md">docs/qvac-integration.md</a> in the repository.</p>
+
+  <nav class="toc" aria-label="On this page">
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#pipeline">Document pipeline</a></li>
+      <li><a href="#detection">Detection layers</a></li>
+      <li><a href="#sidecar">The QVAC sidecar</a></li>
+      <li><a href="#export">Verified export</a></li>
+      <li><a href="#storage">Storage</a></li>
+      <li><a href="#network">Network use</a></li>
+      <li><a href="#limits">Limits and open work</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="overview">Overview</h2>
+  <p>Qvault is a <a href="https://v2.tauri.app/">Tauri v2</a> desktop application. The interface is React and TypeScript rendered in the operating system’s own webview (WebKit on macOS and Linux, WebView2 on Windows). Everything that touches document content runs in a Rust backend in the same process; the interface talks to it through Tauri’s in-process command bridge, not through HTTP.</p>
+  <p>The optional AI features (Layer 3 and OCR) run in a second, bundled process: the <em>QVAC sidecar</em>, built on Tether’s <a href="https://github.com/tetherto/qvac">QVAC</a> SDK and the Bare JavaScript runtime.</p>
+<pre class="diagram" aria-label="Architecture diagram"><code>React UI ──Tauri IPC──▶ Rust backend ──JSON lines over stdio──▶ qvac-sidecar
+                          │  extraction, Layers 1–2,              (Bare + @qvac/inference)
+                          │  export, verification                  OCR · LLM completion
+                          ▼                                        local model files only,
+                   SQLite + encrypted files                        no network sockets
+                   (app data folder)</code></pre>
+
+  <h2 id="pipeline">Document pipeline</h2>
+  <ol>
+    <li><strong>Extraction.</strong> PDFs are rendered with PDF.js, which also provides each piece of text with its position on the page. DOCX files are read as the ZIP of XML parts they are: the main document, headers, footers, footnotes, endnotes and comments, with tracked changes resolved so that the scanner and the redactor see exactly the same text.</li>
+    <li><strong>OCR.</strong> Pages without a text layer, and PNG, JPG and TIFF images, are rendered to images and sent to the sidecar for OCR. The recognised words and their boxes take the place of the missing text layer.</li>
+    <li><strong>Detection.</strong> Layers 1 and 2 always run; Layer 3 runs if it is enabled and a model is installed.</li>
+    <li><strong>Review.</strong> Findings are stored with their category, confidence, source layer and status (pending, approved, rejected). Nothing is applied until you approve it.</li>
+    <li><strong>Export.</strong> Approved redactions are applied and the result is verified before it is kept.</li>
+  </ol>
+
+  <h2 id="detection">Detection layers</h2>
+  <h3>Layer 1: patterns</h3>
+  <p>Compiled regular expressions (Rust’s <code>regex</code> crate, linear-time, no backtracking) for structured data. Matches get a confidence of 0.95. A priority order prevents double matches, such as a phone number inside a URL.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Set</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr><td>Global</td><td>Email, phone numbers, credit cards, IBAN, IPv4 addresses, URLs, monetary amounts, dates</td></tr>
+        <tr><td>United States</td><td>Social Security numbers, EINs</td></tr>
+        <tr><td>European Union</td><td>VAT identification numbers</td></tr>
+        <tr><td>Brazil</td><td>CPF, CNPJ, CEP</td></tr>
+        <tr><td>Germany</td><td>Steuernummer</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Layer 2: heuristics</h3>
+  <p>Rules for names, which no pattern describes: company names with legal suffixes (LLC, Inc, Corp, GmbH, SA, SARL, LTDA, EIRELI and others), names next to titles and roles (“John Smith, Manager”, “representada por…”), names in ownership tables and entity descriptions, and addresses. Name connectors such as <em>de, da, dos, van, von, del</em> are understood. Lists of stop words and stop phrases (“Section”, “Agreement”, “Limited Liability”…) keep legal vocabulary from being flagged. Confidence ranges from 0.75 to 0.92 depending on the evidence.</p>
+  <h3>Layer 3: local language model</h3>
+  <p>The text is split into chunks of about 150 words with 20 words of overlap. For each chunk the model is asked, with a fixed prompt and a JSON schema that constrains its output, to list personal data by category. Qvault then validates every answer (shape, known category, plausibility rules that reject whole sentences), finds every occurrence of each returned string in the chunk on word boundaries, drops anything Layers 1–2 already covered, and adds the rest at confidence 0.70 for review.</p>
+  <p>The default model is Qwen2.5-0.5B-Instruct (Q4_K_M, about 491 MB); the 1.5B variant is optional. A chunk that fails is skipped; if the sidecar is unavailable, Layer 3 stops for that scan and the viewer says so. The scan always completes with Layers 1–2.</p>
+
+  <h2 id="sidecar">The QVAC sidecar</h2>
+  <p>QVAC’s inference packages run on Bare, a small JavaScript runtime. Qvault bundles the Bare executable and a short worker script with the app and starts it only when an AI feature is first used. Design choices:</p>
+  <ul>
+    <li><strong>Standard input/output only.</strong> Requests and responses are JSON lines over the child process’s pipes. The sidecar opens no HTTP server and no sockets; this was checked with <code>lsof</code> and by running it under a sandbox that denies all network access.</li>
+    <li><strong>A fixed allow-list of methods:</strong> load and unload a model, OCR, completion, embedding, a memory-fit check, cancel and shutdown. Anything else is rejected.</li>
+    <li><strong>Local files only.</strong> Model and image paths must be absolute paths to existing files. URLs and QVAC’s registry (which would fetch models over a peer-to-peer network) are refused, and network options of the model runtime are not exposed.</li>
+    <li><strong>Supervised.</strong> Every request has a timeout and can be cancelled. If the sidecar crashes, it is restarted with backoff, at most three times in five minutes, then marked unavailable for the session. It stops after five minutes idle and on app exit. Its environment is cleared, and document text is never logged.</li>
+    <li><strong>Temporary files are wiped.</strong> QVAC writes OCR inputs to a temporary folder; Qvault points that folder into its own app data and empties it after every job.</li>
+  </ul>
+
+  <h2 id="export">Verified export</h2>
+  <h3>PDF</h3>
+  <p>Every page with at least one approved redaction is rendered to an image, the black boxes are burned into the pixels in Rust, and the page is replaced by a page that contains only that image. Its old content stream, fonts, form objects and annotations are dropped. Pages without redactions keep their original content. Across the whole file, the document information dictionary, XMP metadata, outlines, forms, name trees (embedded files and scripts), open actions and the structure tree are removed.</p>
+  <p>Export is refused if any approved redaction could not be placed as a rectangle, if a rasterised page holds more occurrences of an approved string than were covered, or if an approved string appears on a page that is not being redacted (a likely missed detection you should review).</p>
+  <h3>DOCX</h3>
+  <p>Every XML part is parsed and rewritten with a real XML reader and writer, never by raw string replacement. Tracked changes are accepted, so deleted revision text disappears. Within the run-concatenated text of each part, every occurrence of each approved string is replaced; the replacement keeps the formatting of the first run and the rest of the span is removed from the following runs. Alt text, tooltips and field codes get the same treatment. Comment and revision authors are blanked, personal fields in the document properties are emptied, and the thumbnail image is removed.</p>
+  <h3>Verification</h3>
+  <p>After writing, Qvault reads the exported file back, extracts every piece of text it can find, and deletes the file with an error if any approved string survives. The same check runs in the automated test suite.</p>
+
+  <h2 id="storage">Storage</h2>
+  <p>Qvault keeps its data in the per-user app data folder: a SQLite database (documents, findings, cross-document entities, page text and an audit log) and the document files, encrypted with AES-256-GCM. The audit log records actions and metadata, such as model downloads, scans and exports, but not document text. Clearing all data in Settings removes everything.</p>
+
+  <h2 id="network">Network use</h2>
+  <p>Qvault makes no network requests of its own except a model download you start in the Model Manager. That download goes to a pinned, revision-locked Hugging Face URL over HTTPS; the size is shown before you confirm, and the file is checked against a pinned SHA-256 before it is used. There is no telemetry, crash reporting, update check or account. The OCR models are not downloaded by the app at all: you fetch them yourself and import them (see <a href="{{models}}">Models and setup</a>).</p>
+
+  <h2 id="limits">Limits and open work</h2>
+  <ul>
+    <li><strong>Detection is not perfect.</strong> No layer guarantees that all personal data is found. Layer 3’s quality has not yet been measured with a formal evaluation, and small models produce false positives. Always review before sharing.</li>
+    <li><strong>OCR quality varies.</strong> Recognition errors on poor scans, and punctuation dropped at line breaks (for example in email addresses), can hide data from the detectors. OCR is CPU-bound and takes seconds per page. Only Latin-script text is recognised.</li>
+    <li><strong>Plaintext in the database.</strong> Document files are encrypted at rest, but the extracted page text and the text of findings are currently stored unencrypted in the local SQLite database. Rely on full-disk encryption (FileVault, BitLocker, LUKS) until this is addressed.</li>
+    <li><strong>Redacted PDF pages become images.</strong> Text on those pages can no longer be selected or searched, and files get larger.</li>
+    <li><strong>Platforms.</strong> AI and OCR are desktop-only. On Windows, the QVAC runtime needs a recent Vulkan driver even for CPU inference. Installers are not yet code-signed.</li>
+    <li><strong>Installer size.</strong> Bundling the AI runtime makes the installer several times larger than a build without it (about 53 MB on macOS for Apple Silicon); models are separate.</li>
+  </ul>
+</article>
