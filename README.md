@@ -148,7 +148,7 @@ React UI ──Tauri IPC──▶ Rust backend ──JSON lines over stdio──
 - `src-tauri/src/llm/`: Layer 3 scanner on QVAC.
 - `src-tauri/src/qvac/`: sidecar client, pinned model catalog, model store.
 - `src-tauri/src/document/`: PDF/DOCX extraction and redacted export.
-- `src-tauri/src/storage/`: SQLite and AES-256-GCM file encryption.
+- `src-tauri/src/storage/`: SQLite database and document file storage.
 - `sidecar/`: the Bare worker and its build script.
 - `site/`: the website (`node site/build.mjs` → `site/dist`, deployed by
   `.github/workflows/pages.yml`).
@@ -157,9 +157,9 @@ More detail: the [architecture page](https://santacroce-tech.github.io/qvault/ar
 and the design notes in [docs/qvac-integration.md](docs/qvac-integration.md).
 
 Known limits: detection is not exhaustive and Layer 3 quality has not yet been
-formally measured; OCR is CPU-bound and imperfect; extracted text and findings
-are stored unencrypted in the local SQLite database (document files are
-encrypted); redacted PDF pages become images; on Windows the QVAC runtime needs
+formally measured; OCR is CPU-bound and imperfect; document files, extracted text
+and findings are stored unencrypted in the app data folder (use full-disk
+encryption such as FileVault, BitLocker or LUKS); redacted PDF pages become images; on Windows the QVAC runtime needs
 a recent Vulkan driver.
 
 ## Website

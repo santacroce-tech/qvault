@@ -27,7 +27,7 @@ This document covers what Qvault looks like today, the export redaction audit, w
 
 ### 1.3 Storage (`storage/database.rs`)
 
-Tables: `documents`, `redactions`, `entities` (cross-document occurrences, indexed on `normalized_text`), `document_pages` (full extracted page text), `audit_log`. Document files are AES-256-GCM encrypted on disk (`storage/encryption.rs`), but **`redactions.original_text`, `entities.original_text` and `document_pages.raw_text` hold PII in plaintext in SQLite**. Not in scope for this task, but it should be tracked (see §7).
+Tables: `documents`, `redactions`, `entities` (cross-document occurrences, indexed on `normalized_text`), `document_pages` (full extracted page text), `audit_log`. Document files are stored **unencrypted**: `storage/encryption.rs` is a plain copy since commit `3f8e0f2` removed AES-256-GCM. **`redactions.original_text`, `entities.original_text` and `document_pages.raw_text` also hold PII in plaintext in SQLite.** (Corrected after Phase 2; Phase 0 wrongly said files were encrypted.) Not in scope for this task, but it should be tracked (see §7).
 
 ### 1.4 How Layer 3 actually runs
 
@@ -263,7 +263,7 @@ Linux and Windows will be larger (see §4.3 CI notes); their real numbers come w
 5. **OCR quality/speed:** 17 s/page at 200 DPI on Apple Silicon CPU; 7/9 PII strings on one page. Phase 2 needs the normalisation and word-splitting described in §5 and a recall tolerance agreed up front (proposal: ≥ 95 % of the text-layer recall on the scanned `demo.pdf`). *Phase 2 result (§10.10): 97.7 % of text-layer detections and 100 % of the text layer's demo-entity recall at 200 DPI; ~16 s/page.*
 6. **QVAC writes Buffer inputs unencrypted to `<cacheDir>/tmp`.** We'll set an app-private `cacheDir` and wipe it after each job; page images are already in plaintext while rendering, so this doesn't change the threat model, but it must be cleaned up.
 7. **Model hosting:** without Hyperswarm, someone has to host the GGUF files. Resolved for the LLMs (Qwen on Hugging Face at a pinned revision). **Still open for OCR:** QVAC's CRAFT/latin_g2 GGUFs have no HTTPS host, so they are import-only until Qvault mirrors them (§4.3).
-8. **Plaintext PII in SQLite** (§1.3) — separate from QVAC but undermines "encrypted on device". Recommend a follow-up (SQLCipher or field-level encryption).
+8. **No encryption at rest** (§1.3): document files and PII in SQLite are plaintext. Separate from QVAC; users must rely on full-disk encryption. Recommend a follow-up (SQLCipher or field-level encryption).
 9. **API churn:** contained by the sidecar allow-list; upgrading QVAC means editing one JS file and re-running the protocol tests.
 10. **Licensing contradiction in the repo:** `README.md` says "Proprietary. All rights reserved."; the website, Layer 3 post and release notes say MIT. Phase 7 should settle this. (The license server and `LICENSE_SYSTEM.md` were removed in `ab3c8ce`.)
 11. **Layer 3 quality is unmeasured.** Qwen2.5-0.5B with the few-shot prompt finds names, addresses, dates and IDs in quick checks. It also produces false positives (e.g. "Riverside clinic" as an Address) and is not deterministic across runs. The 1.5B model was not better in a 4-sentence spot check. The Phase 3 eval harness has to set the bar; until then, every Layer 3 finding stays in review at 0.70.

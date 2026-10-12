@@ -24,7 +24,7 @@
                           │  extraction, Layers 1–2,              (Bare + @qvac/inference)
                           │  export, verification                  OCR · LLM completion
                           ▼                                        local model files only,
-                   SQLite + encrypted files                        no network sockets
+                   SQLite + document files                         no network sockets
                    (app data folder)</code></pre>
 
   <h2 id="pipeline">Document pipeline</h2>
@@ -77,7 +77,7 @@
   <p>After writing, Qvault reads the exported file back, extracts every piece of text it can find, and deletes the file with an error if any approved string survives. The same check runs in the automated test suite.</p>
 
   <h2 id="storage">Storage</h2>
-  <p>Qvault keeps its data in the per-user app data folder: a SQLite database (documents, findings, cross-document entities, page text and an audit log) and the document files, encrypted with AES-256-GCM. The audit log records actions and metadata, such as model downloads, scans and exports, but not document text. Clearing all data in Settings removes everything.</p>
+  <p>Qvault keeps its data in the per-user app data folder: a SQLite database (documents, findings, cross-document entities, page text and an audit log) and copies of the imported document files. The audit log records actions and metadata, such as model downloads, scans and exports, but not document text. Clearing all data in Settings removes everything.</p>
 
   <h2 id="network">Network use</h2>
   <p>Qvault makes no network requests of its own except a model download you start in the Model Manager. That download goes to a pinned, revision-locked Hugging Face URL over HTTPS; the size is shown before you confirm, and the file is checked against a pinned SHA-256 before it is used. There is no telemetry, crash reporting, update check or account. The OCR models are not downloaded by the app at all: you fetch them yourself and import them (see <a href="{{models}}">Models and setup</a>).</p>
@@ -86,7 +86,7 @@
   <ul>
     <li><strong>Detection is not perfect.</strong> No layer guarantees that all personal data is found. Layer 3’s quality has not yet been measured with a formal evaluation, and small models produce false positives. Always review before sharing.</li>
     <li><strong>OCR quality varies.</strong> Recognition errors on poor scans, and punctuation dropped at line breaks (for example in email addresses), can hide data from the detectors. OCR is CPU-bound and takes seconds per page. Only Latin-script text is recognised.</li>
-    <li><strong>Plaintext in the database.</strong> Document files are encrypted at rest, but the extracted page text and the text of findings are currently stored unencrypted in the local SQLite database. Rely on full-disk encryption (FileVault, BitLocker, LUKS) until this is addressed.</li>
+    <li><strong>No encryption at rest.</strong> Imported document files, extracted page text and the text of findings are stored unencrypted in the app data folder. Rely on full-disk encryption (FileVault, BitLocker, LUKS) until this is addressed.</li>
     <li><strong>Redacted PDF pages become images.</strong> Text on those pages can no longer be selected or searched, and files get larger.</li>
     <li><strong>Platforms.</strong> AI and OCR are desktop-only. On Windows, the QVAC runtime needs a recent Vulkan driver even for CPU inference. Installers are not yet code-signed.</li>
     <li><strong>Installer size.</strong> Bundling the AI runtime makes the installer several times larger than a build without it (about 53 MB on macOS for Apple Silicon); models are separate.</li>
