@@ -714,3 +714,9 @@ fn scoring_rules() {
     bad.pages[0].spans[0].end = 11;
     assert_eq!(validate(&bad).len(), 1);
 }
+
+// ── opt-in: Layer 3 with real models through the QVAC sidecar ────────────
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[path = "eval_support/layer3.rs"]
+mod layer3;
