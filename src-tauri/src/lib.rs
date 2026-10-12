@@ -5,6 +5,8 @@ pub mod document;
 pub mod pipeline;
 pub mod storage;
 pub mod llm;
+#[cfg(desktop)]
+pub mod qvac;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -13,29 +15,27 @@ use storage::database::Database;
 pub struct AppState {
     pub db: Database,
     pub storage_dir: PathBuf,
-    pub llm_state: Arc<llm::LlmState>,
+    /// QVAC sidecar + Model Manager (desktop only).
+    #[cfg(desktop)]
+    pub qvac: Arc<qvac::QvacService>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Wire up the pure-Rust ONNX backend (tract). Must run before any
-    // ort::Session is constructed. CPU-only; works on every target
-    // including x86_64-apple-darwin where ort no longer ships prebuilts.
-    #[cfg(feature = "llm")]
-    ort::set_api(ort_tract::api());
-
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            if cfg!(debug_assertions) {
-                app.handle().plugin(
-                    tauri_plugin_log::Builder::default()
-                        .level(log::LevelFilter::Info)
-                        .build(),
-                )?;
-            }
+            // Logging (stdout + app log dir). Release builds log too so that
+            // AI-engine (sidecar) diagnostics reach the app log; nothing in
+            // the app logs document content.
+            app.handle().plugin(
+                tauri_plugin_log::Builder::default()
+                    .level(if cfg!(debug_assertions) { log::LevelFilter::Info } else { log::LevelFilter::Warn })
+                    .level_for("app_lib::qvac", log::LevelFilter::Info)
+                    .build(),
+            )?;
 
             // Set up storage directory
             let app_data = app
@@ -50,11 +50,47 @@ pub fn run() {
             let db = Database::open(&db_path)
                 .expect("Failed to initialize database");
 
+            #[cfg(desktop)]
+            let qvac = {
+                let sidecar = qvac::SidecarPaths::resolve(app.path().resource_dir().ok().as_deref());
+                let svc = Arc::new(qvac::QvacService::new(&app_data, None, sidecar));
+                svc.start_idle_reaper();
+                svc
+            };
+
             app.manage(AppState {
                 db,
                 storage_dir: app_data,
-                llm_state: Arc::new(llm::LlmState::new()),
+                #[cfg(desktop)]
+                qvac,
             });
+
+            // `Qvault --qvac-self-test <models dir>`: exercise the bundled
+            // sidecar (OCR on a synthetic image, Layer 3 on a synthetic
+            // sentence) with models from <models dir>, print a JSON report
+            // and exit. Uses a throw-away cache dir, never user documents.
+            #[cfg(desktop)]
+            {
+                let args: Vec<String> = std::env::args().collect();
+                if let Some(pos) = args.iter().position(|a| a == "--qvac-self-test") {
+                    let models_dir = args.get(pos + 1).map(PathBuf::from);
+                    let handle = app.handle().clone();
+                    let res_dir = app.path().resource_dir().ok();
+                    std::thread::spawn(move || {
+                        let tmp = std::env::temp_dir().join(format!("qvault-selftest-{}", uuid::Uuid::new_v4()));
+                        let _ = std::fs::create_dir_all(&tmp);
+                        let sidecar = qvac::SidecarPaths::resolve(res_dir.as_deref());
+                        let img = res_dir.map(|d| d.join("selftest").join("ocr-sample.png")).filter(|p| p.is_file());
+                        let svc = Arc::new(qvac::QvacService::new(&tmp, models_dir.as_deref(), sidecar));
+                        let rep = svc.self_test(img.as_deref());
+                        println!("{}", serde_json::to_string_pretty(&rep).unwrap_or_default());
+                        svc.shutdown();
+                        let _ = std::fs::remove_dir_all(&tmp);
+                        let ok = rep.error.is_none() && rep.ocr_error.is_none() && rep.layer3_error.is_none();
+                        handle.exit(if ok { 0 } else { 1 });
+                    });
+                }
+            }
 
             Ok(())
         })
@@ -80,11 +116,35 @@ pub fn run() {
             commands::redaction::bulk_approve,
             commands::history::get_history,
             commands::history::search_history,
-            commands::llm::llm_status,
-            commands::llm::llm_download_model,
-            commands::llm::llm_load_model,
-            commands::llm::llm_set_enabled,
+            #[cfg(desktop)]
+            commands::ai::ai_capabilities,
+            #[cfg(desktop)]
+            commands::ai::ai_list_models,
+            #[cfg(desktop)]
+            commands::ai::ai_download_model,
+            #[cfg(desktop)]
+            commands::ai::ai_cancel_download,
+            #[cfg(desktop)]
+            commands::ai::ai_import_model,
+            #[cfg(desktop)]
+            commands::ai::ai_delete_model,
+            #[cfg(desktop)]
+            commands::ai::ai_assess_fit,
+            #[cfg(desktop)]
+            commands::ai::ai_set_layer3,
+            #[cfg(desktop)]
+            commands::ai::ai_self_test,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|_handle, _event| {
+        // Stop the QVAC sidecar cleanly (shutdown request, kill after 2 s).
+        #[cfg(desktop)]
+        if let tauri::RunEvent::Exit = _event {
+            if let Some(state) = _handle.try_state::<AppState>() {
+                state.qvac.shutdown();
+            }
+        }
+    });
 }

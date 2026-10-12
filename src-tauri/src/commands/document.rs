@@ -121,12 +121,57 @@ pub async fn scan_document_text(
     let jurisdictions = vec!["global", "us", "eu", "br", "de"];
     let mut total_pii = 0;
     let total_pages = pages.len();
-    let llm_active = {
-        #[cfg(feature = "llm")]
-        { state.llm_state.is_enabled() && state.llm_state.is_model_loaded() }
-        #[cfg(not(feature = "llm"))]
-        { false }
+
+    // Layer 3 (QVAC LLM in the sidecar). Preparing it may start the sidecar
+    // and load the model; any failure means Layers 1-2 only, never a failed
+    // scan. The reason is surfaced to the UI via `layer3-status`.
+    #[cfg(desktop)]
+    let layer3_enabled = state.qvac.settings().layer3_enabled;
+    #[cfg(not(desktop))]
+    let layer3_enabled = false;
+    let mut layer3_skip: Option<String> = None;
+    let layer3_started = std::time::Instant::now();
+    #[cfg(desktop)]
+    let mut layer3 = if layer3_enabled {
+        let _ = app_handle.emit("scan-progress", serde_json::json!({
+            "documentId": id, "page": 0, "totalPages": total_pages,
+            "llmActive": true, "phase": "llm-loading",
+        }));
+        match state.qvac.prepare_layer3() {
+            Ok(session) => {
+                if let Some(d) = session.loaded_in {
+                    let _ = state.db.insert_audit_log(
+                        Some(&id),
+                        "model_load",
+                        Some(&format!("model={} purpose=layer3 duration_ms={}", session.model, d.as_millis())),
+                    );
+                }
+                let app_tokens = app_handle.clone();
+                let doc_tokens = id.clone();
+                session.set_token_callback(Some(std::sync::Arc::new(move |data: &serde_json::Value| {
+                    let _ = app_tokens.emit("llm-progress", serde_json::json!({
+                        "documentId": doc_tokens,
+                        "tokensGenerated": data.get("tokens").and_then(|v| v.as_u64()).unwrap_or(0),
+                        "phase": "generating",
+                    }));
+                })));
+                Some(session)
+            }
+            Err(reason) => {
+                log::warn!("Layer 3 skipped for this scan: {}", reason);
+                layer3_skip = Some(reason);
+                None
+            }
+        }
+    } else {
+        None
     };
+    #[cfg(desktop)]
+    let layer3_model = layer3.as_ref().map(|s| s.model.clone());
+    #[cfg(not(desktop))]
+    let layer3_model: Option<String> = None;
+    let mut layer3_entities = 0usize;
+    let mut layer3_failed_chunks = 0usize;
 
     // Store text and run PII pipeline per page
     let text_dir = state.storage_dir.join("text");
@@ -134,6 +179,10 @@ pub async fn scan_document_text(
         .map_err(|e| format!("Failed to create text dir: {}", e))?;
 
     for (page_num, text) in pages.iter().enumerate() {
+        #[cfg(desktop)]
+        let llm_active = layer3.is_some();
+        #[cfg(not(desktop))]
+        let llm_active = false;
         // Emit scan progress event
         let _ = app_handle.emit("scan-progress", serde_json::json!({
             "documentId": id,
@@ -153,35 +202,42 @@ pub async fn scan_document_text(
             .insert_document_page(&id, page_num as i32, text)
             .map_err(|e| format!("Failed to store page text: {}", e))?;
 
-        // Run PII pipeline (with optional LLM layer)
-        #[cfg(feature = "llm")]
-        let entities = {
-            let mut llm_guard = if state.llm_state.is_enabled() {
-                state.llm_state.touch(); // reset idle unload timer
-                state.llm_state.runtime.lock().ok()
-            } else {
-                None
-            };
-            let llm_runtime = llm_guard.as_mut().and_then(|g| g.as_mut());
-
-            // Build progress callback that emits Tauri events during LLM inference
-            let app_handle_clone = app_handle.clone();
-            let doc_id_clone = id.clone();
-            let page_idx = page_num;
-            let progress_cb: crate::llm::llm_scanner::ProgressFn = Box::new(move |tokens, phase| {
-                let _ = app_handle_clone.emit("llm-progress", serde_json::json!({
-                    "documentId": doc_id_clone,
-                    "page": page_idx,
-                    "tokensGenerated": tokens,
-                    "phase": phase,
-                }));
-            });
-            let on_progress = if llm_runtime.is_some() { Some(&progress_cb) } else { None };
-
-            pipeline::run_pipeline(text, page_num as u32, &jurisdictions, llm_runtime, on_progress)
-        };
-        #[cfg(not(feature = "llm"))]
-        let entities = pipeline::run_pipeline(text, page_num as u32, &jurisdictions);
+        // Run PII pipeline (Layer 3 only when prepared above)
+        let app_handle_clone = app_handle.clone();
+        let doc_id_clone = id.clone();
+        let page_idx = page_num;
+        let progress_cb: crate::llm::llm_scanner::ProgressFn = Box::new(move |tokens, phase| {
+            let _ = app_handle_clone.emit("llm-progress", serde_json::json!({
+                "documentId": doc_id_clone,
+                "page": page_idx,
+                "tokensGenerated": tokens,
+                "phase": phase,
+            }));
+        });
+        #[cfg(desktop)]
+        let engine: Option<&dyn crate::llm::llm_scanner::Layer3Engine> =
+            layer3.as_ref().map(|s| s as &dyn crate::llm::llm_scanner::Layer3Engine);
+        #[cfg(not(desktop))]
+        let engine: Option<&dyn crate::llm::llm_scanner::Layer3Engine> = None;
+        let on_progress = if engine.is_some() { Some(&progress_cb) } else { None };
+        let (entities, l3) = pipeline::run_pipeline(text, page_num as u32, &jurisdictions, engine, on_progress);
+        match l3 {
+            pipeline::Layer3Status::Ran { entities: n, failed_chunks, .. } => {
+                layer3_entities += n;
+                layer3_failed_chunks += failed_chunks;
+            }
+            pipeline::Layer3Status::Aborted(reason) => {
+                layer3_entities += entities.iter().filter(|e| e.layer == crate::llm::llm_scanner::LAYER).count();
+                log::warn!("Layer 3 stopped on page {}: {}", page_num, reason);
+                layer3_skip = Some(reason);
+                // Remaining pages: Layers 1-2 only.
+                #[cfg(desktop)]
+                {
+                    layer3 = None;
+                }
+            }
+            pipeline::Layer3Status::NotRun => {}
+        }
 
         // Build cleaned text by applying redactions
         let mut cleaned = text.clone();
@@ -255,6 +311,38 @@ pub async fn scan_document_text(
         "scan_complete",
         Some(&format!("Found {} PII entities across {} pages", total_pii, pages.len())),
     );
+
+    if layer3_enabled {
+        let status = match (&layer3_model, &layer3_skip) {
+            (None, Some(_)) => "skipped",
+            (Some(_), Some(_)) => "partial",
+            (Some(_), None) if layer3_failed_chunks > 0 => "partial",
+            _ => "ran",
+        };
+        let _ = state.db.insert_audit_log(
+            Some(&id),
+            "ai_scan",
+            Some(&format!(
+                "layer=3 model={} status={} duration_ms={} entities={} pages={} failed_chunks={}{}",
+                layer3_model.as_deref().unwrap_or("-"),
+                status,
+                layer3_started.elapsed().as_millis(),
+                layer3_entities,
+                pages.len(),
+                layer3_failed_chunks,
+                layer3_skip.as_ref().map(|r| format!(" reason={}", r)).unwrap_or_default(),
+            )),
+        );
+        let _ = app_handle.emit("layer3-status", serde_json::json!({
+            "documentId": id,
+            "status": status,
+            "reason": layer3_skip.clone().or_else(|| (layer3_failed_chunks > 0)
+                .then(|| format!("{} text chunk(s) could not be analysed", layer3_failed_chunks))),
+            "model": layer3_model,
+            "entities": layer3_entities,
+            "failedChunks": layer3_failed_chunks,
+        }));
+    }
 
     Ok(total_pii as i32)
 }

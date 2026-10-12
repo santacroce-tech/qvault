@@ -27,6 +27,62 @@ along with their copyright notices.
    License: Apache-2.0 / MIT
    Source: https://github.com/serde-rs/serde
 
+5. QVAC (@qvac/inference 0.21.0, @qvac/ocr-ggml 0.26.0,
+   @qvac/llm-llamacpp 0.55.0, @qvac/embed-llamacpp 0.43.0,
+   @qvac/fabric 0.18.1 and their @qvac/* support packages)
+   Copyright 2026 Tether Data, S.A. de C.V. / Tether Operations Limited
+   License: Apache-2.0
+   Source: https://github.com/tetherto/qvac (tag sdk-v0.21.0)
+   NOTICE: each package's LICENSE and NOTICE file ships unmodified inside
+   the application bundle under qvac-worker/node_modules/@qvac/<package>/.
+   Excerpts:
+     "@qvac/inference / @qvac/llm-llamacpp / @qvac/embed-llamacpp /
+      @qvac/fabric — Copyright 2026 Tether Data, S.A. de C.V. This product
+      includes third-party components under their respective licenses.
+      <package> itself is licensed under Apache-2.0; bundled dependencies
+      are governed by the licenses listed below."
+     "@qvac/ocr-ggml — Copyright (C) Tether Operations Limited. Incorporates
+      code derived from EasyOCR (Apache-2.0, Jaided AI), EasyOcr-ggml
+      (Apache-2.0, Tether) and ggml (MIT)."
+     "@qvac/fabric — includes qvac-fabric (forked llama.cpp + ggml, MIT)."
+   The Gemma, HAI-DEF and Llama terms quoted in the @qvac/inference and
+   @qvac/llm-llamacpp NOTICE files apply to models in QVAC's catalog.
+   Qvault does not ship or download any of those models.
+
+6. Bare runtime (bare-runtime 1.34.1) and bare-* modules
+   Copyright 2022 Holepunch Inc
+   License: Apache-2.0
+   Source: https://github.com/holepunchto/bare
+   Bundled as the QVAC sidecar executable (qvac-sidecar).
+
+7. ureq
+   Copyright: Martin Algesten and contributors
+   License: Apache-2.0 / MIT
+   Source: https://github.com/algesten/ureq
+
+────────────────────────────────────────────────────────────────────────
+
+AI MODELS (not bundled; downloaded or imported only at the user's request)
+
+A. Qwen2.5-0.5B-Instruct-GGUF (qwen2.5-0.5b-instruct-q4_k_m.gguf) and
+   Qwen2.5-1.5B-Instruct-GGUF (qwen2.5-1.5b-instruct-q4_k_m.gguf)
+   Copyright: Alibaba Cloud (Qwen team)
+   License: Apache-2.0
+   Source: https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF (rev 9217f5d)
+           https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF (rev 91cad51)
+
+B. CRAFT text detector (craft_mlt_25k.gguf)
+   Copyright: NAVER Corp. (Clova AI Research); GGUF conversion by Tether
+   License: MIT (CRAFT-pytorch weights); conversion Apache-2.0
+   Source: https://github.com/clovaai/CRAFT-pytorch, via EasyOCR and the
+           QVAC model registry (OCR_CRAFT)
+
+C. EasyOCR Latin recognizer gen-2 (latin_g2.gguf)
+   Copyright: Jaided AI; GGUF conversion by Tether
+   License: Apache-2.0
+   Source: https://github.com/JaidedAI/EasyOCR, via the QVAC model
+           registry (OCR_LATIN)
+
 ────────────────────────────────────────────────────────────────────────
 
                            Apache License

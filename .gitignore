@@ -33,3 +33,7 @@ src-tauri/gen/
 
 # graphify knowledge graph output
 graphify-out/
+
+# QVAC sidecar build output (sidecar/build.mjs)
+src-tauri/binaries/
+src-tauri/resources/qvac-worker/

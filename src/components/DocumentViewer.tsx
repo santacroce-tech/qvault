@@ -139,13 +139,15 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
   const [pageData, setPageData] = useState<PageData[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState<{ page: number; totalPages: number; llmActive: boolean } | null>(null);
+  const [scanProgress, setScanProgress] = useState<{ page: number; totalPages: number; llmActive: boolean; phase?: string } | null>(null);
   const [llmProgress, setLlmProgress] = useState<{ phase: string; tokensGenerated: number } | null>(null);
+  // Layer 3 outcome for the last scan (skipped / partial) — shown as a notice.
+  const [layer3Notice, setLayer3Notice] = useState<{ status: string; reason: string | null } | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
   // Listen for scan progress events from the backend
   useEffect(() => {
-    const unlisten = listen<{ documentId: string; page: number; totalPages: number; llmActive: boolean }>(
+    const unlisten = listen<{ documentId: string; page: number; totalPages: number; llmActive: boolean; phase?: string }>(
       "scan-progress",
       (event) => {
         if (event.payload.documentId === documentId) {
@@ -153,9 +155,26 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
             page: event.payload.page,
             totalPages: event.payload.totalPages,
             llmActive: event.payload.llmActive,
+            phase: event.payload.phase,
           });
           // Reset LLM phase when a new page starts
           setLlmProgress(null);
+        }
+      }
+    );
+    return () => { unlisten.then((fn) => fn()); };
+  }, [documentId]);
+
+  // Listen for the Layer 3 (AI) outcome of a scan
+  useEffect(() => {
+    setLayer3Notice(null);
+    const unlisten = listen<{ documentId: string; status: string; reason: string | null }>(
+      "layer3-status",
+      (event) => {
+        if (event.payload.documentId === documentId) {
+          setLayer3Notice(
+            event.payload.status === "ran" ? null : { status: event.payload.status, reason: event.payload.reason }
+          );
         }
       }
     );
@@ -490,6 +509,9 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
               {scanProgress
                 ? (() => {
                     const pageLabel = `${scanProgress.page + 1}/${scanProgress.totalPages}`;
+                    if (scanProgress.llmActive && !llmProgress && scanProgress.phase === "llm-loading") {
+                      return `${t('viewer.scanning')} (${t('viewer.aiLoading')})`;
+                    }
                     if (!scanProgress.llmActive || !llmProgress) {
                       return `${t('viewer.scanning')} (${pageLabel}${scanProgress.llmActive ? " · AI" : ""})`;
                     }
@@ -516,6 +538,14 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
           </span>
         </div>
       </div>
+
+      {layer3Notice && (
+        <div className="mb-4 text-sm bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2">
+          {layer3Notice.status === "skipped"
+            ? t('viewer.layer3Skipped', { reason: layer3Notice.reason ?? "" })
+            : t('viewer.layer3Partial', { reason: layer3Notice.reason ?? "" })}
+        </div>
+      )}
 
       <div className="space-y-6 flex flex-col items-center">
         {pageData.map((pd, pageIdx) =>
