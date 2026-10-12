@@ -1,0 +1,233 @@
+<!-- title: Qvault: detección y tachado local de datos personales en documentos jurídicos
+     description: Qvault localiza datos personales en PDF, archivos de Word y documentos escaneados, le permite revisar cada hallazgo y exporta copias tachadas. Todo se ejecuta en su ordenador. Gratuito y con licencia MIT. -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Gratuito · código abierto · se ejecuta en su ordenador</span>
+      <h1>Tache los documentos de sus clientes sin enviarlos a ninguna parte.</h1>
+      <p class="lead">Qvault localiza nombres, números de identificación, domicilios, datos bancarios y otros datos personales en archivos PDF, documentos de Word y páginas escaneadas. Usted revisa cada hallazgo y después exporta una copia en la que el texto tachado ha desaparecido de verdad.</p>
+      <div class="btn-row">
+        <a class="btn" href="{{releases}}">Descargar Qvault</a>
+        <a class="btn btn-ghost" href="#how">Cómo funciona</a>
+      </div>
+      <p class="hero-note">macOS, Windows y Linux · licencia MIT · sin cuenta, sin clave de licencia, sin telemetría</p>
+    </div>
+    <figure class="shot">
+      <img src="{{root}}assets/screenshots/review-view.jpg" width="1600" height="1000" alt="Pantalla de revisión de Qvault: un contrato de servicios a la izquierda con los datos personales detectados resaltados y, a la derecha, la lista de tachaduras con botones para aprobar y rechazar.">
+    </figure>
+  </div>
+</section>
+
+<section class="alt" id="privacy">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Modelo de privacidad</span>
+      <h2>Sus documentos no salen de su equipo.</h2>
+      <p>Los documentos se abren, analizan, revisan y exportan en local. Ningún documento, texto extraído ni resultado de la detección se envía nunca a nosotros ni a terceros. Detrás de Qvault no hay ningún servicio en la nube.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3>Ningún dato de los documentos sale del equipo</h3>
+        <p>La extracción de texto, el OCR, la detección y la exportación se ejecutan en su ordenador. Los documentos almacenados se cifran en disco con AES-256-GCM.</p>
+      </div>
+      <div class="card">
+        <h3>Red solo para los modelos que usted pida</h3>
+        <p>El único uso de la red es la descarga opcional de un modelo, que inicia usted. Qvault muestra antes el tamaño del archivo, lo descarga por HTTPS y comprueba su SHA-256 antes de utilizarlo.</p>
+      </div>
+      <div class="card">
+        <h3>Funciona sin conexión</h3>
+        <p>Las capas 1 y 2 no necesitan ningún modelo. Los modelos de IA pueden importarse desde un archivo, de modo que los equipos aislados de la red pueden usar todas las funciones.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Cómo funciona</span>
+      <h2>Abrir, revisar, exportar.</h2>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3><span class="num">1</span> Abra un documento</h3>
+        <p>Arrastre un PDF, un DOCX o una página escaneada (PNG, JPG, TIFF). Qvault extrae el texto, con OCR en el propio equipo cuando no hay capa de texto, y busca datos personales.</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">2</span> Revise cada hallazgo</h3>
+        <p>Cada detección aparece resaltada en el documento con su categoría, su nivel de confianza y la capa que la encontró. Apruébela, recházela o modifíquela, o seleccione texto para añadir sus propias tachaduras.</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">3</span> Exporte una copia limpia</h3>
+        <p>Solo se aplican las tachaduras aprobadas. Qvault vuelve a leer el archivo exportado y se niega a guardarlo si todavía puede encontrarse en él algún texto aprobado.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="layers">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Detección</span>
+      <h2>Tres capas que se complementan.</h2>
+      <p>Cada capa detecta lo que a la anterior se le escapa. Las capas posteriores omiten el texto que una capa anterior ya ha identificado.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3><span class="num">1</span> Patrones</h3>
+        <p>Expresiones regulares para datos estructurados: correos electrónicos, teléfonos, números de tarjeta, IBAN, direcciones IP, URL, fechas e importes, además de conjuntos por jurisdicción para EE. UU. (SSN, EIN), la UE (números de IVA), Brasil (CPF, CNPJ) y Alemania (Steuernummer).</p>
+        <p class="meta">Conjuntos de patrones: global, EE. UU., UE, BR, DE</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">2</span> Heurística</h3>
+        <p>Reglas de contexto para lo que un patrón no puede describir: nombres de personas (tratamientos, cargos, «representada por»), razones sociales con forma jurídica (S.A., LLC, GmbH, LTDA, EIRELI…) y domicilios.</p>
+        <p class="meta">No requiere modelo</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">3</span> IA local <span class="tag">opcional</span></h3>
+        <p>Un modelo de lenguaje pequeño lee el texto por fragmentos y propone datos personales que las reglas no detectan. Funciona con el SDK <a href="https://github.com/tetherto/qvac">QVAC</a> de Tether en un proceso auxiliar incluido en la aplicación, que se comunica con Qvault por entrada y salida estándar y no abre ningún socket de red.</p>
+        <p class="meta">Qwen2.5-0.5B-Instruct por defecto, 1.5B opcional · solo escritorio</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="review">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Primero, la revisión</span>
+      <h2>Nada se tacha automáticamente.</h2>
+      <p>Las herramientas de detección se equivocan en ambos sentidos. Qvault trata cada hallazgo como una propuesta: muestra el texto, la categoría, la confianza y la capa (patrón, heurística o IA) para que usted decida, y solo aplica lo que usted aprueba.</p>
+      <ul class="checks">
+        <li>Apruebe o rechace un hallazgo, todas sus apariciones o todo a la vez.</li>
+        <li>Modo avanzado: seleccione cualquier texto del documento para añadir una tachadura manual.</li>
+        <li>Una vista de entidades muestra qué nombres y números se repiten en sus documentos.</li>
+        <li>Un registro de auditoría anota las acciones (cargas, análisis, aprobaciones, exportaciones, cambios de modelo) sin guardar el texto de los documentos.</li>
+      </ul>
+    </div>
+    <figure class="shot">
+      <img src="{{root}}assets/screenshots/entity-view.jpg" width="1600" height="1000" loading="lazy" alt="Vista general de datos sensibles: número de documentos, entidades únicas y apariciones, desglose por categoría y tabla de entidades con buscador.">
+    </figure>
+  </div>
+</section>
+
+<section class="alt" id="ocr">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">OCR</span>
+      <h2>PDF escaneados e imágenes, leídos en su ordenador.</h2>
+      <p>Muchos expedientes son escaneos sin capa de texto. Qvault aplica reconocimiento óptico de caracteres en local con QVAC OCR: un detector de texto CRAFT al estilo de EasyOCR y un reconocedor de alfabeto latino, ambos como modelos GGUF en su equipo.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Qué cubre</h3>
+        <ul class="checks">
+          <li>Páginas PDF escaneadas o compuestas solo por imágenes.</li>
+          <li>Imágenes PNG, JPG y TIFF.</li>
+          <li>Idiomas de alfabeto latino, como español, portugués, inglés, alemán o francés.</li>
+          <li>El texto reconocido pasa por las mismas tres capas y la misma revisión.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Qué esperar</h3>
+        <p>El OCR se ejecuta en la CPU y tarda segundos por página, no milisegundos. El reconocimiento nunca es perfecto: revise los escaneos con especial cuidado, sobre todo las direcciones de correo y los números partidos entre líneas.</p>
+        <p>Los dos archivos de modelo de OCR se descargan una sola vez, a mano. <a href="{{models}}">Consulte los pasos de instalación y las sumas de verificación.</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="export">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Exportación</span>
+      <h2>Tachaduras que no se pueden deshacer copiando.</h2>
+      <p>Un recuadro negro dibujado sobre un texto no es una tachadura si el texto sigue debajo. Qvault lo elimina.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>PDF</h3>
+        <ul class="checks">
+          <li>Cada página con una tachadura aprobada se convierte en imagen y los recuadros se graban en los píxeles. Se descartan el texto, las fuentes y las anotaciones originales de esa página.</li>
+          <li>Se eliminan de todo el archivo los metadatos del documento, XMP, marcadores, formularios, adjuntos y scripts.</li>
+          <li>La exportación se rechaza si una tachadura aprobada no se ha podido situar en la página o si un texto aprobado aparece en una página que no se va a tachar.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Word (DOCX)</h3>
+        <ul class="checks">
+          <li>Tachado consciente de los fragmentos de formato: el texto repartido entre varios fragmentos se encuentra y se sustituye igualmente.</li>
+          <li>Abarca cuerpo, encabezados, pies de página, notas al pie y al final, comentarios y control de cambios; el texto eliminado en revisiones desaparece.</li>
+          <li>Se borran los autores de comentarios y revisiones y las propiedades del documento, y se elimina la miniatura de la página.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="callout"><strong>Cada exportación se verifica.</strong> Tras escribir el archivo, Qvault vuelve a extraer su texto. Si sobrevive algún texto aprobado, el archivo se borra y la exportación falla con una explicación.</p>
+  </div>
+</section>
+
+<section class="alt" id="screenshots">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Capturas de pantalla</span>
+      <h2>Una aplicación de escritorio pensada para revisar.</h2>
+    </div>
+    <div class="shots">
+      <figure>
+        <div class="shot"><img src="{{root}}assets/screenshots/review-view.jpg" width="1600" height="1000" loading="lazy" alt="Pantalla de revisión con los hallazgos resaltados en el documento y la lista de tachaduras."></div>
+        <figcaption>Revisión: los hallazgos se resaltan en el propio documento, con categoría y confianza.</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="{{root}}assets/screenshots/entity-view.jpg" width="1600" height="1000" loading="lazy" alt="Tabla de entidades."></div>
+        <figcaption>Vista de entidades en todos los documentos.</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="{{root}}assets/screenshots/history-view.jpg" width="1600" height="1000" loading="lazy" alt="Historial de documentos con estado y número de hallazgos."></div>
+        <figcaption>Historial y estado de los documentos.</figcaption>
+      </figure>
+    </div>
+    <p class="muted small">Las capturas corresponden a una versión anterior en inglés; la pantalla de Configuración actual incluye además el gestor de modelos de IA.</p>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Ejemplo</span>
+      <h2>Antes y después.</h2>
+      <p>Un contrato de prestación de servicios ficticio de tres páginas, en inglés y lleno de datos personales, junto con una versión tachada. Pruebe el original en Qvault y compare.</p>
+    </div>
+    <div class="demo-grid">
+      <figure>
+        <div class="shot"><img src="{{root}}assets/demo/demo-p1.jpg" width="680" height="880" loading="lazy" alt="Página 1 del contrato de ejemplo con nombres, domicilios, correos y teléfonos visibles."></div>
+        <figcaption>Original · <a href="{{root}}assets/demo/demo.pdf">descargar demo.pdf</a> (PDF, 10 KB)</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="{{root}}assets/demo/demo-cleaned-p1.jpg" width="680" height="880" loading="lazy" alt="Página 1 del contrato de ejemplo con los datos personales sustituidos por etiquetas como [PERSON NAME] y [EMAIL]."></div>
+        <figcaption>Tachado con etiquetas · <a href="{{root}}assets/demo/demo-cleaned.pdf">descargar demo-cleaned.pdf</a> (PDF, 9 KB)</figcaption>
+      </figure>
+    </div>
+    <p class="muted small">La versión tachada ilustra el resultado de una revisión completa con etiquetas de categoría. Una exportación real de PDF desde Qvault graba recuadros negros en imágenes de página, como se describe más arriba. Lo que Qvault detecta por sí solo depende de las capas que active; algunos datos de este ejemplo, como los códigos de ruta bancaria y SWIFT, pueden requerir una tachadura manual.</p>
+  </div>
+</section>
+
+<section class="alt download" id="download">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Descarga</span>
+      <h2>Gratuito para todos, para siempre.</h2>
+      <p>Santacroce SL publica Qvault con licencia MIT. Los instaladores de todas las plataformas se publican en GitHub.</p>
+    </div>
+    <div class="btn-row">
+      <a class="btn" href="{{releases}}">Obtener la última versión</a>
+      <a class="btn btn-ghost" href="{{models}}">Configurar los modelos de IA y OCR</a>
+    </div>
+    <ul class="platforms">
+      <li>macOS (Apple Silicon e Intel)</li>
+      <li>Windows</li>
+      <li>Linux (.deb, AppImage)</li>
+    </ul>
+    <p class="muted small">Los instaladores todavía no están firmados. Si macOS indica que no puede comprobar la aplicación, abra Ajustes del Sistema → Privacidad y seguridad y pulse <em>Abrir igualmente</em>. En Windows, elija <em>Más información → Ejecutar de todas formas</em> en SmartScreen.</p>
+    <p class="muted small">El código fuente incluye versiones para móviles, pero la IA y el OCR solo están disponibles en escritorio. ¿Necesita ayuda para implantar Qvault en su despacho? Escriba a <a href="mailto:info@santacroce.es">info@santacroce.es</a>.</p>
+  </div>
+</section>
