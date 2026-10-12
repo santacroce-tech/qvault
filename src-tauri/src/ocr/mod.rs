@@ -13,6 +13,7 @@
 //! is already bundled for the viewer; see docs/qvac-integration.md §10.
 
 pub mod classify;
+pub mod image_import;
 pub mod layout;
 
 use std::collections::HashMap;

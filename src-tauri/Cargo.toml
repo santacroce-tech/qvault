@@ -35,6 +35,9 @@ hex = "0.4"
 base64 = "0.22"
 # Raster burn-in for PDF export (decode PDF.js page renders, draw boxes, re-encode).
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+# Multi-page TIFF import (standalone scanned images → image-only PDF). Same
+# version the image crate would use for TIFF; read-side only in practice.
+tiff = "0.11"
 tauri-plugin-opener = "2"
 
 # Desktop-only: HTTPS model downloads for the QVAC sidecar (Layer 3 / OCR).

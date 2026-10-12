@@ -22,13 +22,16 @@ fn process_upload(
         .unwrap_or("")
         .to_lowercase();
 
-    if ext != "pdf" && ext != "docx" {
-        return Err("Unsupported file type. Please upload a PDF or DOCX.".to_string());
+    // Standalone images are converted to an image-only PDF on import, so the
+    // viewer, OCR, export and verification treat them like scanned PDFs.
+    let image_kind = crate::ocr::image_import::ImageKind::from_extension(&ext);
+    if ext != "pdf" && ext != "docx" && image_kind.is_none() {
+        return Err("Unsupported file type. Please upload a PDF, DOCX, PNG, JPEG or TIFF file.".to_string());
     }
 
     let doc_id = Uuid::new_v4().to_string();
 
-    // Compute file hash
+    // Compute file hash (of the file as uploaded)
     let file_data = std::fs::read(source)
         .map_err(|e| format!("Failed to read file: {}", e))?;
     let hash = ring::digest::digest(&ring::digest::SHA256, &file_data);
@@ -40,7 +43,27 @@ fn process_upload(
         .map_err(|e| format!("Failed to create storage dir: {}", e))?;
 
     let encrypted_path = storage_dir.join(format!("{}.enc", doc_id));
-    encryption::encrypt_file(source, &encrypted_path)?;
+    let (stored_type, page_count, note) = match image_kind {
+        Some(kind) => {
+            let converted = crate::ocr::image_import::image_to_pdf(&file_data, kind)?;
+            let tmp = storage_dir.join(format!("{}.import.pdf", doc_id));
+            std::fs::write(&tmp, &converted.pdf)
+                .map_err(|e| format!("Failed to write converted image: {}", e))?;
+            let r = encryption::encrypt_file(&tmp, &encrypted_path);
+            let _ = std::fs::remove_file(&tmp);
+            r?;
+            (
+                "pdf".to_string(),
+                converted.pages as i32,
+                format!(" (converted from {} to an image-only PDF, {} page(s))", kind.name(), converted.pages),
+            )
+        }
+        None => {
+            encryption::encrypt_file(source, &encrypted_path)?;
+            (ext.clone(), page_count, String::new())
+        }
+    };
+    drop(file_data);
 
     // Store in database (status = 'processing', PII scan happens next via scan_document_text)
     state
@@ -48,7 +71,7 @@ fn process_upload(
         .insert_document(
             &doc_id,
             filename,
-            &ext,
+            &stored_type,
             &file_hash,
             page_count,
             encrypted_path.to_str().unwrap_or(""),
@@ -59,7 +82,7 @@ fn process_upload(
     let _ = state.db.insert_audit_log(
         Some(&doc_id),
         "upload",
-        Some(&format!("Uploaded {}", filename)),
+        Some(&format!("Uploaded {}{}", filename, note)),
     );
 
     Ok(doc_id)
