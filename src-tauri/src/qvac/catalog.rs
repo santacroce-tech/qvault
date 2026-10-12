@@ -37,6 +37,11 @@ pub struct CatalogModel {
     pub source: &'static str,
     /// Default Layer 3 model.
     pub default_llm: bool,
+    /// Approximate memory needed to run it (bytes; measured peak of the
+    /// sidecar during the Phase 3 eval, rounded up). 0 for OCR models.
+    pub ram_needed: u64,
+    /// Shown in the Model Manager before download.
+    pub note: Option<&'static str>,
 }
 
 pub const CATALOG: &[CatalogModel] = &[
@@ -57,6 +62,8 @@ pub const CATALOG: &[CatalogModel] = &[
         licence_url: "https://github.com/clovaai/CRAFT-pytorch/blob/master/LICENSE",
         source: "QVAC model registry OCR_CRAFT (qvac_models_compiled/ocr/gguf/easyocr/2026-05-14)",
         default_llm: false,
+        ram_needed: 0,
+        note: None,
     },
     CatalogModel {
         id: "easyocr-latin-g2",
@@ -71,6 +78,8 @@ pub const CATALOG: &[CatalogModel] = &[
         licence_url: "https://github.com/JaidedAI/EasyOCR/blob/master/LICENSE",
         source: "QVAC model registry OCR_LATIN (qvac_models_compiled/ocr/gguf/easyocr/2026-05-14)",
         default_llm: false,
+        ram_needed: 0,
+        note: None,
     },
     CatalogModel {
         id: "qwen2.5-0.5b-instruct-q4_k_m",
@@ -85,6 +94,8 @@ pub const CATALOG: &[CatalogModel] = &[
         licence_url: "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/9217f5db79a29953eb74d5343926648285ec7e67/LICENSE",
         source: "Hugging Face Qwen/Qwen2.5-0.5B-Instruct-GGUF @ 9217f5d",
         default_llm: true,
+        ram_needed: 0,
+        note: None,
     },
     CatalogModel {
         id: "qwen2.5-1.5b-instruct-q4_k_m",
@@ -99,6 +110,8 @@ pub const CATALOG: &[CatalogModel] = &[
         licence_url: "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/blob/91cad51170dc346986eccefdc2dd33a9da36ead9/LICENSE",
         source: "Hugging Face Qwen/Qwen2.5-1.5B-Instruct-GGUF @ 91cad51",
         default_llm: false,
+        ram_needed: 0,
+        note: None,
     },
 ];
 
