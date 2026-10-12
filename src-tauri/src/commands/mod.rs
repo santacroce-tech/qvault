@@ -4,3 +4,4 @@ pub mod history;
 pub mod settings;
 #[cfg(desktop)]
 pub mod ai;
+pub mod ocr;

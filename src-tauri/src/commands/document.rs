@@ -667,6 +667,7 @@ pub async fn reset_app_data(
         conn.execute_batch("
             DELETE FROM entities;
             DELETE FROM document_pages;
+            DELETE FROM ocr_pages;
             DELETE FROM redactions;
             DELETE FROM documents;
             DELETE FROM audit_log;
