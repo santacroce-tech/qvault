@@ -6,6 +6,7 @@ import {
   downloadModel,
   cancelModelDownload,
   importModel,
+  openManualDownload,
   deleteModel,
   setLayer3,
   runAiSelfTest,
@@ -118,25 +119,35 @@ export default function ModelManager() {
       await deleteModel(m.id);
     });
 
+  // Several files can be picked at once (e.g. both OCR models). Each one is
+  // verified against the catalog; unknown files still need explicit consent.
   const handleImport = () =>
     run("import", async () => {
-      const selected = await open({ multiple: false, filters: [{ name: "GGUF", extensions: ["gguf"] }] });
-      if (!selected || Array.isArray(selected)) return;
-      let outcome = await importModel(selected, false);
-      if (outcome.status === "needsConsent") {
-        const ok = await ask(
-          t("ai.confirmUnknownImport", {
-            file: outcome.fileName,
-            size: formatBytes(outcome.size),
-            sha: outcome.sha256.slice(0, 16),
-          }),
-          { title: t("ai.unknownImportTitle"), kind: "warning" }
-        );
-        if (!ok) return;
-        outcome = await importModel(selected, true);
+      const selected = await open({ multiple: true, filters: [{ name: "GGUF", extensions: ["gguf"] }] });
+      if (!selected) return;
+      const paths = Array.isArray(selected) ? selected : [selected];
+      let imported = 0;
+      for (const path of paths) {
+        let outcome = await importModel(path, false);
+        if (outcome.status === "needsConsent") {
+          const ok = await ask(
+            t("ai.confirmUnknownImport", {
+              file: outcome.fileName,
+              size: formatBytes(outcome.size),
+              sha: outcome.sha256.slice(0, 16),
+            }),
+            { title: t("ai.unknownImportTitle"), kind: "warning" }
+          );
+          if (!ok) continue;
+          outcome = await importModel(path, true);
+        }
+        if (outcome.status !== "needsConsent") imported += 1;
       }
-      if (outcome.status !== "needsConsent") setNotice(t("ai.imported"));
+      if (imported > 0) setNotice(t("ai.importedCount", { count: imported }));
     });
+
+  const handleManualDownload = (m: ModelInfo) =>
+    run(`manual-${m.id}`, async () => { await openManualDownload(m.id); });
 
   const handleToggle = (enabled: boolean) =>
     run("toggle", async () => {
@@ -234,6 +245,15 @@ export default function ModelManager() {
               >
                 {t("ai.download", { size: formatBytes(m.size) })}
               </button>
+            ) : m.manualUrl ? (
+              <button
+                onClick={() => handleManualDownload(m)}
+                disabled={busy !== null}
+                title={m.manualUrl}
+                className="px-3 py-1.5 text-xs rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-50"
+              >
+                {t("ai.manualDownload", { size: formatBytes(m.size) })}
+              </button>
             ) : null}
           </div>
         </div>
@@ -321,6 +341,27 @@ export default function ModelManager() {
             : t("ai.ocrEngineUnavailable")}
         </p>
         <ul>{ocr.map(renderModel)}</ul>
+        {ocr.some((m) => !m.installed && m.manualUrl) && (
+          <div className="mt-2 text-xs text-gray-600 bg-gray-50 rounded-lg p-3 space-y-2">
+            <div className="font-medium text-gray-700">{t("ai.ocrHowToTitle")}</div>
+            <ol className="list-decimal pl-4 space-y-1">
+              <li>{t("ai.ocrHowToStep1")}</li>
+              <li>{t("ai.ocrHowToStep2")}</li>
+              <li>{t("ai.ocrHowToStep3")}</li>
+              <li>{t("ai.ocrHowToStep4")}</li>
+            </ol>
+            <div className="space-y-1">
+              {ocr.filter((m) => m.manualUrl).map((m) => (
+                <div key={m.id} className="break-all">
+                  <code className="text-gray-700">{m.manualUrl!.split("/").pop()}</code>
+                  <span className="text-gray-400"> · {formatBytes(m.size)} · SHA-256 </span>
+                  <code className="text-gray-500 select-all">{m.sha256}</code>
+                </div>
+              ))}
+            </div>
+            <p className="text-gray-500">{t("ai.ocrHowToAirGapped")}</p>
+          </div>
+        )}
         <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
           <span>{t("ai.ocrDpi")}</span>
           <select

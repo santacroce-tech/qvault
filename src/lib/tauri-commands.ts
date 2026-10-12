@@ -258,6 +258,7 @@ export interface ModelInfo {
   licence: string;
   source: string;
   downloadable: boolean;
+  manualUrl: string | null;
   installed: boolean;
   custom: boolean;
   defaultLlm: boolean;
@@ -318,6 +319,11 @@ export async function cancelModelDownload(id: string): Promise<boolean> {
 
 export async function importModel(path: string, acceptUnknown = false): Promise<ImportOutcome> {
   return invoke("ai_import_model", { path, acceptUnknown });
+}
+
+/** Open an import-only model's pinned download link in the system browser. */
+export async function openManualDownload(id: string): Promise<void> {
+  return invoke("ai_open_manual_download", { id });
 }
 
 export async function deleteModel(id: string): Promise<void> {

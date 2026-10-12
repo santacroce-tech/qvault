@@ -186,7 +186,7 @@
     "delete": "Delete",
     "deleteTitle": "Delete AI model",
     "confirmDelete": "Delete {{name}} ({{size}}) from this computer?",
-    "importOnly": "No official download source yet. Use “Import from file”.",
+    "importOnly": "Not downloaded by the app. Get the file in your browser, then use “Import from file”.",
     "importFromFile": "Import from file…",
     "importing": "Verifying…",
     "imported": "Model imported and verified.",
@@ -212,6 +212,15 @@
     "ocrEngineUnavailable": "OCR models are installed, but the AI engine is not available right now.",
     "ocrDpi": "OCR resolution",
     "ocrDpiDefault": "{{dpi}} DPI (recommended)",
-    "ocrDpiHelp": "Pages are rendered at this resolution for OCR. 200 DPI gave the best results on our tests; try 300–400 for very small print."
+    "ocrDpiHelp": "Pages are rendered at this resolution for OCR. 200 DPI gave the best results on our tests; try 300–400 for very small print.",
+    "manualDownload": "Get file ({{size}})",
+    "importedCount_one": "Imported {{count}} model.",
+    "importedCount_other": "Imported {{count}} models.",
+    "ocrHowToTitle": "How to install the OCR models",
+    "ocrHowToStep1": "Click “Get file” on both models above. Your browser downloads them from Qvault’s GitHub release; the app itself does not connect.",
+    "ocrHowToStep2": "Keep both files in the same folder, with their original names.",
+    "ocrHowToStep3": "Optional: check each SHA-256 below (macOS/Linux: shasum -a 256 <file>; Windows: certutil -hashfile <file> SHA256). Qvault also verifies them on import.",
+    "ocrHowToStep4": "Click “Import from file” and select both files.",
+    "ocrHowToAirGapped": "Offline or air-gapped computer? Download the files on another machine and copy them over on removable media, then import them here."
   }
 }

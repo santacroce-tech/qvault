@@ -186,7 +186,7 @@
     "delete": "Excluir",
     "deleteTitle": "Excluir modelo de IA",
     "confirmDelete": "Excluir {{name}} ({{size}}) deste computador?",
-    "importOnly": "Ainda não há fonte oficial de download. Use “Importar de arquivo”.",
+    "importOnly": "O aplicativo não baixa este arquivo. Obtenha-o no navegador e depois use “Importar de arquivo”.",
     "importFromFile": "Importar de arquivo…",
     "importing": "Verificando…",
     "imported": "Modelo importado e verificado.",
@@ -212,6 +212,15 @@
     "ocrEngineUnavailable": "Os modelos de OCR estão instalados, mas o motor de IA não está disponível agora.",
     "ocrDpi": "Resolução do OCR",
     "ocrDpiDefault": "{{dpi}} DPI (recomendado)",
-    "ocrDpiHelp": "As páginas são renderizadas nesta resolução para o OCR. 200 DPI deu os melhores resultados em nossos testes; experimente 300–400 para letras muito pequenas."
+    "ocrDpiHelp": "As páginas são renderizadas nesta resolução para o OCR. 200 DPI deu os melhores resultados em nossos testes; experimente 300–400 para letras muito pequenas.",
+    "manualDownload": "Obter arquivo ({{size}})",
+    "importedCount_one": "{{count}} modelo importado.",
+    "importedCount_other": "{{count}} modelos importados.",
+    "ocrHowToTitle": "Como instalar os modelos de OCR",
+    "ocrHowToStep1": "Clique em “Obter arquivo” nos dois modelos. O navegador os baixa da versão do Qvault no GitHub; o aplicativo não se conecta.",
+    "ocrHowToStep2": "Mantenha os dois arquivos na mesma pasta, com os nomes originais.",
+    "ocrHowToStep3": "Opcional: confira cada SHA-256 (macOS/Linux: shasum -a 256 <arquivo>; Windows: certutil -hashfile <arquivo> SHA256). O Qvault também os verifica ao importar.",
+    "ocrHowToStep4": "Clique em “Importar de arquivo” e selecione os dois arquivos.",
+    "ocrHowToAirGapped": "Computador offline? Baixe os arquivos em outra máquina, copie-os em mídia removível e importe-os aqui."
   }
 }

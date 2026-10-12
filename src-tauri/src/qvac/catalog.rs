@@ -25,6 +25,10 @@ pub struct CatalogModel {
     pub file_name: &'static str,
     /// Pinned HTTPS URL, or `None` when the model is import-only.
     pub url: Option<&'static str>,
+    /// For import-only models: a pinned HTTPS page/file the user downloads
+    /// from in their own browser, then imports. Opened only through
+    /// `ai_open_manual_download`, never fetched by the app itself.
+    pub manual_url: Option<&'static str>,
     pub size: u64,
     pub sha256: &'static str,
     pub licence: &'static str,
@@ -42,9 +46,11 @@ pub const CATALOG: &[CatalogModel] = &[
         purpose: ModelPurpose::OcrDetector,
         file_name: "craft_mlt_25k.gguf",
         // No official HTTPS host exists for QVAC's GGUF conversion (the QVAC
-        // registry serves it over Hyperswarm only). Import-only until Qvault
-        // mirrors it on Hugging Face; see docs/qvac-integration.md §4.3.
+        // registry serves it over Hyperswarm only). Qvault mirrors the files
+        // byte-identical on its `ocr-models-v1` GitHub release; users download
+        // them in a browser and import them (the app never fetches them).
         url: None,
+        manual_url: Some("https://github.com/santacroce-tech/qvault/releases/download/ocr-models-v1/craft_mlt_25k.gguf"),
         size: 83_133_856,
         sha256: "74501993caf4581ce09b280f49a1b3d249c0f5a78496e047718b398457a875aa",
         licence: "MIT (CRAFT weights, NAVER Clova AI); GGUF conversion Apache-2.0 (Tether QVAC)",
@@ -58,6 +64,7 @@ pub const CATALOG: &[CatalogModel] = &[
         purpose: ModelPurpose::OcrRecognizer,
         file_name: "latin_g2.gguf",
         url: None,
+        manual_url: Some("https://github.com/santacroce-tech/qvault/releases/download/ocr-models-v1/latin_g2.gguf"),
         size: 15_396_512,
         sha256: "dd1c7a436e9175904e63683e939635892f45c8c6377d5e14e87cf8b175e10768",
         licence: "Apache-2.0 (EasyOCR, Jaided AI); GGUF conversion Apache-2.0 (Tether QVAC)",
@@ -71,6 +78,7 @@ pub const CATALOG: &[CatalogModel] = &[
         purpose: ModelPurpose::Llm,
         file_name: "qwen2.5-0.5b-instruct-q4_k_m.gguf",
         url: Some("https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf"),
+        manual_url: None,
         size: 491_400_032,
         sha256: "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db",
         licence: "Apache-2.0",
@@ -84,6 +92,7 @@ pub const CATALOG: &[CatalogModel] = &[
         purpose: ModelPurpose::Llm,
         file_name: "qwen2.5-1.5b-instruct-q4_k_m.gguf",
         url: Some("https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf"),
+        manual_url: None,
         size: 1_117_320_736,
         sha256: "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
         licence: "Apache-2.0",
@@ -130,6 +139,12 @@ mod tests {
                 assert!(url.starts_with("https://huggingface.co/"), "{} must be HTTPS from Hugging Face", m.id);
                 assert!(url.contains("/resolve/") && !url.contains("/resolve/main/"), "{} must pin a revision", m.id);
                 assert!(!url.contains("registry://") && !url.contains("pear://"));
+            }
+            if let Some(manual) = m.manual_url {
+                assert!(m.url.is_none(), "{}: manual_url is only for import-only models", m.id);
+                let prefix = "https://github.com/santacroce-tech/qvault/releases/download/ocr-models-v1/";
+                assert!(manual.starts_with(prefix), "{} manual_url must point at the pinned release", m.id);
+                assert!(manual.ends_with(m.file_name), "{} manual_url must name the catalog file", m.id);
             }
         }
         assert_eq!(CATALOG.iter().filter(|m| m.default_llm).count(), 1);

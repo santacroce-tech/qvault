@@ -148,6 +148,7 @@ pub fn run() {
             commands::ai::ai_set_layer3,
             #[cfg(desktop)]
             commands::ai::ai_self_test,
+            commands::ai::ai_open_manual_download,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

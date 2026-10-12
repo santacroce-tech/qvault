@@ -163,3 +163,17 @@ pub async fn ai_self_test(state: State<'_, AppState>, app: tauri::AppHandle) -> 
     );
     Ok(rep)
 }
+
+/// Open the pinned manual-download link of an import-only catalog model in the
+/// user's browser. Only catalog URLs can be opened; the webview never passes a
+/// URL. The app itself does not download the file.
+#[tauri::command]
+pub async fn ai_open_manual_download(id: String, app: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    let url = crate::qvac::catalog::CATALOG
+        .iter()
+        .find(|m| m.id == id)
+        .and_then(|m| m.manual_url)
+        .ok_or_else(|| "This model has no manual download link".to_string())?;
+    app.opener().open_url(url, None::<&str>).map_err(|e| format!("Could not open the browser: {}", e))
+}
