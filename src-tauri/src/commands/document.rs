@@ -336,7 +336,8 @@ pub async fn scan_document_text(
         let _ = app_handle.emit("layer3-status", serde_json::json!({
             "documentId": id,
             "status": status,
-            "reason": layer3_skip,
+            "reason": layer3_skip.clone().or_else(|| (layer3_failed_chunks > 0)
+                .then(|| format!("{} text chunk(s) could not be analysed", layer3_failed_chunks))),
             "model": layer3_model,
             "entities": layer3_entities,
             "failedChunks": layer3_failed_chunks,

@@ -106,6 +106,25 @@ export async function invoke(cmd: string, args?: any): Promise<any> {
       return "demo-new";
     case "scan_document_text":
       return 5;
+    case "ai_capabilities":
+      return {
+        supported: true,
+        sidecarBundled: true,
+        sidecarRunning: false,
+        sidecarAvailable: true,
+        sidecarVersion: null,
+        unavailableReason: null,
+        ocrInstalled: false,
+        layer3Enabled: true,
+        layer3Model: "qwen2.5-0.5b-instruct-q4_k_m",
+        layer3Ready: true,
+        models: [
+          { id: "easyocr-craft-mlt-25k", name: "CRAFT text detector (EasyOCR, GGUF)", purpose: "ocr-detector", size: 83133856, sha256: "", licence: "MIT / Apache-2.0", source: "QVAC model registry", downloadable: false, installed: false, custom: false, defaultLlm: false, download: null, fit: null },
+          { id: "easyocr-latin-g2", name: "Latin text recognizer (EasyOCR gen-2, GGUF)", purpose: "ocr-recognizer", size: 15396512, sha256: "", licence: "Apache-2.0", source: "QVAC model registry", downloadable: false, installed: false, custom: false, defaultLlm: false, download: null, fit: null },
+          { id: "qwen2.5-0.5b-instruct-q4_k_m", name: "Qwen2.5 0.5B Instruct (Q4_K_M)", purpose: "llm", size: 491400032, sha256: "", licence: "Apache-2.0", source: "Hugging Face Qwen/Qwen2.5-0.5B-Instruct-GGUF", downloadable: true, installed: true, custom: false, defaultLlm: true, download: null, fit: { verdict: "likely-fits", evidence: "native-fit" } },
+          { id: "qwen2.5-1.5b-instruct-q4_k_m", name: "Qwen2.5 1.5B Instruct (Q4_K_M)", purpose: "llm", size: 1117320736, sha256: "", licence: "Apache-2.0", source: "Hugging Face Qwen/Qwen2.5-1.5B-Instruct-GGUF", downloadable: true, installed: false, custom: false, defaultLlm: false, download: { received: 402653184, total: 1117320736, active: true, error: null }, fit: null },
+        ],
+      };
     default:
       console.log(`[tauri-mock] Unhandled invoke: ${cmd}`, args);
       return null;

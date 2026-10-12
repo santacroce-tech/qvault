@@ -132,30 +132,104 @@ export async function bulkApprove(
   return invoke("bulk_approve", { documentId, category });
 }
 
-// LLM
-export interface LlmStatus {
-  available: boolean;
-  enabled: boolean;
-  downloading: boolean;
-  downloadProgress: number;
-  loaded: boolean;
-  device: string;
+// AI engine (QVAC sidecar) + Model Manager
+export type ModelPurpose = "ocr-detector" | "ocr-recognizer" | "llm";
+export type FitVerdict = "likely-fits" | "likely-too-large" | "unknown";
+
+export interface FitInfo {
+  verdict: FitVerdict;
+  evidence: string | null;
 }
 
-export async function getLlmStatus(): Promise<LlmStatus> {
-  return invoke("llm_status");
+export interface DownloadState {
+  received: number;
+  total: number;
+  active: boolean;
+  error: string | null;
 }
 
-export async function downloadLlmModel(): Promise<void> {
-  return invoke("llm_download_model");
+export interface ModelInfo {
+  id: string;
+  name: string;
+  purpose: ModelPurpose;
+  size: number;
+  sha256: string;
+  licence: string;
+  source: string;
+  downloadable: boolean;
+  installed: boolean;
+  custom: boolean;
+  defaultLlm: boolean;
+  download: DownloadState | null;
+  fit: FitInfo | null;
 }
 
-export async function loadLlmModel(): Promise<void> {
-  return invoke("llm_load_model");
+export interface AiCapabilities {
+  supported: boolean;
+  sidecarBundled: boolean;
+  sidecarRunning: boolean;
+  sidecarAvailable: boolean;
+  sidecarVersion: string | null;
+  unavailableReason: string | null;
+  ocrInstalled: boolean;
+  layer3Enabled: boolean;
+  layer3Model: string | null;
+  layer3Ready: boolean;
+  models: ModelInfo[];
 }
 
-export async function setLlmEnabled(enabled: boolean): Promise<void> {
-  return invoke("llm_set_enabled", { enabled });
+export type ImportOutcome =
+  | { status: "installed"; id: string }
+  | { status: "needsConsent"; sha256: string; size: number; fileName: string }
+  | { status: "installedCustom"; id: string };
+
+export interface SelfTestReport {
+  sidecar: string | null;
+  error: string | null;
+  ocrMs: number | null;
+  ocrText: string | null;
+  ocrError: string | null;
+  layer3Model: string | null;
+  layer3Ms: number | null;
+  layer3Entities: string[];
+  layer3Error: string | null;
+}
+
+/** `probe` starts the sidecar and computes fit verdicts for installed LLMs. */
+export async function getAiCapabilities(probe = false): Promise<AiCapabilities> {
+  return invoke("ai_capabilities", { probe });
+}
+
+export async function listModels(): Promise<ModelInfo[]> {
+  return invoke("ai_list_models");
+}
+
+export async function downloadModel(id: string): Promise<void> {
+  return invoke("ai_download_model", { id });
+}
+
+export async function cancelModelDownload(id: string): Promise<boolean> {
+  return invoke("ai_cancel_download", { id });
+}
+
+export async function importModel(path: string, acceptUnknown = false): Promise<ImportOutcome> {
+  return invoke("ai_import_model", { path, acceptUnknown });
+}
+
+export async function deleteModel(id: string): Promise<void> {
+  return invoke("ai_delete_model", { id });
+}
+
+export async function assessModelFit(id: string): Promise<FitInfo> {
+  return invoke("ai_assess_fit", { id });
+}
+
+export async function setLayer3(enabled: boolean, modelId?: string): Promise<void> {
+  return invoke("ai_set_layer3", { enabled, modelId: modelId ?? null });
+}
+
+export async function runAiSelfTest(): Promise<SelfTestReport> {
+  return invoke("ai_self_test");
 }
 
 // History
