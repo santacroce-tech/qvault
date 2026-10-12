@@ -1,0 +1,39 @@
+id: pt_procuracao_portugal
+lang: pt
+kind: power of attorney / letter
+description: Procuração e carta de acompanhamento (Portugal). NIF português, Cartão de Cidadão, IBAN PT50, código postal 4+3, telefones +351, carta de condução, iniciais, "Apelido, Nome". Armadilhas: Código do Notariado, Conservatória, números de artigos, "Lda." genérico na lei.
+---
+PROCURAÇÃO
+
+[[PersonName|Joaquim Manuel Teixeira Fonseca]], divorciado, natural da freguesia de Cedofeita, Porto, nascido em [[DateOfBirth|22 de setembro de 1962]], titular do Cartão de Cidadão n.º [[NationalId|12345678 9 ZX4]], válido até [[Date|30/11/2029]], contribuinte fiscal n.º [[TaxId|212 345 678]], residente na [[Address|Rua de Santa Catarina, 312, 2.º Esq., 4000-447 Porto]],
+
+constitui sua bastante procuradora a Dra. [[PersonName|Inês Margarida Couto Sarmento]], advogada, com a cédula profissional n.º [[?ClientId|58123P]], com escritório na [[Address|Avenida da Liberdade, 190, 5.º, 1250-147 Lisboa]],
+
+a quem confere os poderes forenses gerais e ainda os especiais para, em seu nome, vender à sociedade [[CompanyName|Douro Vinhos & Quintas, Lda.]], NIPC [[TaxId|509 876 543]], pelo preço de [[MonetaryAmount|€ 385.000,00]], o prédio urbano descrito na Conservatória do Registo Predial do Porto sob o n.º [[?ClientId|1847/20031015]], receber o preço por transferência para a conta com o IBAN [[IBAN|PT50 0002 0123 1234 5678 9015 4]] e outorgar a respetiva escritura.
+
+Porto, [[Date|8 de abril de 2025]]
+
+[[PersonName|Joaquim Manuel Teixeira Fonseca]]
+
+Reconhecimento: Reconheço a assinatura supra, feita na minha presença por [[PersonName|Joaquim Manuel Teixeira Fonseca]], cuja identidade verifiquei pelo documento acima referido, nos termos do artigo 153.º do Código do Notariado.
+
+---
+
+Exmo. Senhor
+[[PersonName|Fonseca, Joaquim]]
+
+Lisboa, [[Date|10 de abril de 2025]]
+
+Assunto: Venda do prédio urbano – Rua de Santa Catarina
+
+Caro Sr. [[PersonName|J. M. T. Fonseca]],
+
+Junto envio a minuta da escritura. A compradora, representada pelo seu gerente, Eng. [[PersonName|Rui Pedro Magalhães]], pretende agendar a outorga para [[Date|29 de abril de 2025]], no Cartório Notarial de Lisboa.
+
+Para efeitos de registo, preciso ainda de cópia da sua carta de condução n.º [[DriversLicense|P-1234567 8]] e do comprovativo do IMI de 2024. Pode contactar-me pelo [[PhoneNumber|+351 912 345 678]] ou pelo [[PhoneNumber|213 555 019]], ou por e-mail para [[Email|ines.sarmento@advogados.example.pt]].
+
+Os honorários, no valor de [[MonetaryAmount|3.500 €]] acrescidos de IVA à taxa legal de 23%, serão faturados após a escritura.
+
+Com os melhores cumprimentos,
+
+[[PersonName|Inês Sarmento]]

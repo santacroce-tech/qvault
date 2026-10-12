@@ -1,0 +1,52 @@
+id: en_garnishment_affidavit
+lang: en
+kind: court filing (affidavit with tables)
+description: Affidavit in support of a writ of garnishment. Card numbers in several formats (grouped, Amex, undelimited), routing numbers with valid ABA checksums, SWIFT/BIC, IBANs with spaces, account numbers in tables, IP addresses and URLs from a fraud log, amounts. Numeric traps: statute sections, docket entry numbers, percentages, a zip code alone.
+---
+SUPERIOR COURT OF THE STATE OF ARIZONA
+IN AND FOR THE COUNTY OF MARICOPA
+
+[[CompanyName|Desert Sun Credit Union]],
+    Judgment Creditor,
+v.
+[[PersonName|Calloway, Brent J.]],
+    Judgment Debtor.
+
+Court File No. [[CourtFileNumber|CV2023-014482]]
+
+AFFIDAVIT OF [[PersonName|LORNA FETTERMAN]] IN SUPPORT OF APPLICATION FOR WRIT OF GARNISHMENT (A.R.S. § 12-1574)
+
+I, [[PersonName|Lorna Fetterman]], being first duly sworn, state:
+
+1. I am the Recovery Manager of [[CompanyName|Desert Sun Credit Union]] and have personal knowledge of the facts below. Judgment was entered on [[Date|July 7, 2023]] (Dkt. 41) in the amount of [[MonetaryAmount|$62,318.44]], with interest at 10% per annum.
+
+2. The Judgment Debtor, [[PersonName|Brent J. Calloway]], resides at [[Address|6120 East Saguaro Vista Drive, Scottsdale, AZ 85266]]. His e-mail address of record is [[Email|bcalloway77@mailbox.example.net]].
+
+3. Records produced in discovery show the following accounts held by the Judgment Debtor:
+
+| Institution                  | Routing / BIC   | Account              | Balance       |
+|------------------------------|-----------------|----------------------|---------------|
+| [[?CompanyName|Canyon State Bank]]            | [[BankAccount|121000358]]       | [[BankAccount|0047-221983]]          | [[MonetaryAmount|$14,902.17]]    |
+| [[?CompanyName|Pinnacle Federal Savings]]     | [[BankAccount|026009593]]       | [[BankAccount|884 120 33571]]        | [[MonetaryAmount|$3,415.00]]     |
+| [[?CompanyName|Bank of America, N.A.]]        | [[BankAccount|BOFAUS3N]]        | [[BankAccount|3266 0519 8820]]       | [[MonetaryAmount|$27,050.92]]    |
+
+4. On [[Date|September 14, 2023]], the Judgment Debtor wired [[MonetaryAmount|EUR 40,000.00]] to an account in Germany, IBAN [[IBAN|DE89 3704 0044 0532 0130 00]] (BIC [[BankAccount|COBADEFFXXX]]), and on [[Date|September 18, 2023]] a further [[MonetaryAmount|GBP 12,500]] to IBAN [[IBAN|GB82 WEST 1234 5698 7654 32]].
+
+5. The Judgment Debtor holds the following payment cards:
+   (a) Visa [[CreditCard|4111 1111 1111 1111]], expiring 09/27;
+   (b) Mastercard [[CreditCard|5555-5555-5555-4444]];
+   (c) American Express [[CreditCard|3782 822463 10005]];
+   (d) a Visa card stored in the merchant portal as [[CreditCard|4012888888881881]].
+
+6. The online banking audit log shows logins to the Judgment Debtor's profile from IP address [[IpAddress|203.0.113.47]] and [[IpAddress|198.51.100.212]] between [[Date|October 1, 2023]] and [[Date|October 9, 2023]], and transfers initiated from [[Url|https://portal.desertsun-cu.example/accounts/88412/transfers]].
+
+7. The Judgment Debtor's Social Security Number is [[SocialSecurityNumber|666-07-3391]] and his Arizona driver license is [[DriversLicense|D08847123]].
+
+8. Garnishee: [[?CompanyName|Canyon State Bank]], Attn: Legal Process, [[?Address|P.O. Box 29001, Phoenix, AZ 85038]].
+
+I declare under penalty of perjury under the laws of the State of Arizona that the foregoing is true and correct. Executed on [[Date|November 2, 2023]], at Phoenix, Arizona.
+
+______________________________
+[[PersonName|Lorna Fetterman]]
+SUBSCRIBED AND SWORN before me on [[Date|November 2, 2023]].
+Notary Public, commission no. [[?ClientId|AZ-618204]]

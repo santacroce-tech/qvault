@@ -1,0 +1,146 @@
+{
+  "id": "es_carta_requerimiento",
+  "lang": "es",
+  "kind": "letter",
+  "description": "Carta de requerimiento de pago con datos de cliente (México/España). Iniciales, nombre compuesto, número de expediente del despacho, historia clínica, CURP como identificador nacional, dirección IP y URL de un portal. Trampas: nombres de instituciones públicas y del propio despacho como firmante institucional.",
+  "source": "src/es_carta_requerimiento.txt",
+  "pages": [
+    {
+      "text": "Bufete Arriaga & Solís, S.C.\nPaseo de la Reforma 2620, piso 11, Col. Lomas Altas, 11950 Ciudad de México\nTel. +52 55 5550 1234\n\nCiudad de México, a 7 de octubre de 2024\n\nNuestra referencia: Expediente AS-2024-0193\n\nSra. Guadalupe Itzel Ramírez de la Garza\nCalle Río Lerma 156, int. 3, Col. Cuauhtémoc, 06500 Ciudad de México\n\nEstimada Sra. Ramírez de la Garza:\n\nPor instrucciones de nuestro cliente, el Dr. J. M. Ortuño, le requerimos el pago de MXN 58,400.00 correspondientes a los servicios médicos prestados entre el 2 de febrero de 2024 y el 30 de abril de 2024 (historia clínica HC-0045821).\n\nSegún los registros del portal de pacientes, usted aceptó el presupuesto el 1 de febrero de 2024 desde la dirección IP 203.0.113.9, en la página https://pacientes.clinica-ortuno.example.mx/presupuestos/2024/0177. Su CURP registrada es RAGG850314MDFMRD09 y su fecha de nacimiento, 14/03/1985.\n\nLe concedemos un plazo de quince (15) días hábiles para liquidar el adeudo mediante depósito en la cuenta CLABE 002180700112345678 a nombre de José María Ortuño Villaseñor. De no recibir el pago, procederemos conforme al Código de Comercio y presentaremos la queja correspondiente ante la Procuraduría Federal del Consumidor (PROFECO).\n\nPara cualquier aclaración, puede escribir a cobranza@arriaga-solis.example.mx.\n\nAtentamente,\n\nLic. Mariana Solís Echeverría\nSocia\n",
+      "spans": [
+        {
+          "start": 0,
+          "end": 29,
+          "category": "CompanyName",
+          "text": "Bufete Arriaga & Solís, S.C."
+        },
+        {
+          "start": 30,
+          "end": 106,
+          "category": "Address",
+          "text": "Paseo de la Reforma 2620, piso 11, Col. Lomas Altas, 11950 Ciudad de México"
+        },
+        {
+          "start": 112,
+          "end": 128,
+          "category": "PhoneNumber",
+          "text": "+52 55 5550 1234"
+        },
+        {
+          "start": 151,
+          "end": 171,
+          "category": "Date",
+          "text": "7 de octubre de 2024"
+        },
+        {
+          "start": 204,
+          "end": 216,
+          "category": "ClientId",
+          "text": "AS-2024-0193"
+        },
+        {
+          "start": 223,
+          "end": 259,
+          "category": "PersonName",
+          "text": "Guadalupe Itzel Ramírez de la Garza"
+        },
+        {
+          "start": 260,
+          "end": 331,
+          "category": "Address",
+          "text": "Calle Río Lerma 156, int. 3, Col. Cuauhtémoc, 06500 Ciudad de México"
+        },
+        {
+          "start": 347,
+          "end": 367,
+          "category": "PersonName",
+          "text": "Ramírez de la Garza"
+        },
+        {
+          "start": 415,
+          "end": 428,
+          "category": "PersonName",
+          "text": "J. M. Ortuño"
+        },
+        {
+          "start": 455,
+          "end": 468,
+          "category": "MonetaryAmount",
+          "text": "MXN 58,400.00"
+        },
+        {
+          "start": 530,
+          "end": 550,
+          "category": "Date",
+          "text": "2 de febrero de 2024"
+        },
+        {
+          "start": 556,
+          "end": 575,
+          "category": "Date",
+          "text": "30 de abril de 2024"
+        },
+        {
+          "start": 595,
+          "end": 605,
+          "category": "MedicalRecordNumber",
+          "text": "HC-0045821"
+        },
+        {
+          "start": 687,
+          "end": 707,
+          "category": "Date",
+          "text": "1 de febrero de 2024"
+        },
+        {
+          "start": 731,
+          "end": 742,
+          "category": "IpAddress",
+          "text": "203.0.113.9"
+        },
+        {
+          "start": 758,
+          "end": 824,
+          "category": "Url",
+          "text": "https://pacientes.clinica-ortuno.example.mx/presupuestos/2024/0177"
+        },
+        {
+          "start": 848,
+          "end": 866,
+          "category": "NationalId",
+          "text": "RAGG850314MDFMRD09"
+        },
+        {
+          "start": 893,
+          "end": 903,
+          "category": "DateOfBirth",
+          "text": "14/03/1985"
+        },
+        {
+          "start": 1021,
+          "end": 1039,
+          "category": "BankAccount",
+          "text": "002180700112345678"
+        },
+        {
+          "start": 1052,
+          "end": 1084,
+          "category": "PersonName",
+          "text": "José María Ortuño Villaseñor"
+        },
+        {
+          "start": 1297,
+          "end": 1330,
+          "category": "Email",
+          "text": "cobranza@arriaga-solis.example.mx"
+        },
+        {
+          "start": 1352,
+          "end": 1378,
+          "category": "PersonName",
+          "text": "Mariana Solís Echeverría"
+        }
+      ]
+    }
+  ]
+}

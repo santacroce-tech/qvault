@@ -1,0 +1,51 @@
+id: en_demand_letter
+lang: en
+kind: letter
+description: Personal-injury demand letter. Medical record numbers, a licence plate, a passport number, initials and honorifics, a clinic and an insurer named only as institutions (optional), dates that are not DOB, a policy number in a table.
+---
+[[CompanyName|Okafor Whitfield PLLC]]
+Attorneys at Law
+[[Address|77 Water Street, Suite 310, Brooklyn, NY 11201]]
+[[PhoneNumber|(718) 555-0163]]
+
+[[Date|October 3, 2024]]
+
+VIA CERTIFIED MAIL AND E-MAIL ([[Email|claims.intake@northgate-mutual.example]])
+
+[[?CompanyName|Northgate Mutual Insurance Company]]
+Attn: Claims Department
+[[?Address|1 Liberty Plaza, Hartford, CT 06103]]
+
+Re:     Our client:        [[PersonName|Tobias R. Lindqvist]]
+        Your insured:      [[PersonName|Harriet Pemberton-Shaw]]
+        Claim No.:         [[ClientId|NGM-24-0073318]]
+        Date of loss:      [[Date|May 18, 2024]]
+
+Dear Claims Representative:
+
+This firm represents [[PersonName|Tobias R. Lindqvist]] ("Mr. [[PersonName|Lindqvist]]") for injuries he sustained when the vehicle driven by your insured, a grey sedan bearing New York plate [[LicensePlate|KXR-4471]], struck his bicycle at the intersection of Atlantic Avenue and Court Street.
+
+Mr. [[PersonName|Lindqvist]] (date of birth [[DateOfBirth|11/02/1979]]) was taken by ambulance to [[?CompanyName|Riverside Clinic]], where he was treated under medical record number [[MedicalRecordNumber|MRN 00482913]]. He was later admitted to [[?CompanyName|St. Brendan's Hospital]] (patient ID [[MedicalRecordNumber|SBH-7731-0925]]) for surgery on [[Date|May 21, 2024]]. His treating orthopedist, Dr. [[PersonName|A. N. Castellanos]], has confirmed a fracture of the left radius.
+
+Because Mr. [[PersonName|Lindqvist]] is a Swedish national, his identity was verified at admission with passport no. [[PassportNumber|91734528]]. Your insured's New York driver license number is [[DriversLicense|482 991 073]].
+
+Damages to date:
+
+| Item                         | Date              | Amount       |
+|------------------------------|-------------------|--------------|
+| Ambulance transport          | [[Date|05/18/2024]]        | [[MonetaryAmount|$1,840.00]]    |
+| Emergency department         | [[Date|05/18/2024]]        | [[MonetaryAmount|$6,215.75]]    |
+| Surgery and admission        | [[Date|05/21/2024]]        | [[MonetaryAmount|$38,904.10]]   |
+| Physical therapy (12 visits) | [[Date|06/03/2024]]–[[Date|08/26/2024]] | [[MonetaryAmount|$2,760.00]]    |
+| Lost wages                   |                   | [[MonetaryAmount|$11,500.00]]   |
+
+We demand [[MonetaryAmount|$185,000.00]] in full settlement, within the policy limits under policy no. [[ClientId|NGM-PA-5520193]]. This offer remains open for thirty (30) days. If we do not hear from you by [[Date|November 4, 2024]], we will file suit in the Supreme Court of the State of New York, Kings County.
+
+Please direct all communication to the undersigned at [[Email|j.whitfield@okafor-whitfield.test]] or [[PhoneNumber|718-555-0164]].
+
+Very truly yours,
+
+[[PersonName|J. Whitfield]]
+[[PersonName|Jerome Whitfield]], Esq.
+
+cc: [[PersonName|T. R. Lindqvist]] (client)

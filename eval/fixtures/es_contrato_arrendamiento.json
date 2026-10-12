@@ -1,0 +1,171 @@
+{
+  "id": "es_contrato_arrendamiento",
+  "lang": "es",
+  "kind": "contract",
+  "description": "Contrato de arrendamiento de vivienda (España). DNI y NIE con letra de control, NIF de sociedad, direcciones españolas, IBAN ES, teléfonos +34 y nacionales, importes en euros con coma decimal, fechas en texto, matrícula, nombres con dos apellidos repetidos y partidos entre líneas. Trampas: cláusulas en mayúsculas, referencias a la LAU y al Código Civil.",
+  "source": "src/es_contrato_arrendamiento.txt",
+  "pages": [
+    {
+      "text": "CONTRATO DE ARRENDAMIENTO DE VIVIENDA\n\nEn Madrid, a 15 de marzo de 2024.\n\nREUNIDOS\n\nDe una parte, Dña. María Inmaculada Ferrándiz Olmedo, mayor de edad, con DNI 48291736Q, nacida el 3 de julio de 1975, con domicilio en Calle de Alcalá, 214, 3.º B, 28028 Madrid, en adelante LA ARRENDADORA.\n\nDe otra parte, D. Tomás Ezequiel Barroso\nQuintanilla, mayor de edad, con NIE X1234567L, con domicilio a efectos de notificaciones en Avenida de la Albufera, 77, 2.º izda., 28038 Madrid, teléfono +34 611 482 907 y correo electrónico tomas.barroso@correo.example.es, en adelante EL ARRENDATARIO.\n\nInterviene asimismo, como fiadora solidaria, la sociedad Inversiones Quintanilla Hermanos, S.L., con NIF B87654321, representada por su administrador único D. Rogelio Quintanilla Mateu.\n\nEXPONEN\n\nI. Que LA ARRENDADORA es propietaria de la vivienda situada en Calle del Doctor Esquerdo, 105, 5.º A, 28007 Madrid, con referencia catastral 9872023VH5797S0001WX.\n\nII. Que ambas partes se reconocen capacidad legal suficiente y acuerdan celebrar el presente contrato, que se regirá por la Ley 29/1994, de 24 de noviembre, de Arrendamientos Urbanos (LAU), y supletoriamente por el Código Civil, con arreglo a las siguientes\n\nCLÁUSULAS\n\nPRIMERA. OBJETO Y DURACIÓN. El contrato tendrá una duración de un (1) año a contar desde el 1 de abril de 2024, prorrogable conforme al artículo 9 de la LAU.\n\nSEGUNDA. RENTA. La renta mensual será de 1.250,00 € (mil doscientos cincuenta euros), pagadera dentro de los siete primeros días de cada mes mediante transferencia a la cuenta ES91 2100 0418 4502 0005 1332, de la que es titular la Sra. Ferrándiz Olmedo.\n\nTERCERA. FIANZA. EL ARRENDATARIO entrega en este acto la cantidad de 2.500 euros en concepto de fianza, equivalente a dos mensualidades, que se depositará en la Agencia de Vivienda Social de la Comunidad de Madrid.\n\nCUARTA. PLAZA DE GARAJE. Se incluye el uso de la plaza de garaje n.º 14, en la que EL ARRENDATARIO podrá estacionar exclusivamente el vehículo con matrícula 4821 KLM.\n\nQUINTA. GASTOS. Los gastos de comunidad, por importe de 85,40 € mensuales, serán por cuenta de LA ARRENDADORA.\n\nSEXTA. NOTIFICACIONES. Las notificaciones a LA ARRENDADORA se dirigirán a mi.ferrandiz@buzon.example.es o al teléfono 915 550 142.\n\nY en prueba de conformidad, firman el presente contrato por duplicado en el lugar y fecha indicados.\n\nLA ARRENDADORA                                  EL ARRENDATARIO\nMaría Inmaculada Ferrándiz Olmedo               Tomás E. Barroso Quintanilla\n",
+      "spans": [
+        {
+          "start": 52,
+          "end": 71,
+          "category": "Date",
+          "text": "15 de marzo de 2024"
+        },
+        {
+          "start": 104,
+          "end": 139,
+          "category": "PersonName",
+          "text": "María Inmaculada Ferrándiz Olmedo"
+        },
+        {
+          "start": 164,
+          "end": 173,
+          "category": "NationalId",
+          "text": "48291736Q"
+        },
+        {
+          "start": 185,
+          "end": 203,
+          "category": "DateOfBirth",
+          "text": "3 de julio de 1975"
+        },
+        {
+          "start": 222,
+          "end": 265,
+          "category": "Address",
+          "text": "Calle de Alcalá, 214, 3.º B, 28028 Madrid"
+        },
+        {
+          "start": 314,
+          "end": 349,
+          "category": "PersonName",
+          "text": "Tomás Ezequiel Barroso\nQuintanilla"
+        },
+        {
+          "start": 374,
+          "end": 383,
+          "category": "NationalId",
+          "text": "X1234567L"
+        },
+        {
+          "start": 430,
+          "end": 482,
+          "category": "Address",
+          "text": "Avenida de la Albufera, 77, 2.º izda., 28038 Madrid"
+        },
+        {
+          "start": 494,
+          "end": 509,
+          "category": "PhoneNumber",
+          "text": "+34 611 482 907"
+        },
+        {
+          "start": 532,
+          "end": 563,
+          "category": "Email",
+          "text": "tomas.barroso@correo.example.es"
+        },
+        {
+          "start": 652,
+          "end": 690,
+          "category": "CompanyName",
+          "text": "Inversiones Quintanilla Hermanos, S.L."
+        },
+        {
+          "start": 700,
+          "end": 709,
+          "category": "TaxId",
+          "text": "B87654321"
+        },
+        {
+          "start": 755,
+          "end": 780,
+          "category": "PersonName",
+          "text": "Rogelio Quintanilla Mateu"
+        },
+        {
+          "start": 855,
+          "end": 907,
+          "category": "Address",
+          "text": "Calle del Doctor Esquerdo, 105, 5.º A, 28007 Madrid"
+        },
+        {
+          "start": 934,
+          "end": 954,
+          "category": "ClientId",
+          "text": "9872023VH5797S0001WX",
+          "optional": true
+        },
+        {
+          "start": 1326,
+          "end": 1344,
+          "category": "Date",
+          "text": "1 de abril de 2024"
+        },
+        {
+          "start": 1436,
+          "end": 1448,
+          "category": "MonetaryAmount",
+          "text": "1.250,00 €"
+        },
+        {
+          "start": 1574,
+          "end": 1603,
+          "category": "IBAN",
+          "text": "ES91 2100 0418 4502 0005 1332"
+        },
+        {
+          "start": 1634,
+          "end": 1651,
+          "category": "PersonName",
+          "text": "Ferrándiz Olmedo"
+        },
+        {
+          "start": 1723,
+          "end": 1734,
+          "category": "MonetaryAmount",
+          "text": "2.500 euros"
+        },
+        {
+          "start": 2032,
+          "end": 2040,
+          "category": "LicensePlate",
+          "text": "4821 KLM"
+        },
+        {
+          "start": 2099,
+          "end": 2108,
+          "category": "MonetaryAmount",
+          "text": "85,40 €"
+        },
+        {
+          "start": 2233,
+          "end": 2262,
+          "category": "Email",
+          "text": "mi.ferrandiz@buzon.example.es"
+        },
+        {
+          "start": 2278,
+          "end": 2289,
+          "category": "PhoneNumber",
+          "text": "915 550 142"
+        },
+        {
+          "start": 2458,
+          "end": 2493,
+          "category": "PersonName",
+          "text": "María Inmaculada Ferrándiz Olmedo"
+        },
+        {
+          "start": 2508,
+          "end": 2537,
+          "category": "PersonName",
+          "text": "Tomás E. Barroso Quintanilla"
+        }
+      ]
+    }
+  ]
+}

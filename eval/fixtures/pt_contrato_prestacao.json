@@ -1,0 +1,212 @@
+{
+  "id": "pt_contrato_prestacao",
+  "lang": "pt",
+  "kind": "contract",
+  "description": "Contrato de prestação de serviços (Brasil). CPF, CNPJ, RG, CEP, endereços \"Rua/Avenida ..., nº\", dados bancários (agência/conta) e chave PIX, telefones (11) 9xxxx-xxxx, valores em R$, datas por extenso, \"representada por\", nomes compostos com \"de/da/dos\". Armadilhas: títulos de cláusulas, Código Civil, LGPD, foro.",
+  "source": "src/pt_contrato_prestacao.txt",
+  "pages": [
+    {
+      "text": "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE CONSULTORIA\n\nPelo presente instrumento particular, de um lado:\n\nCONTRATANTE: Laticínios Serra Azul Ltda., pessoa jurídica de direito privado, inscrita no CNPJ sob o nº 11.222.333/0001-81, com sede na Avenida Brigadeiro Faria Lima, 3477, 14º andar, Itaim Bibi, São Paulo/SP, CEP 04538-133, neste ato representada por sua diretora Helena Cristina dos Santos Albuquerque, brasileira, casada, administradora, portadora do RG nº 23.456.789-1 SSP/SP e inscrita no CPF sob o nº 111.444.777-35;\n\nCONTRATADA: Moura Dantas Consultoria Tributária EIRELI, inscrita no CNPJ sob o nº 45.987.321/0001-09, com sede na Rua Padre Chagas, 415, sala 802, Moinhos de Vento, Porto Alegre/RS, CEP 90570-080, representada por seu sócio Rodrigo Moura Dantas, portador do CPF nº 123.456.789-09.\n\nAs partes acima identificadas têm, entre si, justo e acertado o presente Contrato de Prestação de Serviços, que se regerá pelas cláusulas seguintes e pelo Código Civil (Lei nº 10.406/2002).\n\nCLÁUSULA PRIMEIRA – DO OBJETO\n\n1.1. O presente contrato tem por objeto a revisão dos créditos de ICMS da CONTRATANTE referentes aos exercícios de 2019 a 2023.\n\nCLÁUSULA SEGUNDA – DO PRAZO\n\n2.1. O contrato vigorará de 1º de fevereiro de 2024 a 31 de janeiro de 2025.\n\nCLÁUSULA TERCEIRA – DA REMUNERAÇÃO\n\n3.1. Pelos serviços, a CONTRATANTE pagará à CONTRATADA honorários mensais de R$ 18.500,00 (dezoito mil e quinhentos reais), acrescidos de êxito de 10% (dez por cento) sobre os créditos recuperados, limitado a R$ 250.000,00.\n\n3.2. Os pagamentos serão efetuados por depósito no Banco do Brasil, Agência 3064-2, Conta Corrente 48.715-9, ou via PIX para a chave 45.987.321/0001-09.\n\nCLÁUSULA QUARTA – DA CONFIDENCIALIDADE E PROTEÇÃO DE DADOS\n\n4.1. As partes se obrigam a tratar os dados pessoais em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 – LGPD), designando como encarregada a Sra. Priscila\nFagundes Teixeira, contato dpo@laticinios-serraazul.example.com.br.\n\nCLÁUSULA QUINTA – DAS COMUNICAÇÕES\n\n5.1. As comunicações à CONTRATADA serão enviadas a Rodrigo Moura Dantas, pelo e-mail rodrigo@mouradantas.example.com.br ou pelos telefones (51) 99876-5432 e (51) 3555-0198.\n\nCLÁUSULA SEXTA – DO FORO\n\n6.1. Fica eleito o Foro da Comarca de São Paulo/SP para dirimir quaisquer dúvidas oriundas do presente contrato.\n\nSão Paulo, 25 de janeiro de 2024.\n\n_____________________________________\nLATICÍNIOS SERRA AZUL LTDA.\np. Helena Cristina dos Santos Albuquerque\n\n_____________________________________\nMOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI\np. Rodrigo Moura Dantas\n\nTestemunhas:\n1. Vanessa Lacerda Pimentel – CPF 987.654.321-00\n2. Otávio Brandão Neto – CPF 741.852.963-14\n",
+      "spans": [
+        {
+          "start": 117,
+          "end": 145,
+          "category": "CompanyName",
+          "text": "Laticínios Serra Azul Ltda."
+        },
+        {
+          "start": 211,
+          "end": 229,
+          "category": "TaxId",
+          "text": "11.222.333/0001-81"
+        },
+        {
+          "start": 243,
+          "end": 332,
+          "category": "Address",
+          "text": "Avenida Brigadeiro Faria Lima, 3477, 14º andar, Itaim Bibi, São Paulo/SP, CEP 04538-133"
+        },
+        {
+          "start": 374,
+          "end": 412,
+          "category": "PersonName",
+          "text": "Helena Cristina dos Santos Albuquerque"
+        },
+        {
+          "start": 470,
+          "end": 482,
+          "category": "NationalId",
+          "text": "23.456.789-1"
+        },
+        {
+          "start": 518,
+          "end": 532,
+          "category": "NationalId",
+          "text": "111.444.777-35"
+        },
+        {
+          "start": 547,
+          "end": 590,
+          "category": "CompanyName",
+          "text": "Moura Dantas Consultoria Tributária EIRELI"
+        },
+        {
+          "start": 619,
+          "end": 637,
+          "category": "TaxId",
+          "text": "45.987.321/0001-09"
+        },
+        {
+          "start": 651,
+          "end": 732,
+          "category": "Address",
+          "text": "Rua Padre Chagas, 415, sala 802, Moinhos de Vento, Porto Alegre/RS, CEP 90570-080"
+        },
+        {
+          "start": 762,
+          "end": 782,
+          "category": "PersonName",
+          "text": "Rodrigo Moura Dantas"
+        },
+        {
+          "start": 804,
+          "end": 818,
+          "category": "NationalId",
+          "text": "123.456.789-09"
+        },
+        {
+          "start": 1247,
+          "end": 1271,
+          "category": "Date",
+          "text": "1º de fevereiro de 2024"
+        },
+        {
+          "start": 1274,
+          "end": 1295,
+          "category": "Date",
+          "text": "31 de janeiro de 2025"
+        },
+        {
+          "start": 1420,
+          "end": 1432,
+          "category": "MonetaryAmount",
+          "text": "R$ 18.500,00"
+        },
+        {
+          "start": 1554,
+          "end": 1567,
+          "category": "MonetaryAmount",
+          "text": "R$ 250.000,00"
+        },
+        {
+          "start": 1649,
+          "end": 1655,
+          "category": "BankAccount",
+          "text": "3064-2"
+        },
+        {
+          "start": 1672,
+          "end": 1680,
+          "category": "BankAccount",
+          "text": "48.715-9"
+        },
+        {
+          "start": 1706,
+          "end": 1724,
+          "category": "TaxId",
+          "text": "45.987.321/0001-09"
+        },
+        {
+          "start": 1967,
+          "end": 1993,
+          "category": "PersonName",
+          "text": "Priscila\nFagundes Teixeira"
+        },
+        {
+          "start": 2003,
+          "end": 2042,
+          "category": "Email",
+          "text": "dpo@laticinios-serraazul.example.com.br"
+        },
+        {
+          "start": 2141,
+          "end": 2161,
+          "category": "PersonName",
+          "text": "Rodrigo Moura Dantas"
+        },
+        {
+          "start": 2175,
+          "end": 2209,
+          "category": "Email",
+          "text": "rodrigo@mouradantas.example.com.br"
+        },
+        {
+          "start": 2229,
+          "end": 2244,
+          "category": "PhoneNumber",
+          "text": "(51) 99876-5432"
+        },
+        {
+          "start": 2247,
+          "end": 2261,
+          "category": "PhoneNumber",
+          "text": "(51) 3555-0198"
+        },
+        {
+          "start": 2421,
+          "end": 2442,
+          "category": "Date",
+          "text": "25 de janeiro de 2024"
+        },
+        {
+          "start": 2483,
+          "end": 2511,
+          "category": "CompanyName",
+          "text": "LATICÍNIOS SERRA AZUL LTDA."
+        },
+        {
+          "start": 2515,
+          "end": 2553,
+          "category": "PersonName",
+          "text": "Helena Cristina dos Santos Albuquerque"
+        },
+        {
+          "start": 2593,
+          "end": 2636,
+          "category": "CompanyName",
+          "text": "MOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI"
+        },
+        {
+          "start": 2640,
+          "end": 2660,
+          "category": "PersonName",
+          "text": "Rodrigo Moura Dantas"
+        },
+        {
+          "start": 2678,
+          "end": 2702,
+          "category": "PersonName",
+          "text": "Vanessa Lacerda Pimentel"
+        },
+        {
+          "start": 2711,
+          "end": 2725,
+          "category": "NationalId",
+          "text": "987.654.321-00"
+        },
+        {
+          "start": 2729,
+          "end": 2750,
+          "category": "PersonName",
+          "text": "Otávio Brandão Neto"
+        },
+        {
+          "start": 2759,
+          "end": 2773,
+          "category": "NationalId",
+          "text": "741.852.963-14"
+        }
+      ]
+    }
+  ]
+}

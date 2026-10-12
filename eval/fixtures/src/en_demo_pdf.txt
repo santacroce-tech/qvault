@@ -1,0 +1,119 @@
+id: en_demo_pdf
+lang: en
+kind: contract (landing/demo.pdf, text layer as read by the backend extractor)
+description: The three pages of landing/demo.pdf with the 25 website-listed entities plus the banking details (routing, SWIFT) and every other date/amount. Line-wrapped e-mail and name kept as extracted.
+---
+  PROFESSIONAL SERVICES AGREEMENT 
+  Contract No. [[?ClientId|PSA-2024-00847]] 
+  Effective Date: [[Date|June 15, 2024]] 
+  1. PARTIES 
+  This Professional Services Agreement ("Agreement") is entered into as of [[Date|June 15, 2024]], by and  
+  between: 
+  [[CompanyName|Meridian Consulting Group LLC]], a limited liability company organized under the laws of the State of  
+  California, with its principal place of business at [[Address|1420 Market Street, Suite 200, San Francisco, CA 94103]]  
+  (hereinafter referred to as "Consultant"), represented by [[PersonName|Maria Santos]], Managing Partner, email:  
+  [[Email|maria.santos@meridian-consulting.com]], phone: [[PhoneNumber|(415) 555-0187]]; 
+  and 
+  [[CompanyName|Atlas Digital Solutions Inc]], a corporation organized under the laws of the State of New York, with its  
+  principal place of business at [[Address|350 Fifth Avenue, Floor 12, New York, NY 10118]] (hereinafter referred to as  
+  "Client"), represented by [[PersonName|James Richardson]], Chief Executive Officer, email: [[Email|j.richardson@atlas-  
+  digital.com]], phone: [[PhoneNumber|(212) 555-0234]]. 
+  2. TERM AND DURATION 
+  This Agreement shall commence on [[Date|June 15, 2024]] and shall remain in effect through [[Date|December 31,  
+  2025]], unless terminated earlier in accordance with the provisions of Section 8. Either party may request  
+  a renewal in writing no later than thirty (30) days prior to the expiration date. A subsequent renewal term  
+  beginning [[Date|March 1, 2026]] may be negotiated at the mutual agreement of both parties. 
+  3. SCOPE OF SERVICES 
+  Consultant agrees to provide the following professional services to Client: strategic technology  
+  consulting, software architecture review, data migration planning, cloud infrastructure assessment, and  
+  staff augmentation for the Client's enterprise modernization initiative (the "Project"). The Project Manager  
+  on behalf of Consultant shall be [[PersonName|Elena Kowalski]], Senior Director of Technology Services  
+  ([[Email|elena.kowalski@meridian-consulting.com]]). The Client's designated point of contact shall be [[PersonName|Roberto  
+  Fernandes]], VP of Engineering ([[Email|r.fernandes@atlas-digital.com]]). 
+  Consultant shall provide a team of no fewer than five (5) qualified professionals to support the Project. All  
+  personnel assigned to the Project shall possess relevant industry certifications and a minimum of five (5)  
+  years of professional experience in the applicable domain. 
+  4. COMPENSATION 
+  In consideration for the services described herein, Client agrees to pay Consultant a total fee not to  
+  exceed [[?MonetaryAmount|One Hundred Fifty Thousand Dollars]] ([[MonetaryAmount|$150,000.00]]) for the initial term of this Agreement. The  
+  compensation shall be structured as follows: 
+  (a) An initial retainer of [[?MonetaryAmount|Eighty-Five Thousand Dollars]] ([[MonetaryAmount|$85,000.00]]) shall be payable within fifteen (15)  
+  business days of the execution of this Agreement. 
+  (b) A milestone payment of [[?MonetaryAmount|Fifty Thousand Dollars]] ([[MonetaryAmount|$50,000.00]]) shall be due upon completion and Client  
+  acceptance of the Phase 1 deliverables, as defined in Exhibit A. 
+  (c) The remaining balance of [[?MonetaryAmount|Fifteen Thousand Dollars]] ([[MonetaryAmount|$15,000.00]]) shall be payable upon final delivery  
+  and acceptance of all Project deliverables. 
+
+=== page ===
+  5. PAYMENT TERMS AND BANKING INFORMATION 
+  All payments shall be made via wire transfer to the following account designated by Consultant: 
+  Bank: [[?CompanyName|First National Bank of California]] 
+  Account Holder: [[CompanyName|Meridian Consulting Group LLC]] 
+  Account Number: [[BankAccount|7823401956]] 
+  Routing Number: [[BankAccount|021000021]] 
+  SWIFT Code: [[BankAccount|FNBCUS6S]] 
+  Invoices shall be submitted monthly and are due net thirty (30) days from the date of receipt. Late  
+  payments shall accrue interest at a rate of 1.5% per month or the maximum rate permitted by applicable  
+  law, whichever is less. 
+  6. EXPENSE REIMBURSEMENT 
+  Client shall reimburse Consultant for all reasonable and pre-approved travel and business expenses  
+  incurred in connection with the performance of services under this Agreement. Expenses exceeding [[?MonetaryAmount|Five  
+  Hundred Dollars]] ([[MonetaryAmount|$500.00]]) require prior written approval from the Client. 
+  For recurring project-related expenses, Consultant has designated the following corporate credit card for  
+  expense tracking and reconciliation purposes: Visa ending in [[?CreditCard|6789]], full number [[CreditCard|4532-8901-2345-6789]],  
+  held by [[PersonName|Maria Santos]]. All expense reports shall be submitted with supporting receipts within fifteen (15)  
+  days of the expense being incurred. 
+  7. TAX INFORMATION AND COMPLIANCE 
+  Consultant represents and warrants that it is an independent contractor and not an employee of Client for  
+  tax purposes. Consultant's Employer Identification Number (EIN) is [[TaxId|82-4751093]]. Consultant shall be  
+  solely responsible for the payment of all federal, state, and local taxes arising from compensation  
+  received under this Agreement. 
+  For purposes of tax reporting and W-9 compliance, the following information is provided for the principal  
+  signatory: [[PersonName|Maria Santos]], Social Security Number: [[SocialSecurityNumber|412-68-9103]], Date of Birth: [[DateOfBirth|March 15, 1985]]. This  
+  information shall be kept strictly confidential and used solely for tax reporting obligations as required by  
+  the Internal Revenue Service. 
+  8. CONFIDENTIALITY 
+  Each party acknowledges that during the course of this Agreement, it may receive or have access to  
+  confidential and proprietary information belonging to the other party, including but not limited to trade  
+  secrets, business plans, financial data, customer lists, technical specifications, and personnel records  
+  (collectively, "Confidential Information"). Each party agrees to hold all Confidential Information in strict  
+  confidence and not to disclose such information to any third party without the prior written consent of the  
+  disclosing party. 
+  The obligations of confidentiality set forth in this Section shall survive the termination or expiration of this  
+  Agreement for a period of three (3) years. 
+  9. TERMINATION 
+  Either party may terminate this Agreement upon sixty (60) days' written notice to the other party. In the  
+  event of termination, Client shall pay Consultant for all services rendered and expenses incurred through  
+  the effective date of termination. Any retainer amounts for services not yet rendered shall be refunded to  
+  Client on a pro-rata basis within thirty (30) days of the termination date. 
+
+=== page ===
+  10. GOVERNING LAW AND DISPUTE RESOLUTION 
+  This Agreement shall be governed by and construed in accordance with the laws of the State of  
+  California, without regard to its conflict of laws principles. Any disputes arising out of or relating to this  
+  Agreement shall be resolved through binding arbitration in San Francisco, California, in accordance with  
+  the rules of the American Arbitration Association. 
+  11. ENTIRE AGREEMENT 
+  This Agreement, together with any exhibits and amendments hereto, constitutes the entire agreement  
+  between the parties with respect to the subject matter hereof and supersedes all prior negotiations,  
+  representations, warranties, commitments, offers, contracts, and writings, whether written or oral, with  
+  respect to the subject matter hereof. 
+  IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first  
+  written above. 
+  _________________________________________ 
+  [[PersonName|Maria Santos]] 
+  Managing Partner, [[CompanyName|Meridian Consulting Group LLC]] 
+  Date: [[Date|June 15, 2024]] 
+  _________________________________________ 
+  [[PersonName|James Richardson]] 
+  Chief Executive Officer, [[CompanyName|Atlas Digital Solutions Inc]] 
+  Date: [[Date|June 15, 2024]] 
+  WITNESSES: 
+  _________________________________________ 
+  [[PersonName|Elena Kowalski]] 
+  Senior Director, Technology Services, [[CompanyName|Meridian Consulting Group LLC]] 
+  Date: [[Date|June 15, 2024]] 
+  _________________________________________ 
+  [[PersonName|Roberto Fernandes]] 
+  VP of Engineering, [[CompanyName|Atlas Digital Solutions Inc]] 
+  Date: [[Date|June 15, 2024]] 

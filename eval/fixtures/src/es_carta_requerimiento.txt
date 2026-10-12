@@ -1,0 +1,30 @@
+id: es_carta_requerimiento
+lang: es
+kind: letter
+description: Carta de requerimiento de pago con datos de cliente (México/España). Iniciales, nombre compuesto, número de expediente del despacho, historia clínica, CURP como identificador nacional, dirección IP y URL de un portal. Trampas: nombres de instituciones públicas y del propio despacho como firmante institucional.
+---
+[[CompanyName|Bufete Arriaga & Solís, S.C.]]
+[[Address|Paseo de la Reforma 2620, piso 11, Col. Lomas Altas, 11950 Ciudad de México]]
+Tel. [[PhoneNumber|+52 55 5550 1234]]
+
+Ciudad de México, a [[Date|7 de octubre de 2024]]
+
+Nuestra referencia: Expediente [[ClientId|AS-2024-0193]]
+
+Sra. [[PersonName|Guadalupe Itzel Ramírez de la Garza]]
+[[Address|Calle Río Lerma 156, int. 3, Col. Cuauhtémoc, 06500 Ciudad de México]]
+
+Estimada Sra. [[PersonName|Ramírez de la Garza]]:
+
+Por instrucciones de nuestro cliente, el Dr. [[PersonName|J. M. Ortuño]], le requerimos el pago de [[MonetaryAmount|MXN 58,400.00]] correspondientes a los servicios médicos prestados entre el [[Date|2 de febrero de 2024]] y el [[Date|30 de abril de 2024]] (historia clínica [[MedicalRecordNumber|HC-0045821]]).
+
+Según los registros del portal de pacientes, usted aceptó el presupuesto el [[Date|1 de febrero de 2024]] desde la dirección IP [[IpAddress|203.0.113.9]], en la página [[Url|https://pacientes.clinica-ortuno.example.mx/presupuestos/2024/0177]]. Su CURP registrada es [[NationalId|RAGG850314MDFMRD09]] y su fecha de nacimiento, [[DateOfBirth|14/03/1985]].
+
+Le concedemos un plazo de quince (15) días hábiles para liquidar el adeudo mediante depósito en la cuenta CLABE [[BankAccount|002180700112345678]] a nombre de [[PersonName|José María Ortuño Villaseñor]]. De no recibir el pago, procederemos conforme al Código de Comercio y presentaremos la queja correspondiente ante la Procuraduría Federal del Consumidor (PROFECO).
+
+Para cualquier aclaración, puede escribir a [[Email|cobranza@arriaga-solis.example.mx]].
+
+Atentamente,
+
+Lic. [[PersonName|Mariana Solís Echeverría]]
+Socia

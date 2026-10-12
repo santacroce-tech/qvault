@@ -1,0 +1,55 @@
+id: pt_contrato_prestacao
+lang: pt
+kind: contract
+description: Contrato de prestação de serviços (Brasil). CPF, CNPJ, RG, CEP, endereços "Rua/Avenida ..., nº", dados bancários (agência/conta) e chave PIX, telefones (11) 9xxxx-xxxx, valores em R$, datas por extenso, "representada por", nomes compostos com "de/da/dos". Armadilhas: títulos de cláusulas, Código Civil, LGPD, foro.
+---
+CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE CONSULTORIA
+
+Pelo presente instrumento particular, de um lado:
+
+CONTRATANTE: [[CompanyName|Laticínios Serra Azul Ltda.]], pessoa jurídica de direito privado, inscrita no CNPJ sob o nº [[TaxId|11.222.333/0001-81]], com sede na [[Address|Avenida Brigadeiro Faria Lima, 3477, 14º andar, Itaim Bibi, São Paulo/SP, CEP 04538-133]], neste ato representada por sua diretora [[PersonName|Helena Cristina dos Santos Albuquerque]], brasileira, casada, administradora, portadora do RG nº [[NationalId|23.456.789-1]] SSP/SP e inscrita no CPF sob o nº [[NationalId|111.444.777-35]];
+
+CONTRATADA: [[CompanyName|Moura Dantas Consultoria Tributária EIRELI]], inscrita no CNPJ sob o nº [[TaxId|45.987.321/0001-09]], com sede na [[Address|Rua Padre Chagas, 415, sala 802, Moinhos de Vento, Porto Alegre/RS, CEP 90570-080]], representada por seu sócio [[PersonName|Rodrigo Moura Dantas]], portador do CPF nº [[NationalId|123.456.789-09]].
+
+As partes acima identificadas têm, entre si, justo e acertado o presente Contrato de Prestação de Serviços, que se regerá pelas cláusulas seguintes e pelo Código Civil (Lei nº 10.406/2002).
+
+CLÁUSULA PRIMEIRA – DO OBJETO
+
+1.1. O presente contrato tem por objeto a revisão dos créditos de ICMS da CONTRATANTE referentes aos exercícios de 2019 a 2023.
+
+CLÁUSULA SEGUNDA – DO PRAZO
+
+2.1. O contrato vigorará de [[Date|1º de fevereiro de 2024]] a [[Date|31 de janeiro de 2025]].
+
+CLÁUSULA TERCEIRA – DA REMUNERAÇÃO
+
+3.1. Pelos serviços, a CONTRATANTE pagará à CONTRATADA honorários mensais de [[MonetaryAmount|R$ 18.500,00]] (dezoito mil e quinhentos reais), acrescidos de êxito de 10% (dez por cento) sobre os créditos recuperados, limitado a [[MonetaryAmount|R$ 250.000,00]].
+
+3.2. Os pagamentos serão efetuados por depósito no Banco do Brasil, Agência [[BankAccount|3064-2]], Conta Corrente [[BankAccount|48.715-9]], ou via PIX para a chave [[TaxId|45.987.321/0001-09]].
+
+CLÁUSULA QUARTA – DA CONFIDENCIALIDADE E PROTEÇÃO DE DADOS
+
+4.1. As partes se obrigam a tratar os dados pessoais em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 – LGPD), designando como encarregada a Sra. [[PersonName|Priscila
+Fagundes Teixeira]], contato [[Email|dpo@laticinios-serraazul.example.com.br]].
+
+CLÁUSULA QUINTA – DAS COMUNICAÇÕES
+
+5.1. As comunicações à CONTRATADA serão enviadas a [[PersonName|Rodrigo Moura Dantas]], pelo e-mail [[Email|rodrigo@mouradantas.example.com.br]] ou pelos telefones [[PhoneNumber|(51) 99876-5432]] e [[PhoneNumber|(51) 3555-0198]].
+
+CLÁUSULA SEXTA – DO FORO
+
+6.1. Fica eleito o Foro da Comarca de São Paulo/SP para dirimir quaisquer dúvidas oriundas do presente contrato.
+
+São Paulo, [[Date|25 de janeiro de 2024]].
+
+_____________________________________
+[[CompanyName|LATICÍNIOS SERRA AZUL LTDA.]]
+p. [[PersonName|Helena Cristina dos Santos Albuquerque]]
+
+_____________________________________
+[[CompanyName|MOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI]]
+p. [[PersonName|Rodrigo Moura Dantas]]
+
+Testemunhas:
+1. [[PersonName|Vanessa Lacerda Pimentel]] – CPF [[NationalId|987.654.321-00]]
+2. [[PersonName|Otávio Brandão Neto]] – CPF [[NationalId|741.852.963-14]]
