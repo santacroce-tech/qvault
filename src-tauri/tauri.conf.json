@@ -7,7 +7,7 @@
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeBuildCommand": "npm run build && npm run sidecar:build"
   },
   "app": {
     "windows": [
@@ -35,6 +35,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "externalBin": [
+      "binaries/qvac-sidecar"
+    ],
+    "resources": {
+      "resources/qvac-worker/": "qvac-worker/",
+      "resources/selftest/ocr-sample.png": "selftest/ocr-sample.png"
+    },
     "windows": {
       "nsis": {
         "installMode": "currentUser",

@@ -36,4 +36,4 @@ graphify-out/
 
 # QVAC sidecar build output (sidecar/build.mjs)
 src-tauri/binaries/
-src-tauri/resources/qvac-sidecar/
+src-tauri/resources/qvac-worker/

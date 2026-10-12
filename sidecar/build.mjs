@@ -4,7 +4,7 @@
 //   src-tauri/binaries/qvac-sidecar-<target-triple>[.exe]   <- Bare runtime (bundle.externalBin)
 //   src-tauri/resources/qvac-sidecar/                        <- worker.js + pruned node_modules (bundle.resources)
 //
-// At runtime Rust spawns `<externalBin> <resources>/qvac-sidecar/worker.js
+// At runtime Rust spawns `<externalBin> <resources>/qvac-worker/worker.js
 // --cache-dir <app data>/qvac-cache` with piped stdio (see src-tauri/src/qvac/).
 //
 // This mirrors QVAC's own Electron packaging (runtime binary + real files on
@@ -27,7 +27,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const repo = join(here, '..')
 const tauriDir = join(repo, 'src-tauri')
 const binDir = join(tauriDir, 'binaries')
-const outDir = join(tauriDir, 'resources', 'qvac-sidecar')
+const outDir = join(tauriDir, 'resources', 'qvac-worker')
 
 const TRIPLE_TO_HOST = {
   'aarch64-apple-darwin': 'darwin-arm64',
