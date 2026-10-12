@@ -1,6 +1,6 @@
 # QVAC integration — Phase 0 design
 
-Status: **Phase 0 (investigate and design) — awaiting approval before Phase 1.**
+Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1 in progress.**
 Date: 2026-10-12. Branch: `feature/qvac-integration`.
 
 This document covers what Qvault looks like today, the export redaction audit, what QVAC actually provides at the version we would pin, the proposed sidecar architecture, measured size impact, and open questions. Where the original task prompt turned out to be wrong, that is called out in [§8](#8-corrections-to-the-task-prompt).
@@ -109,7 +109,7 @@ React UI ──IPC──▶ Rust (Tauri) ──JSON-RPC over stdio──▶ qvac
 
 Lifecycle: spawned lazily on first AI use; `hello` handshake checks versions; each request carries a timeout (OCR per page, completion per chunk); cancellation maps to `cancel({requestId})`; on exit or crash, pending requests fail with `INTERNAL` and the client restarts with exponential backoff (cap 3 restarts per 5 min, then mark unavailable for the session); `shutdown` on app exit, then kill after 2 s. Stderr is captured to the app log; document text is never logged.
 
-### 4.2 Layer 3: keep GLiNER for now, decide on numbers
+### 4.2 Layer 3: keep GLiNER for now, decide on numbers (superseded: see §9 — Layer 3 moves to QVAC in Phase 1)
 
 The prompt says not to run two runtimes without a clear reason. There is a reason here, but it is a trade-off that deserves your call:
 
@@ -178,9 +178,9 @@ Models are not bundled (OCR pair 98 MB; an LLM 0.4–5 GB), consistent with "opt
 
 ---
 
-## 9. Decisions needed before Phase 1
+## 9. Decisions (approved 2026-10-12)
 
-1. **Bundle the sidecar in the installer (~57 MB DMG) or ship it as an optional AI pack download?**
-2. **Layer 3:** keep GLiNER until the Phase 3 eval decides (recommended), or move to QVAC now?
-3. **PDF export fix:** rasterize redacted pages only (recommended) — acceptable that redacted pages lose selectable text?
-4. **Model hosting:** OK to download pinned GGUFs over HTTPS from Hugging Face (user-initiated, checksum-verified)?
+1. **Packaging:** bundle the sidecar in the installer (~57 MB macOS DMG).
+2. **Layer 3:** move to a QVAC LLM **now** (Phase 1), not after the Phase 3 eval. GLiNER, `ort`, `ort-tract`, `tokenizers` and `hf-hub` are removed, so there is a single AI runtime. Consequence: Layer 3 accuracy is not benchmarked against GLiNER before the switch; the Phase 3 harness will measure the QVAC layer on its own.
+3. **PDF export:** rasterize only pages that carry an approved redaction, burn boxes into the pixels in Rust, strip document-wide metadata, and refuse export if any approved redaction has no rect.
+4. **Model hosting:** user-initiated HTTPS downloads from Hugging Face with pinned size and SHA-256, plus import from file. No P2P.
