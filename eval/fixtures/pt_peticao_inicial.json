@@ -1,6 +1,7 @@
 {
   "id": "pt_peticao_inicial",
   "lang": "pt",
+  "split": "dev",
   "kind": "court filing",
   "description": "Petição inicial de ação indenizatória (Brasil). Número de processo no padrão CNJ, \"SOBRENOME, Nome\", nomes repetidos por sobrenome, placa Mercosul, data de nascimento, prontuário médico, cartão de crédito, IP. Armadilhas: tribunal, artigos do CPC/CDC, súmulas do STJ e precedentes (REsp).",
   "source": "src/pt_peticao_inicial.txt",

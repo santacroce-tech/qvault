@@ -80,7 +80,9 @@ function parseSource (file) {
   if (!['en', 'es', 'pt'].includes(meta.lang)) throw new Error(`${file}: lang must be en|es|pt`)
   const body = raw.slice(sep + 5)
   const pages = body.split(/\n=== page ===\n/).map((p, n) => parsePage(p, `${file} page ${n + 1}`))
-  return { id: meta.id, lang: meta.lang, kind: meta.kind, description: meta.description, source: `src/${file}`, pages }
+  const split = meta.split || 'dev'
+  if (!['dev', 'holdout'].includes(split)) throw new Error(`${file}: split must be dev|holdout`)
+  return { id: meta.id, lang: meta.lang, split, kind: meta.kind, description: meta.description, source: `src/${file}`, pages }
 }
 
 // Same checks as the Rust validator (src-tauri/tests/eval_harness.rs).

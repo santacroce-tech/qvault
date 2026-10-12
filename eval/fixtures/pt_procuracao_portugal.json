@@ -1,6 +1,7 @@
 {
   "id": "pt_procuracao_portugal",
   "lang": "pt",
+  "split": "dev",
   "kind": "power of attorney / letter",
   "description": "Procuração e carta de acompanhamento (Portugal). NIF português, Cartão de Cidadão, IBAN PT50, código postal 4+3, telefones +351, carta de condução, iniciais, \"Apelido, Nome\". Armadilhas: Código do Notariado, Conservatória, números de artigos, \"Lda.\" genérico na lei.",
   "source": "src/pt_procuracao_portugal.txt",

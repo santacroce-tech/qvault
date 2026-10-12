@@ -1,6 +1,7 @@
 {
   "id": "en_demand_letter",
   "lang": "en",
+  "split": "dev",
   "kind": "letter",
   "description": "Personal-injury demand letter. Medical record numbers, a licence plate, a passport number, initials and honorifics, a clinic and an insurer named only as institutions (optional), dates that are not DOB, a policy number in a table.",
   "source": "src/en_demand_letter.txt",

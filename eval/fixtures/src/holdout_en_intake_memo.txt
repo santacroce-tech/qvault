@@ -1,0 +1,36 @@
+id: holdout_en_intake_memo
+lang: en
+kind: memo (held out)
+split: holdout
+description: Held-out internal intake memo, written after the Layer 1 changes and never used to tune them. Mixed formats the dev fixtures do not use (dotted dates, 10-digit phone without separators, ZIP+4, Discover card, ITIN-like number, Canadian address and SIN, bank account with "acct" abbreviation).
+---
+PRIVILEGED & CONFIDENTIAL — ATTORNEY WORK PRODUCT
+
+MEMORANDUM
+
+TO:      Litigation Team
+FROM:    [[PersonName|Naomi Fairbanks-Oyelaran]]
+DATE:    [[Date|2025.03.18]]
+RE:      New matter intake – [[PersonName|Desmond Achebe-Kowalczyk]] v. [[CompanyName|Pellucid Freight Systems, Inc.]] (our ref. [[ClientId|M-25-0331]])
+
+1. Client details
+
+Our client, [[PersonName|Desmond Achebe-Kowalczyk]] (DOB [[DateOfBirth|07.11.1968]]), lives at [[Address|83 Lantern Hill Terrace, Unit 12, Marietta, GA 30064-3317]]. He can be reached on [[PhoneNumber|4045550127]] (cell) or at [[Email|desmond.ak@inbox.example.org]]. He previously lived in Canada at [[Address|2210 Rue Sainte-Catherine Ouest, Montréal, QC H3H 1M7]] and still holds a Canadian Social Insurance Number, [[NationalId|046 454 286]].
+
+2. The dispute
+
+[[PersonName|Desmond]] drove for Pellucid from [[Date|Feb. 3, 2021]] to [[Date|Nov. 30, 2024]]. Pellucid's dispatcher, [[PersonName|Grete Mauldin]], deducted fuel costs from his settlements without authorisation. Total deductions per his spreadsheet: [[MonetaryAmount|USD 27,413.06]]. Reimbursements were paid to his checking acct. [[BankAccount|000123456789]] at [[?CompanyName|Peachtree Community Bank]].
+
+3. Payment card
+
+He used a company fuel card ending 1117; the full number on the statement is [[CreditCard|6011 1111 1111 1117]].
+
+4. Opposing counsel
+
+[[PersonName|Bartholomew Quist]], [[CompanyName|Quist Harrow & Lyle LLP]], [[PhoneNumber|(678) 555-0110]]. He has asked for an extension until [[Date|April 15, 2025]].
+
+5. Next steps
+
+Conflicts check cleared on [[Date|3/17/25]]. Engagement letter to go out under the standard terms (Fee Schedule B). Prepare a demand under O.C.G.A. § 34-7-2 and the Fair Labor Standards Act.
+
+N.F.

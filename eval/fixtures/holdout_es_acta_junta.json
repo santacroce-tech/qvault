@@ -1,0 +1,135 @@
+{
+  "id": "holdout_es_acta_junta",
+  "lang": "es",
+  "split": "holdout",
+  "kind": "corporate minutes (held out)",
+  "description": "Acta de junta general (España), escrita después de los cambios en la capa 1 y nunca usada para ajustarlos. Socios con porcentajes, DNI con letra, domicilios con \"C/\", teléfonos con prefijo 0034, fechas con barras, importes con \"EUR\" detrás y IBAN sin espacios.",
+  "source": "src/holdout_es_acta_junta.txt",
+  "pages": [
+    {
+      "text": "ACTA DE LA JUNTA GENERAL EXTRAORDINARIA DE SOCIOS DE TALLERES METÁLICOS ARGAÑA, S.L.\n\nEn Bilbao, en el domicilio social sito en C/ Gran Vía de Don Diego López de Haro, 45, 48011 Bilbao, siendo las 11:00 horas del día 28/06/2024, se reúne la Junta General Extraordinaria con asistencia de los siguientes socios:\n\n- D. Íñigo Zabaleta Urrutia, DNI 30651122B, titular del 55 % del capital.\n- Dña. Arantxa Beloki Etxeberria, DNI 72485390Q, titular del 45 % del capital.\n\nPreside la reunión el Sr. Zabaleta y actúa como secretaria la Sra. Beloki.\n\nORDEN DEL DÍA\n\nPrimero.- Aprobación de las cuentas anuales del ejercicio 2023.\nSegundo.- Ampliación de capital.\nTercero.- Nombramiento de auditor.\n\nACUERDOS\n\n1. Se aprueban por unanimidad las cuentas anuales, con un resultado positivo de 184.320,77 EUR.\n\n2. Se acuerda ampliar el capital social en 60.000 EUR, que se desembolsará mediante transferencia a la cuenta ES7921000813610123456789.\n\n3. Se nombra auditor de cuentas a Auditores Ibaizabal, S.L.P., con NIF B95123456, representada por D. Koldo Iturbe Larrañaga, con domicilio profesional en Alameda de Recalde, 27, 5.º dcha., 48009 Bilbao, teléfono 0034 944 555 120 y correo kiturbe@ibaizabal-auditores.example.es.\n\nNo habiendo más asuntos que tratar, se levanta la sesión, de la que se extiende la presente acta, que es leída y aprobada por unanimidad.\n\nV.º B.º EL PRESIDENTE                    LA SECRETARIA\nÍñigo Zabaleta Urrutia                    Arantxa Beloki Etxeberria\n",
+      "spans": [
+        {
+          "start": 53,
+          "end": 86,
+          "category": "CompanyName",
+          "text": "TALLERES METÁLICOS ARGAÑA, S.L."
+        },
+        {
+          "start": 130,
+          "end": 188,
+          "category": "Address",
+          "text": "C/ Gran Vía de Don Diego López de Haro, 45, 48011 Bilbao"
+        },
+        {
+          "start": 222,
+          "end": 232,
+          "category": "Date",
+          "text": "28/06/2024"
+        },
+        {
+          "start": 323,
+          "end": 347,
+          "category": "PersonName",
+          "text": "Íñigo Zabaleta Urrutia"
+        },
+        {
+          "start": 353,
+          "end": 362,
+          "category": "NationalId",
+          "text": "30651122B"
+        },
+        {
+          "start": 402,
+          "end": 427,
+          "category": "PersonName",
+          "text": "Arantxa Beloki Etxeberria"
+        },
+        {
+          "start": 433,
+          "end": 442,
+          "category": "NationalId",
+          "text": "72485390Q"
+        },
+        {
+          "start": 502,
+          "end": 510,
+          "category": "PersonName",
+          "text": "Zabaleta"
+        },
+        {
+          "start": 544,
+          "end": 550,
+          "category": "PersonName",
+          "text": "Beloki"
+        },
+        {
+          "start": 794,
+          "end": 808,
+          "category": "MonetaryAmount",
+          "text": "184.320,77 EUR"
+        },
+        {
+          "start": 854,
+          "end": 864,
+          "category": "MonetaryAmount",
+          "text": "60.000 EUR"
+        },
+        {
+          "start": 922,
+          "end": 946,
+          "category": "IBAN",
+          "text": "ES7921000813610123456789"
+        },
+        {
+          "start": 983,
+          "end": 1010,
+          "category": "CompanyName",
+          "text": "Auditores Ibaizabal, S.L.P."
+        },
+        {
+          "start": 1020,
+          "end": 1029,
+          "category": "TaxId",
+          "text": "B95123456"
+        },
+        {
+          "start": 1051,
+          "end": 1074,
+          "category": "PersonName",
+          "text": "Koldo Iturbe Larrañaga"
+        },
+        {
+          "start": 1105,
+          "end": 1153,
+          "category": "Address",
+          "text": "Alameda de Recalde, 27, 5.º dcha., 48009 Bilbao"
+        },
+        {
+          "start": 1165,
+          "end": 1181,
+          "category": "PhoneNumber",
+          "text": "0034 944 555 120"
+        },
+        {
+          "start": 1191,
+          "end": 1229,
+          "category": "Email",
+          "text": "kiturbe@ibaizabal-auditores.example.es"
+        },
+        {
+          "start": 1431,
+          "end": 1455,
+          "category": "PersonName",
+          "text": "Íñigo Zabaleta Urrutia"
+        },
+        {
+          "start": 1475,
+          "end": 1500,
+          "category": "PersonName",
+          "text": "Arantxa Beloki Etxeberria"
+        }
+      ]
+    }
+  ]
+}

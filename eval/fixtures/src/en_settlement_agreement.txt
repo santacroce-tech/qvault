@@ -13,7 +13,7 @@ A. The Employee was employed by the Company as Senior Data Analyst from [[Date|4
 
 B. On [[Date|9 August 2024]], a Company laptop assigned to [[PersonName|S. Achterberg]] was accessed from IP address [[IpAddress|192.0.2.118]] without authorisation. Server logs also record requests from [[IpAddress|198.51.100.34]] to [[Url|https://intranet.halcyon-data.example/hr/records?id=7781]] (the "Data Incident").
 
-C. [[PersonName|Achterberg]]'s personnel file, including her passport number [[PassportNumber|548271936]] and National Insurance number [[NationalId|QQ 12 34 56 C]], was among the records exposed.
+C. [[PersonName|Achterberg]]'s personnel file, including her passport number [[PassportNumber|548271936]] and National Insurance number [[NationalId|AB 12 34 56 C]], was among the records exposed.
 
 1. DEFINITIONS
 

@@ -56,10 +56,16 @@ pub struct FixturePage {
 pub struct Fixture {
     pub id: String,
     pub lang: String,
+    #[serde(default = "dev_split")]
+    pub split: String,
     pub kind: String,
     pub description: String,
     pub source: String,
     pub pages: Vec<FixturePage>,
+}
+
+fn dev_split() -> String {
+    "dev".into()
 }
 
 pub fn eval_dir() -> PathBuf {
@@ -272,6 +278,7 @@ pub struct Report {
     pub overall: Breakdown,
     pub by_category: BTreeMap<String, Breakdown>,
     pub by_lang: BTreeMap<String, Breakdown>,
+    pub by_split: BTreeMap<String, Breakdown>,
     pub false_negatives: Vec<Miss>,
     pub false_positives: Vec<FalsePos>,
 }
@@ -319,6 +326,7 @@ pub fn score(fixtures: &[Fixture], preds: &Predictions) -> Report {
                 rep.overall.add(&b);
                 rep.by_category.entry(s.category.clone()).or_default().add(&b);
                 rep.by_lang.entry(fx.lang.clone()).or_default().add(&b);
+                rep.by_split.entry(fx.split.clone()).or_default().add(&b);
                 if hit_overlap.is_empty() || !covered {
                     rep.false_negatives.push(Miss {
                         fixture: fx.id.clone(),
@@ -347,6 +355,7 @@ pub fn score(fixtures: &[Fixture], preds: &Predictions) -> Report {
                 rep.overall.add(&b);
                 rep.by_category.entry(p.category.clone()).or_default().add(&b);
                 rep.by_lang.entry(fx.lang.clone()).or_default().add(&b);
+                rep.by_split.entry(fx.split.clone()).or_default().add(&b);
                 if !req_o && !opt_o {
                     rep.false_positives.push(FalsePos {
                         fixture: fx.id.clone(),
@@ -409,6 +418,7 @@ pub fn summary_json(r: &Report) -> Value {
     json!({
         "overall": b(&r.overall),
         "by_lang": r.by_lang.iter().map(|(k, v)| (k.clone(), b(v))).collect::<serde_json::Map<_, _>>(),
+        "by_split": r.by_split.iter().map(|(k, v)| (k.clone(), b(v))).collect::<serde_json::Map<_, _>>(),
         "by_category": r.by_category.iter().map(|(k, v)| (k.clone(), b(v))).collect::<serde_json::Map<_, _>>(),
         "false_negatives": r.false_negatives,
         "false_positives": r.false_positives,
@@ -579,10 +589,19 @@ fn layers_1_2_against_baseline() {
     md.push_str(&row("Layer 1 (regex)", &l1.overall));
     md.push_str(&row("Layer 2 (heuristics)", &l2.overall));
     md.push_str(&row("Layers 1+2", &l12.overall));
-    md.push_str("\n## Layers 1+2 by language\n\n");
+    md.push_str("\n## Layers 1+2 by language and split\n\n");
+    md.push_str("`holdout` fixtures were written after the Layer 1 changes and never used to tune any rule.\n\n");
     md.push_str(TABLE_HEAD);
     for (l, b) in &l12.by_lang {
         md.push_str(&row(l, b));
+    }
+    for (s, b) in &l12.by_split {
+        md.push_str(&row(s, b));
+    }
+    for (name, r) in [("Layer 1", &l1), ("Layer 2", &l2)] {
+        for (s, b) in &r.by_split {
+            md.push_str(&row(&format!("{} – {}", name, s), b));
+        }
     }
     md.push_str("\n## By category (overlap)\n\n");
     md.push_str(&category_table(&[("L1", &l1), ("L2", &l2), ("L1+2", &l12)]));
@@ -661,6 +680,7 @@ fn scoring_rules() {
     let fx = Fixture {
         id: "t".into(),
         lang: "en".into(),
+        split: "dev".into(),
         kind: "t".into(),
         description: "t".into(),
         source: "t".into(),

@@ -1,6 +1,7 @@
 {
   "id": "en_garnishment_affidavit",
   "lang": "en",
+  "split": "dev",
   "kind": "court filing (affidavit with tables)",
   "description": "Affidavit in support of a writ of garnishment. Card numbers in several formats (grouped, Amex, undelimited), routing numbers with valid ABA checksums, SWIFT/BIC, IBANs with spaces, account numbers in tables, IP addresses and URLs from a fraud log, amounts. Numeric traps: statute sections, docket entry numbers, percentages, a zip code alone.",
   "source": "src/en_garnishment_affidavit.txt",

@@ -1,6 +1,7 @@
 {
   "id": "en_traps_llc_agreement",
   "lang": "en",
+  "split": "dev",
   "kind": "contract (false-positive traps)",
   "description": "Operating-agreement boilerplate dense with capitalised legal terms, clause headings, defined terms, company-like phrases, case and statute citations, section numbers, percentages, years and durations. Only a few real items are labelled; everything else a detector flags is a false positive.",
   "source": "src/en_traps_llc_agreement.txt",

@@ -1,6 +1,7 @@
 {
   "id": "en_eu_share_purchase",
   "lang": "en",
+  "split": "dev",
   "kind": "contract (cross-border, EU/DE formats)",
   "description": "Share purchase agreement between a German seller and a Dutch buyer. German tax ID, tax number, VAT ID, ID card number, address and licence plate; EU VAT numbers (DE, NL, FR, BE); IBANs from several countries; German and Dutch phone formats; register numbers (optional) and EU regulation numbers as traps.",
   "source": "src/en_eu_share_purchase.txt",

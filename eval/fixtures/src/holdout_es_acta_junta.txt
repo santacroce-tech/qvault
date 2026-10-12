@@ -1,0 +1,33 @@
+id: holdout_es_acta_junta
+lang: es
+kind: corporate minutes (held out)
+split: holdout
+description: Acta de junta general (España), escrita después de los cambios en la capa 1 y nunca usada para ajustarlos. Socios con porcentajes, DNI con letra, domicilios con "C/", teléfonos con prefijo 0034, fechas con barras, importes con "EUR" detrás y IBAN sin espacios.
+---
+ACTA DE LA JUNTA GENERAL EXTRAORDINARIA DE SOCIOS DE [[CompanyName|TALLERES METÁLICOS ARGAÑA, S.L.]]
+
+En Bilbao, en el domicilio social sito en [[Address|C/ Gran Vía de Don Diego López de Haro, 45, 48011 Bilbao]], siendo las 11:00 horas del día [[Date|28/06/2024]], se reúne la Junta General Extraordinaria con asistencia de los siguientes socios:
+
+- D. [[PersonName|Íñigo Zabaleta Urrutia]], DNI [[NationalId|30651122B]], titular del 55 % del capital.
+- Dña. [[PersonName|Arantxa Beloki Etxeberria]], DNI [[NationalId|72485390Q]], titular del 45 % del capital.
+
+Preside la reunión el Sr. [[PersonName|Zabaleta]] y actúa como secretaria la Sra. [[PersonName|Beloki]].
+
+ORDEN DEL DÍA
+
+Primero.- Aprobación de las cuentas anuales del ejercicio 2023.
+Segundo.- Ampliación de capital.
+Tercero.- Nombramiento de auditor.
+
+ACUERDOS
+
+1. Se aprueban por unanimidad las cuentas anuales, con un resultado positivo de [[MonetaryAmount|184.320,77 EUR]].
+
+2. Se acuerda ampliar el capital social en [[MonetaryAmount|60.000 EUR]], que se desembolsará mediante transferencia a la cuenta [[IBAN|ES7921000813610123456789]].
+
+3. Se nombra auditor de cuentas a [[CompanyName|Auditores Ibaizabal, S.L.P.]], con NIF [[TaxId|B95123456]], representada por D. [[PersonName|Koldo Iturbe Larrañaga]], con domicilio profesional en [[Address|Alameda de Recalde, 27, 5.º dcha., 48009 Bilbao]], teléfono [[PhoneNumber|0034 944 555 120]] y correo [[Email|kiturbe@ibaizabal-auditores.example.es]].
+
+No habiendo más asuntos que tratar, se levanta la sesión, de la que se extiende la presente acta, que es leída y aprobada por unanimidad.
+
+V.º B.º EL PRESIDENTE                    LA SECRETARIA
+[[PersonName|Íñigo Zabaleta Urrutia]]                    [[PersonName|Arantxa Beloki Etxeberria]]

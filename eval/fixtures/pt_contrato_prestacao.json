@@ -1,6 +1,7 @@
 {
   "id": "pt_contrato_prestacao",
   "lang": "pt",
+  "split": "dev",
   "kind": "contract",
   "description": "Contrato de prestação de serviços (Brasil). CPF, CNPJ, RG, CEP, endereços \"Rua/Avenida ..., nº\", dados bancários (agência/conta) e chave PIX, telefones (11) 9xxxx-xxxx, valores em R$, datas por extenso, \"representada por\", nomes compostos com \"de/da/dos\". Armadilhas: títulos de cláusulas, Código Civil, LGPD, foro.",
   "source": "src/pt_contrato_prestacao.txt",

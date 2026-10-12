@@ -1,0 +1,118 @@
+{
+  "id": "holdout_pt_notificacao",
+  "lang": "pt",
+  "split": "holdout",
+  "kind": "extrajudicial notice (held out)",
+  "description": "Notificação extrajudicial (Brasil), escrita depois das mudanças na camada 1 e nunca usada para ajustá-las. Telefone com +55, CPF sem pontuação, CEP sem \"CEP\", valores por extenso e em R$, data com mês abreviado, matrícula de imóvel, nome de condomínio, chave PIX e-mail.",
+  "source": "src/holdout_pt_notificacao.txt",
+  "pages": [
+    {
+      "text": "NOTIFICAÇÃO EXTRAJUDICIAL\n\nNOTIFICANTE: Benedita Aparecida Rocha Lins, CPF 39053344705, residente na Avenida Getúlio Vargas, 1.540, apto. 302, Savassi, Belo Horizonte/MG, 30112-021.\n\nNOTIFICADO: Cláudio Henrique Vasconcelos, inquilino do imóvel situado na Rua Pernambuco, 88, casa 2, Funcionários, Belo Horizonte/MG, 30130-150.\n\nPrezado Sr. Vasconcelos,\n\nPela presente, a Notificante, proprietária do imóvel registrado sob a matrícula nº 47.812 do 4º Ofício de Registro de Imóveis de Belo Horizonte, vem NOTIFICÁ-LO de que se encontram em atraso os aluguéis vencidos em 10 jan. 2025, 10 fev. 2025 e 10 mar. 2025, no valor total de R$ 7.950,00 (sete mil, novecentos e cinquenta reais), já acrescidos da multa contratual de 10%.\n\nFica V. Sa. notificado a quitar o débito no prazo de 15 (quinze) dias, por meio de PIX para a chave benedita.lins@correio.example.com.br, sob pena de ajuizamento de ação de despejo por falta de pagamento, nos termos da Lei nº 8.245/1991 (Lei do Inquilinato).\n\nEventuais dúvidas poderão ser esclarecidas com o advogado da Notificante, Dr. Marcelo Tavares Quintão, pelo telefone +55 31 98877-6655 ou pelo e-mail mtquintao@advocacia.example.com.br.\n\nBelo Horizonte, 17 de março de 2025.\n\nBenedita Aparecida Rocha Lins\n",
+      "spans": [
+        {
+          "start": 42,
+          "end": 71,
+          "category": "PersonName",
+          "text": "Benedita Aparecida Rocha Lins"
+        },
+        {
+          "start": 77,
+          "end": 88,
+          "category": "NationalId",
+          "text": "39053344705"
+        },
+        {
+          "start": 103,
+          "end": 183,
+          "category": "Address",
+          "text": "Avenida Getúlio Vargas, 1.540, apto. 302, Savassi, Belo Horizonte/MG, 30112-021"
+        },
+        {
+          "start": 198,
+          "end": 227,
+          "category": "PersonName",
+          "text": "Cláudio Henrique Vasconcelos"
+        },
+        {
+          "start": 261,
+          "end": 332,
+          "category": "Address",
+          "text": "Rua Pernambuco, 88, casa 2, Funcionários, Belo Horizonte/MG, 30130-150"
+        },
+        {
+          "start": 347,
+          "end": 358,
+          "category": "PersonName",
+          "text": "Vasconcelos"
+        },
+        {
+          "start": 448,
+          "end": 454,
+          "category": "ClientId",
+          "text": "47.812",
+          "optional": true
+        },
+        {
+          "start": 585,
+          "end": 597,
+          "category": "Date",
+          "text": "10 jan. 2025"
+        },
+        {
+          "start": 599,
+          "end": 611,
+          "category": "Date",
+          "text": "10 fev. 2025"
+        },
+        {
+          "start": 614,
+          "end": 626,
+          "category": "Date",
+          "text": "10 mar. 2025"
+        },
+        {
+          "start": 646,
+          "end": 657,
+          "category": "MonetaryAmount",
+          "text": "R$ 7.950,00"
+        },
+        {
+          "start": 845,
+          "end": 881,
+          "category": "Email",
+          "text": "benedita.lins@correio.example.com.br"
+        },
+        {
+          "start": 1088,
+          "end": 1112,
+          "category": "PersonName",
+          "text": "Marcelo Tavares Quintão"
+        },
+        {
+          "start": 1128,
+          "end": 1145,
+          "category": "PhoneNumber",
+          "text": "+55 31 98877-6655"
+        },
+        {
+          "start": 1161,
+          "end": 1195,
+          "category": "Email",
+          "text": "mtquintao@advocacia.example.com.br"
+        },
+        {
+          "start": 1214,
+          "end": 1234,
+          "category": "Date",
+          "text": "17 de março de 2025"
+        },
+        {
+          "start": 1237,
+          "end": 1266,
+          "category": "PersonName",
+          "text": "Benedita Aparecida Rocha Lins"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+id: holdout_pt_notificacao
+lang: pt
+kind: extrajudicial notice (held out)
+split: holdout
+description: Notificação extrajudicial (Brasil), escrita depois das mudanças na camada 1 e nunca usada para ajustá-las. Telefone com +55, CPF sem pontuação, CEP sem "CEP", valores por extenso e em R$, data com mês abreviado, matrícula de imóvel, nome de condomínio, chave PIX e-mail.
+---
+NOTIFICAÇÃO EXTRAJUDICIAL
+
+NOTIFICANTE: [[PersonName|Benedita Aparecida Rocha Lins]], CPF [[NationalId|39053344705]], residente na [[Address|Avenida Getúlio Vargas, 1.540, apto. 302, Savassi, Belo Horizonte/MG, 30112-021]].
+
+NOTIFICADO: [[PersonName|Cláudio Henrique Vasconcelos]], inquilino do imóvel situado na [[Address|Rua Pernambuco, 88, casa 2, Funcionários, Belo Horizonte/MG, 30130-150]].
+
+Prezado Sr. [[PersonName|Vasconcelos]],
+
+Pela presente, a Notificante, proprietária do imóvel registrado sob a matrícula nº [[?ClientId|47.812]] do 4º Ofício de Registro de Imóveis de Belo Horizonte, vem NOTIFICÁ-LO de que se encontram em atraso os aluguéis vencidos em [[Date|10 jan. 2025]], [[Date|10 fev. 2025]] e [[Date|10 mar. 2025]], no valor total de [[MonetaryAmount|R$ 7.950,00]] (sete mil, novecentos e cinquenta reais), já acrescidos da multa contratual de 10%.
+
+Fica V. Sa. notificado a quitar o débito no prazo de 15 (quinze) dias, por meio de PIX para a chave [[Email|benedita.lins@correio.example.com.br]], sob pena de ajuizamento de ação de despejo por falta de pagamento, nos termos da Lei nº 8.245/1991 (Lei do Inquilinato).
+
+Eventuais dúvidas poderão ser esclarecidas com o advogado da Notificante, Dr. [[PersonName|Marcelo Tavares Quintão]], pelo telefone [[PhoneNumber|+55 31 98877-6655]] ou pelo e-mail [[Email|mtquintao@advocacia.example.com.br]].
+
+Belo Horizonte, [[Date|17 de março de 2025]].
+
+[[PersonName|Benedita Aparecida Rocha Lins]]

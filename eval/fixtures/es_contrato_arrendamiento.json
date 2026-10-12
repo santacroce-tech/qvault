@@ -1,6 +1,7 @@
 {
   "id": "es_contrato_arrendamiento",
   "lang": "es",
+  "split": "dev",
   "kind": "contract",
   "description": "Contrato de arrendamiento de vivienda (España). DNI y NIE con letra de control, NIF de sociedad, direcciones españolas, IBAN ES, teléfonos +34 y nacionales, importes en euros con coma decimal, fechas en texto, matrícula, nombres con dos apellidos repetidos y partidos entre líneas. Trampas: cláusulas en mayúsculas, referencias a la LAU y al Código Civil.",
   "source": "src/es_contrato_arrendamiento.txt",

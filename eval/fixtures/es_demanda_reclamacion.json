@@ -1,6 +1,7 @@
 {
   "id": "es_demanda_reclamacion",
   "lang": "es",
+  "split": "dev",
   "kind": "court filing",
   "description": "Demanda de juicio verbal por reclamación de cantidad (España). Nombres en forma \"APELLIDOS, Nombre\", número de procedimiento y NIG, abogado y procurador con número de colegiado, tarjeta bancaria, pasaporte, importes y fechas. Trampas: juzgado, artículos de la LEC, jurisprudencia del Tribunal Supremo (STS) y nombres de leyes.",
   "source": "src/es_demanda_reclamacion.txt",

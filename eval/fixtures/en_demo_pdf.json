@@ -1,6 +1,7 @@
 {
   "id": "en_demo_pdf",
   "lang": "en",
+  "split": "dev",
   "kind": "contract (landing/demo.pdf, text layer as read by the backend extractor)",
   "description": "The three pages of landing/demo.pdf with the 25 website-listed entities plus the banking details (routing, SWIFT) and every other date/amount. Line-wrapped e-mail and name kept as extracted.",
   "source": "src/en_demo_pdf.txt",

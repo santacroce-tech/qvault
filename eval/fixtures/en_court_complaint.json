@@ -1,6 +1,7 @@
 {
   "id": "en_court_complaint",
   "lang": "en",
+  "split": "dev",
   "kind": "court filing",
   "description": "US civil complaint. Caption in \"LAST, First\" form, case number, attorney block, several phone formats, DOB vs. other dates, case citations and statutes as false-positive traps, a name split across a line break.",
   "source": "src/en_court_complaint.txt",

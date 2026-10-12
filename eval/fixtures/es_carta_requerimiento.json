@@ -1,6 +1,7 @@
 {
   "id": "es_carta_requerimiento",
   "lang": "es",
+  "split": "dev",
   "kind": "letter",
   "description": "Carta de requerimiento de pago con datos de cliente (México/España). Iniciales, nombre compuesto, número de expediente del despacho, historia clínica, CURP como identificador nacional, dirección IP y URL de un portal. Trampas: nombres de instituciones públicas y del propio despacho como firmante institucional.",
   "source": "src/es_carta_requerimiento.txt",
