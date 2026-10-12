@@ -1,16 +1,15 @@
 import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { exportClean, exportCleanFlat, openFile } from "../lib/tauri-commands";
-import type { RedactionRect, PageImageData } from "../lib/tauri-commands";
+import { exportRedactedDocx, exportRedactedPdf, openFile } from "../lib/tauri-commands";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
+import type { RenderRedactedPages } from "../App";
 import { PII_COLORS, piiCategoryLabel } from "../lib/types";
 import type { PiiCategory } from "../lib/types";
 
 interface Props {
   documentId: string;
   fileType: string;
-  getPdfRects: () => RedactionRect[];
-  renderFlatPages: () => Promise<PageImageData[]>;
+  renderRedactedPages: RenderRedactedPages;
   advancedMode: boolean;
   onToggleAdvanced: () => void;
   redactionsHook: UseRedactionsReturn;
@@ -22,8 +21,7 @@ interface Props {
 export default function RedactionSidebar({
   documentId,
   fileType,
-  getPdfRects,
-  renderFlatPages,
+  renderRedactedPages,
   advancedMode,
   onToggleAdvanced,
   redactionsHook,
@@ -84,9 +82,7 @@ export default function RedactionSidebar({
     setExporting(true);
     setExportError(null);
     try {
-      const rects = getPdfRects();
-      console.log("[Qvault] Exporting with", rects.length, "redaction rects, fileType:", fileType);
-      if (rects.length === 0) {
+      if (approvedCount === 0) {
         setExportError(t('sidebar.exportErrorNoApproved'));
         return;
       }
@@ -94,16 +90,16 @@ export default function RedactionSidebar({
       let outputPath: string;
 
       if (fileType === "docx") {
-        // DOCX: use structured export — replaces PII text directly in the DOCX XML
-        // Produces a clean .docx file preserving original formatting
-        console.log("[Qvault] Exporting redacted DOCX...");
-        outputPath = await exportClean(documentId, rects, "text_replace");
+        // DOCX: the backend rewrites every text-bearing part of the package
+        // and verifies the result before returning.
+        outputPath = await exportRedactedDocx(documentId, "text_replace");
       } else {
-        // PDF: render pages to flattened images with redaction overlays baked in.
-        // This produces an image-based PDF with no copyable text layer.
-        console.log("[Qvault] Rendering flattened pages...");
-        const pageImages = await renderFlatPages();
-        outputPath = await exportCleanFlat(documentId, pageImages);
+        // PDF: render only the pages that carry approved redactions; the
+        // backend burns the boxes into the pixels, replaces those pages,
+        // strips metadata and refuses if anything approved would survive.
+        const pages = await renderRedactedPages();
+        console.log("[Qvault] Exporting redacted PDF:", pages.length, "page(s) rasterized");
+        outputPath = await exportRedactedPdf(documentId, pages);
       }
 
       console.log("[Qvault] Exported to:", outputPath);

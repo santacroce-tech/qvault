@@ -6,13 +6,13 @@ import RedactionSidebar from "./components/RedactionSidebar";
 import HistoryView from "./components/HistoryView";
 import EntityDatabaseView from "./components/EntityDatabaseView";
 import Settings from "./components/Settings";
-import type { RedactionRect, PageImageData } from "./lib/tauri-commands";
+import type { RedactedPageInput } from "./lib/tauri-commands";
 import { useRedactions } from "./hooks/useRedactions";
 
 type View = "upload" | "review" | "history" | "entities" | "settings";
 
-export type GetPdfRectsForExport = () => RedactionRect[];
-export type RenderFlatPages = () => Promise<PageImageData[]>;
+/** Renders the PDF pages that carry approved redactions, with their boxes. */
+export type RenderRedactedPages = () => Promise<RedactedPageInput[]>;
 
 // Hook: returns true when viewport <= 768px
 const mobileQuery = typeof window !== "undefined" ? window.matchMedia("(max-width: 768px)") : null;
@@ -33,8 +33,7 @@ function App() {
   const [view, setView] = useState<View>("upload");
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const [activeFileType, setActiveFileType] = useState<string>("pdf");
-  const pdfRectsRef = useRef<GetPdfRectsForExport>(() => []);
-  const flatPagesRef = useRef<RenderFlatPages>(async () => []);
+  const redactedPagesRef = useRef<RenderRedactedPages>(async () => []);
   const [advancedMode, setAdvancedMode] = useState(false);
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
@@ -149,8 +148,7 @@ function App() {
             <div className="flex-1 overflow-auto">
               <DocumentViewer
                 documentId={activeDocumentId}
-                onRectsReady={(getter) => { pdfRectsRef.current = getter; }}
-                onFlatPagesReady={(renderer) => { flatPagesRef.current = renderer; }}
+                onRedactedPagesReady={(renderer) => { redactedPagesRef.current = renderer; }}
                 advancedMode={advancedMode}
                 redactionsHook={redactionsHook}
               />
@@ -159,8 +157,7 @@ function App() {
               <RedactionSidebar
                 documentId={activeDocumentId}
                 fileType={activeFileType}
-                getPdfRects={() => pdfRectsRef.current()}
-                renderFlatPages={() => flatPagesRef.current()}
+                renderRedactedPages={() => redactedPagesRef.current()}
                 advancedMode={advancedMode}
                 onToggleAdvanced={() => setAdvancedMode((v) => !v)}
                 redactionsHook={redactionsHook}
@@ -172,8 +169,7 @@ function App() {
               <RedactionSidebar
                 documentId={activeDocumentId}
                 fileType={activeFileType}
-                getPdfRects={() => pdfRectsRef.current()}
-                renderFlatPages={() => flatPagesRef.current()}
+                renderRedactedPages={() => redactedPagesRef.current()}
                 advancedMode={advancedMode}
                 onToggleAdvanced={() => setAdvancedMode((v) => !v)}
                 redactionsHook={redactionsHook}

@@ -69,39 +69,47 @@ export async function getDocumentPages(documentId: string): Promise<DocumentPage
   return invoke("get_document_pages", { documentId });
 }
 
-export interface RedactionRect {
-  page: number;
+export type RedactionModeType = "black_bar" | "text_replace";
+
+/** Export a redacted DOCX. The backend reads the approved redactions itself. */
+export async function exportRedactedDocx(
+  id: string,
+  redactionMode?: RedactionModeType,
+): Promise<string> {
+  return invoke("export_redacted_docx", { id, redactionMode });
+}
+
+/** A box to burn into a page image, in that image's pixels (origin top-left). */
+export interface PixelRect {
+  /** Approved redaction whose text this box covers. */
+  redactionId: string;
+  /** Which occurrence (0-based) of that text on the page; several boxes may share one. */
+  occurrence: number;
   x: number;
   y: number;
   width: number;
   height: number;
-  replacement?: string;
-  category?: string;
 }
 
-export type RedactionModeType = "black_bar" | "text_replace";
+/** A clean render of one page that carries approved redactions. */
+export interface RedactedPageInput {
+  /** 0-based page index */
+  page: number;
+  /** PNG, base64. Must be the plain page render: the backend burns the boxes. */
+  imageBase64: string;
+  rects: PixelRect[];
+}
 
-export async function exportClean(
+/**
+ * Export a redacted PDF. Only pages in `pages` are rasterized; the backend
+ * refuses (rejects with a message) if a redaction is missing a box or approved
+ * text would remain anywhere in the output.
+ */
+export async function exportRedactedPdf(
   id: string,
-  redactionRects: RedactionRect[],
-  redactionMode?: RedactionModeType,
+  pages: RedactedPageInput[],
 ): Promise<string> {
-  return invoke("export_clean", { id, redactionRects, redactionMode });
-}
-
-export interface PageImageData {
-  jpegBase64: string;
-  width: number;
-  height: number;
-  pageWidth: number;
-  pageHeight: number;
-}
-
-export async function exportCleanFlat(
-  id: string,
-  pages: PageImageData[],
-): Promise<string> {
-  return invoke("export_clean_flat", { id, pages });
+  return invoke("export_redacted_pdf", { id, pages });
 }
 
 export async function openFile(path: string): Promise<void> {

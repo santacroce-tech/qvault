@@ -6,19 +6,19 @@ import type { PDFDocumentProxy, TextItem } from "pdfjs-dist/types/src/display/ap
 import { useDocument } from "../hooks/useDocument";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
 import { getDocumentBytes, extractDocxText, scanDocumentText, addManualRedaction } from "../lib/tauri-commands";
-import type { RedactionRect } from "../lib/tauri-commands";
+import type { PixelRect, RedactedPageInput } from "../lib/tauri-commands";
 import { PII_COLORS } from "../lib/types";
 import type { Redaction } from "../lib/types";
-import type { GetPdfRectsForExport, RenderFlatPages } from "../App";
-import type { PageImageData } from "../lib/tauri-commands";
+import type { RenderRedactedPages } from "../App";
+import { FoldedText, makeNeedle } from "../lib/redaction-match";
+import type { Needle } from "../lib/redaction-match";
 
 // Set up PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
 interface Props {
   documentId: string;
-  onRectsReady: (getter: GetPdfRectsForExport) => void;
-  onFlatPagesReady: (renderer: RenderFlatPages) => void;
+  onRedactedPagesReady: (renderer: RenderRedactedPages) => void;
   advancedMode: boolean;
   redactionsHook: UseRedactionsReturn;
 }
@@ -81,7 +81,57 @@ interface PageData {
   scale: number;
 }
 
-export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesReady, advancedMode, redactionsHook }: Props) {
+/**
+ * Boxes for every occurrence of every approved string on one page, in the
+ * page's viewport coordinates (scale `pd.scale`). A box covers the whole
+ * PDF.js text item a match touches, which over-redacts rather than risk a
+ * partially visible word.
+ *
+ * Items are joined with a space so item edges count as word boundaries, as in
+ * the backend's text extraction; whitespace is ignored when matching.
+ */
+interface OccurrenceBox {
+  redactionId: string;
+  occurrence: number;
+  span: TextSpan;
+}
+
+function occurrenceBoxes(
+  textSpans: TextSpan[],
+  needles: { needle: Needle; redactionId: string }[]
+): OccurrenceBox[] {
+  let joined = "";
+  const spanAt: number[] = [];
+  textSpans.forEach((s, idx) => {
+    if (idx > 0) {
+      joined += " ";
+      spanAt.push(-1);
+    }
+    joined += s.text;
+    for (let k = 0; k < s.text.length; k++) spanAt.push(idx);
+  });
+  const folded = new FoldedText(joined);
+  const out: OccurrenceBox[] = [];
+  for (const { needle, redactionId } of needles) {
+    folded.findAll(needle).forEach(([start, end], occurrence) => {
+      const spans = new Set<number>();
+      for (let i = start; i < end; i++) if (spanAt[i] >= 0) spans.add(spanAt[i]);
+      for (const idx of spans) out.push({ redactionId, occurrence, span: textSpans[idx] });
+    });
+  }
+  return out;
+}
+
+function toBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+export default function DocumentViewer({ documentId, onRedactedPagesReady, advancedMode, redactionsHook }: Props) {
   const { t } = useTranslation();
   const { document: doc, loading: docLoading, error, loadDocument } = useDocument();
   const { redactions, selectedId, setSelectedId, reload: reloadRedactions } = redactionsHook;
@@ -305,116 +355,72 @@ export default function DocumentViewer({ documentId, onRectsReady, onFlatPagesRe
     return () => { cancelled = true; };
   }, [documentId, doc?.file_type]);
 
-  // Expose PDF-coordinate rects for export
-  useEffect(() => {
-    if (pageData.length === 0) return;
-
-    onRectsReady(() => {
-      const rects: RedactionRect[] = [];
-      const approved = redactions.filter((r) => r.status === "approved");
-
-      for (let pageIdx = 0; pageIdx < pageData.length; pageIdx++) {
-        const pd = pageData[pageIdx];
-        const pageRedactions = approved.filter((r) => r.page === pageIdx);
-        const mapped = mapRedactionsToRects(pd.textSpans, pageRedactions);
-
-        for (const { redaction, rects: spanRects } of mapped) {
-          for (const span of spanRects) {
-            rects.push({
-              page: pageIdx,
-              x: span.pdfX,
-              y: span.pdfY,
-              width: span.pdfWidth,
-              height: span.pdfHeight,
-              replacement: redaction.replacement || undefined,
-              category: redaction.category,
-            });
-          }
-        }
-      }
-      return rects;
-    });
-  }, [pageData, redactions, onRectsReady]);
-
-  // Expose flat page renderer: renders each page to canvas with redaction overlays baked in
+  // Expose the export renderer. PDF.js renders the page images because it is
+  // already bundled for the viewer (no pdfium binary to ship per platform).
+  // It renders only pages that carry an approved redaction, and only the
+  // plain page: the backend burns the boxes into the pixels, swaps the pages,
+  // and refuses the export if a redaction has no box or approved text would
+  // remain (including on pages we did not render).
   useEffect(() => {
     if (!pdfDoc || pageData.length === 0) return;
 
-    onFlatPagesReady(async (): Promise<PageImageData[]> => {
-      const renderScale = 2.0; // 2x for high quality
+    onRedactedPagesReady(async (): Promise<RedactedPageInput[]> => {
+      const renderScale = 2.0; // 144 dpi
       const approved = redactions.filter((r) => r.status === "approved");
-      const mode = localStorage.getItem("qvault_redaction_style") || "black_bar";
-      const results: PageImageData[] = [];
 
-      for (let pageIdx = 0; pageIdx < pageData.length; pageIdx++) {
-        const pd = pageData[pageIdx];
-        const page = await pdfDoc.getPage(pd.pageNum);
-        const viewport = page.getViewport({ scale: renderScale });
-
-        // Render PDF page to offscreen canvas
-        const canvas = document.createElement("canvas");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext("2d")!;
-
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        // Draw redaction overlays on top
-        const pageRedactions = approved.filter((r) => r.page === pageIdx);
-        const mapped = mapRedactionsToRects(pd.textSpans, pageRedactions);
-        const scaleFactor = renderScale / pd.scale;
-
-        for (const { redaction, rects } of mapped) {
-          for (const rect of rects) {
-            const rx = rect.x * scaleFactor;
-            const ry = rect.y * scaleFactor;
-            const rw = rect.width * scaleFactor;
-            const rh = rect.height * scaleFactor;
-
-            if (mode === "text_replace") {
-              // White rectangle + gray label
-              ctx.fillStyle = "#ffffff";
-              ctx.fillRect(rx, ry, rw, rh);
-              ctx.fillStyle = "#666666";
-              const label = redaction.replacement || `[${redaction.category}]`;
-              const fontSize = Math.min(rh * 0.85, 14 * scaleFactor);
-              ctx.font = `${fontSize}px Helvetica, Arial, sans-serif`;
-              ctx.fillText(label, rx + 1, ry + rh - 2, rw);
-            } else {
-              // Solid black bar
-              ctx.fillStyle = "#000000";
-              ctx.fillRect(rx, ry, rw, rh);
-            }
-          }
-        }
-
-        // Export as JPEG
-        const blob = await new Promise<Blob>((resolve) =>
-          canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92)
-        );
-        const arrayBuf = await blob.arrayBuffer();
-        const bytes = new Uint8Array(arrayBuf);
-        let binary = "";
-        for (let i = 0; i < bytes.length; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        const jpegBase64 = btoa(binary);
-
-        // Get original page dimensions in PDF points
-        const origViewport = page.getViewport({ scale: 1.0 });
-
-        results.push({
-          jpegBase64,
-          width: canvas.width,
-          height: canvas.height,
-          pageWidth: origViewport.width,
-          pageHeight: origViewport.height,
-        });
+      // Every approved string is boxed wherever it occurs on a rendered page,
+      // not only at the detected offset: a second occurrence left in the image
+      // would be invisible to the backend's text-layer check.
+      const byKey = new Map<string, { needle: Needle; rows: Redaction[] }>();
+      for (const r of approved) {
+        const needle = makeNeedle(r.original_text);
+        if (!needle) continue;
+        const entry = byKey.get(needle.key);
+        if (entry) entry.rows.push(r);
+        else byKey.set(needle.key, { needle, rows: [r] });
       }
 
+      const pages = [...new Set(approved.map((r) => r.page))].sort((a, b) => a - b);
+      const results: RedactedPageInput[] = [];
+      for (const pageIdx of pages) {
+        const pd = pageData[pageIdx];
+        if (!pd) continue; // the backend reports these redactions as unplaceable
+
+        const needles = [...byKey.values()].map(({ needle, rows }) => ({
+          needle,
+          redactionId: (rows.find((r) => r.page === pageIdx) ?? rows[0]).id,
+        }));
+        const k = renderScale / pd.scale;
+        const rects: PixelRect[] = occurrenceBoxes(pd.textSpans, needles).map((b) => ({
+          redactionId: b.redactionId,
+          occurrence: b.occurrence,
+          x: b.span.x * k,
+          y: b.span.y * k,
+          width: b.span.width * k,
+          height: b.span.height * k,
+        }));
+
+        const page = await pdfDoc.getPage(pd.pageNum);
+        const viewport = page.getViewport({ scale: renderScale });
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // PNG: lossless, so the backend's burn-in is the only processing.
+        const blob = await new Promise<Blob>((resolve, reject) =>
+          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Failed to render page"))), "image/png")
+        );
+        const imageBase64 = toBase64(new Uint8Array(await blob.arrayBuffer()));
+        canvas.width = 0; // release the bitmap early
+        results.push({ page: pageIdx, imageBase64, rects });
+      }
       return results;
     });
-  }, [pdfDoc, pageData, redactions, onFlatPagesReady]);
+  }, [pdfDoc, pageData, redactions, onRedactedPagesReady]);
 
   // Handle manual redaction from text selection
   const handleManualRedaction = useCallback(
