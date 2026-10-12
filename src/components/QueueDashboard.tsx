@@ -10,6 +10,13 @@ interface Props {
   onDocumentReady: (docId: string, fileType?: string) => void;
 }
 
+/** Accepted uploads. Images are converted to image-only PDFs by the backend. */
+const DOC_EXTENSIONS = ["pdf", "docx"];
+const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "tif", "tiff"];
+const isAccepted = (ext: string) => DOC_EXTENSIONS.includes(ext) || IMAGE_EXTENSIONS.includes(ext);
+/** The stored type: images become PDFs on import. */
+const storedType = (ext: string) => (IMAGE_EXTENSIONS.includes(ext) ? "pdf" : ext);
+
 /** Check if the device is likely mobile based on viewport width */
 function isMobile(): boolean {
   return window.innerWidth <= 768;
@@ -31,7 +38,7 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
       const ext = filePath.split(".").pop()?.toLowerCase() || "pdf";
       const docId = await upload(filePath, 0);
       if (docId) {
-        onDocumentReady(docId, ext);
+        onDocumentReady(docId, storedType(ext));
       }
     },
     [upload, onDocumentReady]
@@ -44,7 +51,7 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
       if (!file) return;
 
       const ext = file.name.split(".").pop()?.toLowerCase() || "";
-      if (ext !== "pdf" && ext !== "docx" && ext !== "doc") return;
+      if (!isAccepted(ext) && ext !== "doc") return;
 
       setMobileLoading(true);
       setMobileError(null);
@@ -63,7 +70,7 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
         });
         const doc = await getDocument(docId);
         if (doc) {
-          onDocumentReady(docId, ext);
+          onDocumentReady(docId, doc.file_type || storedType(ext));
         }
       } catch (err) {
         setMobileError(err instanceof Error ? err.message : String(err));
@@ -93,7 +100,7 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
           if (paths && paths.length > 0) {
             const filePath = paths[0];
             const ext = filePath.split(".").pop()?.toLowerCase();
-            if (ext === "pdf" || ext === "docx") {
+            if (ext && isAccepted(ext)) {
               handleFile(filePath);
             }
           }
@@ -119,7 +126,7 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
       const selected = await open({
         multiple: false,
         filters: [
-          { name: "Documents", extensions: ["pdf", "docx"] },
+          { name: "Documents and scans", extensions: [...DOC_EXTENSIONS, ...IMAGE_EXTENSIONS] },
         ],
       });
       if (selected) {
@@ -140,7 +147,7 @@ export default function QueueDashboard({ onDocumentReady }: Props) {
         <input
           type="file"
           ref={fileInputRef}
-          accept=".pdf,.docx,.doc"
+          accept=".pdf,.docx,.doc,.png,.jpg,.jpeg,.tif,.tiff"
           onChange={handleFileInputChange}
           className="hidden"
         />

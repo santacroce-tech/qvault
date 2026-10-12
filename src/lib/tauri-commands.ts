@@ -103,13 +103,106 @@ export interface RedactedPageInput {
 /**
  * Export a redacted PDF. Only pages in `pages` are rasterized; the backend
  * refuses (rejects with a message) if a redaction is missing a box or approved
- * text would remain anywhere in the output.
+ * text would remain anywhere in the output, including text still readable by
+ * OCR on scanned pages. If a page that needs OCR was never scanned, it rejects
+ * with `OCR_UNSCANNED:<0-based pages>|<message>` unless `acknowledgeUnscanned`.
  */
 export async function exportRedactedPdf(
   id: string,
   pages: RedactedPageInput[],
+  acknowledgeUnscanned = false,
 ): Promise<string> {
-  return invoke("export_redacted_pdf", { id, pages });
+  return invoke("export_redacted_pdf", { id, pages, acknowledgeUnscanned });
+}
+
+// OCR (scanned pages and imported images)
+export type OcrReason = "noText" | "littleText" | "mostlyImage";
+
+export interface PageClass {
+  /** 0-based */
+  page: number;
+  textChars: number;
+  imageCoverage: number;
+  needsOcr: boolean;
+  reason: OcrReason | null;
+}
+
+export interface OcrStatus {
+  available: boolean;
+  code: "ok" | "unsupported" | "not_bundled" | "models_missing" | "engine_unavailable";
+  reason: string | null;
+  dpi: number;
+}
+
+/** A box on the page, in PDF points from the top-left of the displayed page. */
+export interface OcrWordBox {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  line: number;
+}
+
+/** A run of the OCR page text mapped to one box (or none, for separators). */
+export interface OcrSegment {
+  text: string;
+  boxIndex: number | null;
+}
+
+export interface OcrPageLayout {
+  widthPt: number;
+  heightPt: number;
+  dpi: number;
+  blocks: number;
+  /** Normalised page text (= concatenation of segment texts). */
+  text: string;
+  boxes: OcrWordBox[];
+  segments: OcrSegment[];
+}
+
+export type OcrPageStatus = "done" | "unavailable" | "cancelled" | "failed";
+
+export interface OcrPageInfo {
+  page: number;
+  status: OcrPageStatus;
+  reason: string | null;
+  dpi: number | null;
+  layout: OcrPageLayout | null;
+}
+
+export interface UnscannedPage {
+  page: number;
+  status: Exclude<OcrPageStatus, "done">;
+  reason: string | null;
+}
+
+export async function classifyPdfPages(id: string, textChars: number[]): Promise<PageClass[]> {
+  return invoke("classify_pdf_pages", { id, textChars });
+}
+
+export async function getOcrStatus(): Promise<OcrStatus> {
+  return invoke("ocr_status");
+}
+
+/** OCR one page rendered at `dpi` (PNG base64). Errors start with OCR_CANCELLED / OCR_UNAVAILABLE / OCR_FAILED. */
+export async function ocrPage(id: string, page: number, imageBase64: string, dpi: number): Promise<OcrPageLayout> {
+  return invoke("ocr_page", { id, page, imageBase64, dpi });
+}
+
+export async function cancelOcr(id: string): Promise<boolean> {
+  return invoke("ocr_cancel", { id });
+}
+
+export async function finishOcr(id: string, unscanned: UnscannedPage[]): Promise<void> {
+  return invoke("ocr_finish", { id, unscanned });
+}
+
+export async function getOcrPages(id: string): Promise<OcrPageInfo[]> {
+  return invoke("get_ocr_pages", { id });
+}
+
+export async function setOcrDpi(dpi: number): Promise<void> {
+  return invoke("ai_set_ocr_dpi", { dpi });
 }
 
 export async function openFile(path: string): Promise<void> {
@@ -180,6 +273,9 @@ export interface AiCapabilities {
   sidecarVersion: string | null;
   unavailableReason: string | null;
   ocrInstalled: boolean;
+  /** OCR can run now (engine bundled and usable, models installed). */
+  ocrAvailable: boolean;
+  ocrDpi: number;
   layer3Enabled: boolean;
   layer3Model: string | null;
   layer3Ready: boolean;

@@ -115,6 +115,8 @@ export async function invoke(cmd: string, args?: any): Promise<any> {
         sidecarVersion: null,
         unavailableReason: null,
         ocrInstalled: false,
+        ocrAvailable: false,
+        ocrDpi: 200,
         layer3Enabled: true,
         layer3Model: "qwen2.5-0.5b-instruct-q4_k_m",
         layer3Ready: true,
@@ -125,6 +127,15 @@ export async function invoke(cmd: string, args?: any): Promise<any> {
           { id: "qwen2.5-1.5b-instruct-q4_k_m", name: "Qwen2.5 1.5B Instruct (Q4_K_M)", purpose: "llm", size: 1117320736, sha256: "", licence: "Apache-2.0", source: "Hugging Face Qwen/Qwen2.5-1.5B-Instruct-GGUF", downloadable: true, installed: false, custom: false, defaultLlm: false, download: { received: 402653184, total: 1117320736, active: true, error: null }, fit: null },
         ],
       };
+    case "classify_pdf_pages":
+      return (args?.textChars ?? []).map((c: number, page: number) => ({
+        page, textChars: c, imageCoverage: 0, needsOcr: c < 32,
+        reason: c === 0 ? "noText" : c < 32 ? "littleText" : null,
+      }));
+    case "ocr_status":
+      return { available: false, code: "models_missing", reason: "OCR models are not installed", dpi: 200 };
+    case "get_ocr_pages":
+      return [];
     default:
       console.log(`[tauri-mock] Unhandled invoke: ${cmd}`, args);
       return null;

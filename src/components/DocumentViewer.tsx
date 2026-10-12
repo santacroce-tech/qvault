@@ -5,8 +5,28 @@ import * as pdfjsLib from "pdfjs-dist";
 import type { PDFDocumentProxy, TextItem } from "pdfjs-dist/types/src/display/api";
 import { useDocument } from "../hooks/useDocument";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
-import { getDocumentBytes, extractDocxText, scanDocumentText, addManualRedaction } from "../lib/tauri-commands";
-import type { PixelRect, RedactedPageInput } from "../lib/tauri-commands";
+import {
+  getDocumentBytes,
+  extractDocxText,
+  scanDocumentText,
+  addManualRedaction,
+  classifyPdfPages,
+  getOcrStatus,
+  getOcrPages,
+  ocrPage,
+  cancelOcr,
+  finishOcr,
+} from "../lib/tauri-commands";
+import type {
+  PixelRect,
+  RedactedPageInput,
+  PageClass,
+  OcrStatus,
+  OcrPageInfo,
+  OcrPageLayout,
+  OcrPageStatus,
+  UnscannedPage,
+} from "../lib/tauri-commands";
 import { PII_COLORS } from "../lib/types";
 import type { Redaction } from "../lib/types";
 import type { RenderRedactedPages } from "../App";
@@ -33,6 +53,66 @@ interface TextSpan {
   pdfY: number;
   pdfWidth: number;
   pdfHeight: number;
+  /** From OCR of the page image (boxes are placed by the backend at export). */
+  ocr?: boolean;
+}
+
+/** OCR state of one page that needs OCR. */
+interface PageOcrState {
+  status: OcrPageStatus | "pending" | "running";
+  dpi?: number | null;
+  reason?: string | null;
+}
+
+/** Same rule as the backend's `visible_chars`. */
+function visibleChars(s: string): number {
+  let n = 0;
+  for (const c of s) if (!/[\s\u00AD\u200B-\u200D\u2060\uFEFF]/u.test(c) && !/\p{Cc}/u.test(c)) n++;
+  return n;
+}
+
+/**
+ * Spans for an OCR'd page: one per layout segment, so that the spans' joined
+ * text equals the OCR page text (detection offsets and highlights line up).
+ * Separators have no box (zero size).
+ */
+function ocrSpans(layout: OcrPageLayout, viewportWidth: number): TextSpan[] {
+  const k = viewportWidth / layout.widthPt;
+  return layout.segments.map((seg) => {
+    const b = seg.boxIndex !== null ? layout.boxes[seg.boxIndex] : null;
+    return {
+      text: seg.text,
+      x: b ? b.x0 * k : 0,
+      y: b ? b.y0 * k : 0,
+      width: b ? (b.x1 - b.x0) * k : 0,
+      height: b ? (b.y1 - b.y0) * k : 0,
+      pdfX: 0,
+      pdfY: 0,
+      pdfWidth: 0,
+      pdfHeight: 0,
+      ocr: true,
+    };
+  });
+}
+
+/** Render one PDF page to PNG (base64) at `scale` (1 = 72 DPI). */
+async function renderPagePng(pdf: PDFDocumentProxy, pageNum: number, scale: number): Promise<string> {
+  const page = await pdf.getPage(pageNum);
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(viewport.width);
+  canvas.height = Math.round(viewport.height);
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  // PNG: lossless, so the backend's burn-in / OCR sees exactly the render.
+  const blob = await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Failed to render page"))), "image/png")
+  );
+  const base64 = toBase64(new Uint8Array(await blob.arrayBuffer()));
+  canvas.width = 0; // release the bitmap early
+  return base64;
 }
 
 function mapRedactionsToRects(
@@ -55,7 +135,13 @@ function mapRedactionsToRects(
     const matchRects: TextSpan[] = [];
     const targetText = r.original_text;
 
-    const matchIdx = fullSpanText.indexOf(targetText);
+    // Prefer the detection's own offset (exact for PDF.js and OCR page text,
+    // which is what was scanned; offsets are UTF-8 bytes, so this only holds
+    // for ASCII before the match), else the first occurrence.
+    const atOffset =
+      r.start_offset >= 0 &&
+      fullSpanText.slice(r.start_offset, r.start_offset + targetText.length) === targetText;
+    const matchIdx = atOffset ? r.start_offset : fullSpanText.indexOf(targetText);
     if (matchIdx >= 0) {
       const matchEnd = matchIdx + targetText.length;
       const spanIndices = new Set<number>();
@@ -144,6 +230,22 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
   // Layer 3 outcome for the last scan (skipped / partial) — shown as a notice.
   const [layer3Notice, setLayer3Notice] = useState<{ status: string; reason: string | null } | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  // OCR of scanned / image pages (0-based page -> state) and progress.
+  const [ocrPages, setOcrPages] = useState<Record<number, PageOcrState>>({});
+  const [ocrProgress, setOcrProgress] = useState<{ index: number; total: number; page: number } | null>(null);
+  const [ocrInfo, setOcrInfo] = useState<OcrStatus | null>(null);
+  const [ocrCancelling, setOcrCancelling] = useState(false);
+  const ocrCancelRef = useRef(false);
+
+  const handleCancelOcr = useCallback(async () => {
+    ocrCancelRef.current = true;
+    setOcrCancelling(true);
+    try {
+      await cancelOcr(documentId);
+    } catch (e) {
+      console.warn("[Qvault] OCR cancel failed:", e);
+    }
+  }, [documentId]);
 
   // Listen for scan progress events from the backend
   useEffect(() => {
@@ -359,6 +461,36 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
       setPageData(allPageData);
       setLoading(false);
 
+      // Pages with no usable text layer (scans, photos, outlined text) or
+      // that are mostly images are OCR'd; their OCR text joins the page text
+      // so all detection layers see it.
+      const counts = pageTexts.map(visibleChars);
+      const byCount = (): PageClass[] => counts.map((c, i) => ({
+        page: i, textChars: c, imageCoverage: 0, needsOcr: c < 32,
+        reason: c === 0 ? "noText" : c < 32 ? "littleText" : null,
+      }));
+      let classes: PageClass[];
+      try {
+        classes = (await classifyPdfPages(documentId, counts)) ?? byCount();
+      } catch (e) {
+        console.warn("[Qvault] Page classification failed; using text counts only:", e);
+        classes = byCount();
+      }
+      const needing = classes.filter((c) => c.needsOcr).map((c) => c.page);
+      if (needing.length > 0) {
+        const layouts = await runOcr(pdf, needing, allPageData);
+        for (const [p, layout] of layouts) {
+          const pd = allPageData[p];
+          if (!pd) continue;
+          const sep = pageTexts[p].length > 0 ? "\n" : "";
+          if (sep) pd.textSpans.push({ text: sep, x: 0, y: 0, width: 0, height: 0, pdfX: 0, pdfY: 0, pdfWidth: 0, pdfHeight: 0, ocr: true });
+          pd.textSpans.push(...ocrSpans(layout, pd.width));
+          pageTexts[p] = pageTexts[p] + sep + layout.text;
+        }
+        if (isCancelled) return;
+        setPageData([...allPageData]);
+      }
+
       setScanning(true);
       const piiCount = await scanDocumentText(documentId, pageTexts);
       console.log("[Qvault] PII scan complete:", piiCount, "entities found");
@@ -368,6 +500,93 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
 
       await reloadRedactions();
       await loadDocument(documentId);
+    }
+
+    /**
+     * OCR the given pages (0-based): reuse stored results at the current DPI,
+     * otherwise render each page with PDF.js at the OCR DPI and send it to
+     * the backend. Pages that cannot be scanned are recorded as such, so the
+     * viewer flags them and export warns.
+     */
+    async function runOcr(
+      pdf: PDFDocumentProxy,
+      pages: number[],
+      allPageData: PageData[],
+    ): Promise<Map<number, OcrPageLayout>> {
+      const out = new Map<number, OcrPageLayout>();
+      const state: Record<number, PageOcrState> = {};
+      for (const p of pages) state[p] = { status: "pending" };
+      setOcrPages({ ...state });
+      ocrCancelRef.current = false;
+      setOcrCancelling(false);
+
+      const noOcr: OcrStatus = { available: false, code: "unsupported", reason: null, dpi: 200 };
+      let status: OcrStatus;
+      try {
+        status = (await getOcrStatus()) ?? noOcr;
+      } catch {
+        status = noOcr;
+      }
+      setOcrInfo(status);
+      let cached: OcrPageInfo[] = [];
+      try {
+        cached = (await getOcrPages(documentId)) ?? [];
+      } catch (e) {
+        console.warn("[Qvault] Could not read stored OCR results:", e);
+      }
+
+      const unscanned: UnscannedPage[] = [];
+      let stop: { status: "unavailable" | "cancelled"; reason: string | null } | null =
+        status.available ? null : { status: "unavailable", reason: status.reason };
+      try {
+        for (let i = 0; i < pages.length; i++) {
+          const p = pages[i];
+          const hit = cached.find((c) => c.page === p && c.status === "done" && c.layout && c.dpi === status.dpi);
+          if (hit?.layout) {
+            out.set(p, hit.layout);
+            state[p] = { status: "done", dpi: hit.dpi };
+            setOcrPages({ ...state });
+            continue;
+          }
+          if (!stop && ocrCancelRef.current) stop = { status: "cancelled", reason: null };
+          if (stop || !allPageData[p]) {
+            const st = stop ?? { status: "unavailable" as const, reason: null };
+            unscanned.push({ page: p, status: st.status, reason: st.reason });
+            state[p] = { status: st.status, reason: st.reason };
+            setOcrPages({ ...state });
+            continue;
+          }
+          state[p] = { status: "running" };
+          setOcrPages({ ...state });
+          setOcrProgress({ index: i, total: pages.length, page: p });
+          try {
+            const png = await renderPagePng(pdf, p + 1, status.dpi / 72);
+            const layout = await ocrPage(documentId, p, png, status.dpi);
+            out.set(p, layout);
+            state[p] = { status: "done", dpi: status.dpi };
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            if (msg.startsWith("OCR_CANCELLED")) {
+              stop = { status: "cancelled", reason: null };
+            } else if (msg.startsWith("OCR_UNAVAILABLE")) {
+              stop = { status: "unavailable", reason: msg.replace(/^OCR_UNAVAILABLE:\s*/, "") };
+            }
+            const st = stop ?? { status: "failed" as const, reason: msg.replace(/^OCR_FAILED:\s*/, "") };
+            unscanned.push({ page: p, status: st.status, reason: st.reason });
+            state[p] = { status: st.status, reason: st.reason };
+          }
+          setOcrPages({ ...state });
+        }
+      } finally {
+        setOcrProgress(null);
+        setOcrCancelling(false);
+        try {
+          await finishOcr(documentId, unscanned);
+        } catch (e) {
+          console.warn("[Qvault] Could not record OCR results:", e);
+        }
+      }
+      return out;
     }
 
     loadContent();
@@ -384,7 +603,6 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
     if (!pdfDoc || pageData.length === 0) return;
 
     onRedactedPagesReady(async (): Promise<RedactedPageInput[]> => {
-      const renderScale = 2.0; // 144 dpi
       const approved = redactions.filter((r) => r.status === "approved");
 
       // Every approved string is boxed wherever it occurs on a rendered page,
@@ -409,8 +627,14 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
           needle,
           redactionId: (rows.find((r) => r.page === pageIdx) ?? rows[0]).id,
         }));
+        // Scanned pages are rendered at their OCR resolution (the backend
+        // places their boxes from the OCR layout and OCRs the burned result);
+        // other pages at 144 DPI.
+        const ocr = ocrPages[pageIdx];
+        const renderScale = ocr?.status === "done" && ocr.dpi ? ocr.dpi / 72 : 2.0;
         const k = renderScale / pd.scale;
-        const rects: PixelRect[] = occurrenceBoxes(pd.textSpans, needles).map((b) => ({
+        const textLayerSpans = pd.textSpans.filter((s) => !s.ocr);
+        const rects: PixelRect[] = occurrenceBoxes(textLayerSpans, needles).map((b) => ({
           redactionId: b.redactionId,
           occurrence: b.occurrence,
           x: b.span.x * k,
@@ -419,27 +643,12 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
           height: b.span.height * k,
         }));
 
-        const page = await pdfDoc.getPage(pd.pageNum);
-        const viewport = page.getViewport({ scale: renderScale });
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(viewport.width);
-        canvas.height = Math.round(viewport.height);
-        const ctx = canvas.getContext("2d")!;
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        // PNG: lossless, so the backend's burn-in is the only processing.
-        const blob = await new Promise<Blob>((resolve, reject) =>
-          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Failed to render page"))), "image/png")
-        );
-        const imageBase64 = toBase64(new Uint8Array(await blob.arrayBuffer()));
-        canvas.width = 0; // release the bitmap early
+        const imageBase64 = await renderPagePng(pdfDoc, pd.pageNum, renderScale);
         results.push({ page: pageIdx, imageBase64, rects });
       }
       return results;
     });
-  }, [pdfDoc, pageData, redactions, onRedactedPagesReady]);
+  }, [pdfDoc, pageData, redactions, ocrPages, onRedactedPagesReady]);
 
   // Handle manual redaction from text selection
   const handleManualRedaction = useCallback(
@@ -503,6 +712,19 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">{doc.filename}</h2>
         <div className="flex items-center gap-3">
+          {ocrProgress && (
+            <span className="text-sm text-amber-600 flex items-center gap-1.5">
+              <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+              {t('viewer.ocrProgress', { current: ocrProgress.index + 1, total: ocrProgress.total, page: ocrProgress.page + 1 })}
+              <button
+                onClick={handleCancelOcr}
+                disabled={ocrCancelling}
+                className="ml-1 px-2 py-0.5 text-xs border border-amber-300 rounded hover:bg-amber-50 disabled:opacity-50"
+              >
+                {ocrCancelling ? t('viewer.ocrCancelling') : t('viewer.ocrCancel')}
+              </button>
+            </span>
+          )}
           {scanning && (
             <span className="text-sm text-amber-600 flex items-center gap-1.5">
               <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
@@ -539,6 +761,36 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
         </div>
       </div>
 
+      {(() => {
+        const unscanned = Object.entries(ocrPages)
+          .filter(([, st]) => st.status === "unavailable" || st.status === "cancelled" || st.status === "failed")
+          .map(([p]) => Number(p) + 1)
+          .sort((a, b) => a - b);
+        if (unscanned.length === 0) return null;
+        const statuses = new Set(Object.values(ocrPages).map((st) => st.status));
+        const pages = unscanned.join(", ");
+        let detail: string;
+        if (statuses.has("unavailable")) {
+          detail = ocrInfo?.code === "models_missing"
+            ? t('viewer.ocrModelsMissing')
+            : ocrInfo?.code === "not_bundled"
+            ? t('viewer.ocrNotBundled')
+            : ocrInfo?.code === "unsupported"
+            ? t('viewer.ocrUnsupported')
+            : t('viewer.ocrEngineUnavailable');
+        } else if (statuses.has("cancelled")) {
+          detail = t('viewer.ocrCancelledDetail');
+        } else {
+          detail = t('viewer.ocrFailedDetail');
+        }
+        return (
+          <div className="mb-4 text-sm bg-red-50 border border-red-200 text-red-800 rounded-lg px-3 py-2">
+            <p className="font-medium">{t('viewer.ocrUnscannedTitle', { count: unscanned.length, pages })}</p>
+            <p className="mt-0.5">{detail}</p>
+          </div>
+        );
+      })()}
+
       {layer3Notice && (
         <div className="mb-4 text-sm bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2">
           {layer3Notice.status === "skipped"
@@ -563,6 +815,7 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
           ) : (
             <PdfPage
               key={pd.pageNum}
+              ocr={ocrPages[pageIdx]}
               pageNum={pd.pageNum}
               pdfDoc={pdfDoc!}
               pageData={pd}
@@ -720,6 +973,7 @@ function DocxPage({
 
 /** Renders a single PDF page with canvas + redaction overlays + optional text selection */
 function PdfPage({
+  ocr,
   pageNum,
   pdfDoc,
   pageData: pd,
@@ -730,6 +984,7 @@ function PdfPage({
   advancedMode,
   onManualRedaction,
 }: {
+  ocr?: PageOcrState;
   pageNum: number;
   pdfDoc: PDFDocumentProxy;
   pageData: PageData;
@@ -830,7 +1085,7 @@ function PdfPage({
           style={{ zIndex: 20 }}
           onMouseUp={handleMouseUp}
         >
-          {pd.textSpans.map((span, i) => (
+          {pd.textSpans.map((span, i) => span.width <= 0 || span.height <= 0 ? null : (
             <span
               key={i}
               className="absolute select-text"
@@ -882,7 +1137,7 @@ function PdfPage({
       {/* Redaction overlays */}
       {rendered &&
         mapped.map(({ redaction, rects }) =>
-          rects.map((rect, ri) => {
+          rects.filter((rect) => rect.width > 0 && rect.height > 0).map((rect, ri) => {
             const color = PII_COLORS[redaction.category] || "#6B7280";
             const isSelected = redaction.id === selectedId;
             const isApproved = redaction.status === "approved";
@@ -912,6 +1167,34 @@ function PdfPage({
           })
         )}
 
+      {ocr && (ocr.status === "unavailable" || ocr.status === "cancelled" || ocr.status === "failed") && (
+        <div
+          className="absolute top-0 left-0 right-0 z-20 bg-red-600/90 text-white text-xs font-medium px-3 py-1.5"
+          role="alert"
+        >
+          {ocr.status === "unavailable"
+            ? t('viewer.pageNotScannedUnavailable')
+            : ocr.status === "cancelled"
+            ? t('viewer.pageNotScannedCancelled')
+            : t('viewer.pageNotScannedFailed')}
+        </div>
+      )}
+      {ocr && (ocr.status === "pending" || ocr.status === "running") && (
+        <div className="absolute top-2 left-2 z-20 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded flex items-center gap-1">
+          {ocr.status === "running" && (
+            <div className="w-2.5 h-2.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+          )}
+          {ocr.status === "running" ? t('viewer.pageOcrRunning') : t('viewer.pageOcrPending')}
+        </div>
+      )}
+      {ocr?.status === "done" && (
+        <div
+          className="absolute top-2 left-2 z-20 text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded"
+          title={t('viewer.pageOcrDoneTitle')}
+        >
+          {t('viewer.pageOcrDone', { dpi: ocr.dpi ?? "" })}
+        </div>
+      )}
       <div className="absolute bottom-2 right-3 text-xs text-gray-400 bg-white/80 px-1.5 py-0.5 rounded">
         {t('viewer.page', { number: pageNum })}
       </div>

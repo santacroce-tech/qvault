@@ -10,8 +10,8 @@
     "title": "Qvault",
     "subtitle": "Detecta y redacta información personal de tus documentos. Todo permanece en tu computadora.",
     "processing": "Procesando documento...",
-    "dropPrompt": "Arrastra un PDF o DOCX aquí, o haz clic para buscar",
-    "supportedFormats": "Formatos: PDF (basado en texto), DOCX"
+    "dropPrompt": "Suelte aquí un PDF, DOCX o imagen escaneada, o haga clic para buscar",
+    "supportedFormats": "Compatibles: PDF, DOCX, PNG, JPEG, TIFF (los escaneos se leen con OCR en este equipo)"
   },
   "viewer": {
     "loading": "Cargando documento...",
@@ -25,7 +25,25 @@
     "noDocument": "Ningún documento seleccionado. Sube un documento primero.",
     "aiLoading": "cargando el modelo de IA",
     "layer3Skipped": "Se omitió la detección con IA (capa 3): {{reason}}. Los resultados provienen solo de las capas 1–2.",
-    "layer3Partial": "La detección con IA (capa 3) no cubrió todo el documento: {{reason}}. Revisa con atención."
+    "layer3Partial": "La detección con IA (capa 3) no cubrió todo el documento: {{reason}}. Revisa con atención.",
+    "ocrProgress": "Leyendo la página escaneada {{page}} con OCR ({{current}}/{{total}})…",
+    "ocrCancel": "Cancelar OCR",
+    "ocrCancelling": "Cancelando…",
+    "ocrUnscannedTitle": "La página {{pages}} no se analizó en busca de datos personales.",
+    "ocrUnscannedTitle_other": "Las páginas {{pages}} no se analizaron en busca de datos personales.",
+    "ocrModelsMissing": "Estas páginas son imágenes y necesitan OCR, pero los modelos de OCR no están instalados. Impórtelos en Configuración → Detección por IA y vuelva a abrir el documento. Mientras tanto, revise estas páginas usted mismo: nada en ellas se detecta ni se oculta automáticamente.",
+    "ocrNotBundled": "Estas páginas son imágenes y necesitan OCR, pero esta versión no incluye el motor de IA. Revise estas páginas usted mismo: nada en ellas se detecta ni se oculta automáticamente.",
+    "ocrUnsupported": "Estas páginas son imágenes y necesitan OCR, que no está disponible en este dispositivo. Revise estas páginas usted mismo: nada en ellas se detecta ni se oculta automáticamente.",
+    "ocrEngineUnavailable": "Estas páginas son imágenes y necesitan OCR, pero el motor de IA no está disponible ahora (vea Configuración). Revise estas páginas usted mismo: nada en ellas se detecta ni se oculta automáticamente.",
+    "ocrCancelledDetail": "Se canceló el OCR. Vuelva a abrir el documento para analizar estas páginas o revíselas usted mismo.",
+    "ocrFailedDetail": "El OCR falló en estas páginas. Vuelva a abrir el documento para reintentar o revíselas usted mismo.",
+    "pageNotScannedUnavailable": "No analizada en busca de datos personales — OCR no disponible",
+    "pageNotScannedCancelled": "No analizada en busca de datos personales — OCR cancelado",
+    "pageNotScannedFailed": "No analizada en busca de datos personales — falló el OCR",
+    "pageOcrRunning": "Leyendo texto (OCR)…",
+    "pageOcrPending": "Esperando OCR",
+    "pageOcrDone": "OCR · {{dpi}} DPI",
+    "pageOcrDoneTitle": "Esta página es una imagen; su texto se leyó con OCR en este equipo. Los resaltados son aproximados a la palabra."
   },
   "sidebar": {
     "title": "Redacciones",
@@ -42,7 +60,13 @@
     "reject": "Rechazar",
     "editReplacement": "Editar reemplazo",
     "approveCount": "Aprobar {{count}}",
-    "exportErrorNoApproved": "No hay redacciones aprobadas para exportar. Aprueba al menos una redacción primero."
+    "exportErrorNoApproved": "No hay redacciones aprobadas para exportar. Aprueba al menos una redacción primero.",
+    "verifyingOcr": "Comprobando con OCR la página escaneada ocultada {{current}}/{{total}}…",
+    "unscannedTitle": "La página {{pages}} no se analizó en busca de datos personales.",
+    "unscannedTitle_other": "Las páginas {{pages}} no se analizaron en busca de datos personales.",
+    "unscannedBody": "Son imágenes y el OCR no se ejecutó en ellas, así que todo lo que contienen se exportará tal cual. ¿Exportar de todos modos?",
+    "unscannedExportAnyway": "Exportar de todos modos",
+    "unscannedCancel": "Cancelar"
   },
   "history": {
     "title": "Historial de Documentos",
@@ -152,7 +176,7 @@
     "layer3Review": "Los hallazgos de la IA se añaden con un 70 % de confianza y siempre esperan tu revisión; nada se aplica automáticamente.",
     "detectionModels": "Modelos de detección (capa 3)",
     "ocrModels": "Modelos OCR",
-    "ocrModelsDesc": "Para documentos escaneados (llegará en una próxima actualización). Importa estos archivos si los tienes.",
+    "ocrModelsDesc": "Lee PDF escaneados e imágenes (PNG, JPEG, TIFF). Importe estos dos archivos para activar el OCR.",
     "recommended": "Recomendado",
     "download": "Descargar ({{size}})",
     "downloadTitle": "Descargar modelo de IA",
@@ -181,6 +205,13 @@
       "likely-too-large": "Probablemente demasiado grande para este equipo",
       "unknown": "Compatibilidad desconocida",
       "notChecked": "Compatibilidad aún no comprobada"
-    }
+    },
+    "ocrReady": "El OCR está listo: las páginas escaneadas se leen en este equipo.",
+    "ocrNoEngine": "El OCR no está disponible: esta versión no incluye el motor de IA.",
+    "ocrNotInstalled": "Los modelos de OCR no están instalados: las páginas escaneadas se marcarán como no analizadas. Use «Importar desde archivo» para añadir ambos archivos.",
+    "ocrEngineUnavailable": "Los modelos de OCR están instalados, pero el motor de IA no está disponible ahora.",
+    "ocrDpi": "Resolución de OCR",
+    "ocrDpiDefault": "{{dpi}} DPI (recomendado)",
+    "ocrDpiHelp": "Las páginas se renderizan a esta resolución para el OCR. 200 DPI dio los mejores resultados en nuestras pruebas; pruebe 300–400 para letra muy pequeña."
   }
 }
