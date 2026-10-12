@@ -7,38 +7,45 @@ use types::PiiEntity;
 use regex_scanner::RegexScanner;
 use heuristic_scanner::HeuristicScanner;
 
-/// Run the PII detection pipeline. Layers 1 (regex) and 2 (heuristic) always run.
-/// Layer 3 (LLM) runs only if an LlmRuntime is provided.
-/// `on_llm_progress` is called during LLM inference for real-time UI feedback.
-#[cfg(feature = "llm")]
+/// Outcome of Layer 3 for one page.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Layer3Status {
+    /// Layer 3 was not requested (disabled, or no engine passed).
+    NotRun,
+    Ran { entities: usize, chunks: usize, failed_chunks: usize },
+    /// The engine failed fatally; Layers 1-2 results stand on their own.
+    Aborted(String),
+}
+
+/// Run the PII detection pipeline. Layers 1 (regex) and 2 (heuristic) always
+/// run. Layer 3 (LLM) runs when an engine is provided; whatever happens to
+/// it, the Layer 1-2 results are returned.
 pub fn run_pipeline(
     text: &str,
     page: u32,
     jurisdictions: &[&str],
-    llm_runtime: Option<&mut crate::llm::LlmRuntime>,
+    layer3: Option<&dyn crate::llm::llm_scanner::Layer3Engine>,
     on_llm_progress: Option<&crate::llm::llm_scanner::ProgressFn>,
-) -> Vec<PiiEntity> {
+) -> (Vec<PiiEntity>, Layer3Status) {
     let mut entities = run_layers_1_2(text, page, jurisdictions);
+    let mut status = Layer3Status::NotRun;
 
-    // Layer 3: LLM-based detection (optional)
-    if let Some(runtime) = llm_runtime {
-        let existing_ranges: Vec<(usize, usize)> = entities.iter()
-            .map(|e| (e.start, e.end))
-            .collect();
-        let mut llm_entities = crate::llm::llm_scanner::scan(runtime, text, page, &existing_ranges, on_llm_progress);
-        entities.append(&mut llm_entities);
+    if let Some(engine) = layer3 {
+        let existing_ranges: Vec<(usize, usize)> = entities.iter().map(|e| (e.start, e.end)).collect();
+        let report = crate::llm::llm_scanner::scan(engine, text, page, &existing_ranges, on_llm_progress);
+        status = match report.aborted {
+            Some(reason) => Layer3Status::Aborted(reason),
+            None => Layer3Status::Ran {
+                entities: report.entities.len(),
+                chunks: report.chunks,
+                failed_chunks: report.failed_chunks,
+            },
+        };
+        entities.extend(report.entities);
     }
 
     entities.sort_by_key(|e| e.start);
-    entities
-}
-
-/// Run the PII detection pipeline without LLM support (no `llm` feature).
-#[cfg(not(feature = "llm"))]
-pub fn run_pipeline(text: &str, page: u32, jurisdictions: &[&str]) -> Vec<PiiEntity> {
-    let mut entities = run_layers_1_2(text, page, jurisdictions);
-    entities.sort_by_key(|e| e.start);
-    entities
+    (entities, status)
 }
 
 /// Convenience: run Layers 1+2 only (no LLM). Useful for tests and non-LLM callers.

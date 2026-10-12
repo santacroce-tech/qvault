@@ -2,4 +2,5 @@ pub mod document;
 pub mod redaction;
 pub mod history;
 pub mod settings;
-pub mod llm;
+#[cfg(desktop)]
+pub mod ai;
