@@ -1,6 +1,6 @@
 # QVAC integration — Phase 0 design
 
-Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1 in progress.**
+Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1B (sidecar, Model Manager, Layer 3 on QVAC) built — see [§4.3](#43-as-built-phase-1b) and [§6](#6-installer-size).**
 Date: 2026-10-12. Branch: `feature/qvac-integration`.
 
 This document covers what Qvault looks like today, the export redaction audit, what QVAC actually provides at the version we would pin, the proposed sidecar architecture, measured size impact, and open questions. Where the original task prompt turned out to be wrong, that is called out in [§8](#8-corrections-to-the-task-prompt).
@@ -77,7 +77,7 @@ Full notes with sources: kept in the session scratchpad; key points below. Every
 
 ---
 
-## 4. Proposed architecture
+## 4. Architecture
 
 ```
 React UI ──IPC──▶ Rust (Tauri) ──JSON-RPC over stdio──▶ qvac-sidecar (Bare + @qvac/inference)
@@ -117,6 +117,91 @@ The prompt says not to run two runtimes without a clear reason. There is a reaso
 - **But Phase 5 (LoRA fine-tuning) only works on QVAC LLMs**, and Phase 3's "bigger model on a GPU workstation" also points at QVAC.
 - **Recommendation:** Phase 1 builds the sidecar for OCR (which we need regardless). Layer 3 stays on GLiNER/`ort-tract` through Phase 3, when the eval harness lets us compare GLiNER vs. a QVAC LLM per category with real precision/recall. If the QVAC LLM is competitive, migrate Layer 3 and delete `ort`/`ort-tract`/`hf-hub`; if not, keep GLiNER and either drop Phase 5 or apply it only to an optional QVAC "second opinion" layer. Either way the existing GLiNER download gets the Model Manager treatment (size, real progress, cancel, checksum, import from file).
 
+### 4.3 As built (Phase 1B)
+
+**Sidecar (`sidecar/`).** `package.json` + committed `package-lock.json` pin exactly `@qvac/inference@0.21.0`, `@qvac/ocr-ggml@0.26.0`, `@qvac/llm-llamacpp@0.55.0`, `@qvac/embed-llamacpp@0.43.0`, `bare-runtime@1.34.1`, `bare-process@4.5.1`, `bare-fs@4.8.4`, `bare-path@3.1.2`, plus `@qvac/langdetect-text@0.1.2`, which the LLM plugin imports unconditionally (the worker fails to start without it). Installed with `--legacy-peer-deps`; no other addons. `bare-build` is not used. `worker.js` implements §4.1 with the allow-list `hello, loadModel{path,type,config}, unloadModel, ocr, complete, embed, assessFit{path,type}, cancel{target}, shutdown`. Anything else returns `METHOD_NOT_ALLOWED`. It also does the following:
+- Paths (model, image, `detectorModelSrc`, `lora`) must be absolute and must exist. Any URL scheme is rejected.
+- `loadModel` config keys are allow-listed per model type. llama.cpp's `rpc-servers` (network) is not on the list.
+- QVAC config is written to `<cacheDir>/qvac.config.json` with `loggerConsoleOutput:false`, `requireHttpChecksum`, `requireSecureTransport`. `console.log/info` are redirected to stderr.
+- `<cacheDir>/tmp` is wiped after every OCR job and on cancel, start and exit.
+- `complete` always streams internally. It emits `{"event":"progress","id","data":{"tokens"}}`, and adds the text deltas only when `stream:true` is requested.
+- `cancel` maps to `cancel({requestId})` for completion, embed and loadModel, and to `cancel({modelId, kind:'ocr'})` for OCR, which has no request id. It answers the target with `CANCELLED` immediately.
+
+**Packaging: runtime as `externalBin`, worker as resources (the preferred option; the single-file fallback was not needed).** `npm run sidecar:build` (`sidecar/build.mjs`) does three things:
+1. Copies the host's Bare binary to `src-tauri/binaries/qvac-sidecar-<triple>`.
+2. Writes `worker.js` + `node_modules` to `src-tauri/resources/qvac-worker/`. Only the host's `prebuilds/<platform>` are kept, and headers, typings, sources, docs and tests are dropped. `LICENSE`/`NOTICE` files are kept.
+3. Replaces `bare-runtime-<host>` with a 2-line stub that returns the running executable. `assessModelFit` spawns its native fit probe through that package, so the stub saves shipping a second 68 MB copy of Bare.
+
+The resource directory is called `qvac-worker`, not `qvac-sidecar`, because dev builds copy the externalBin and resources into the same `target/` directory and the names collided. `tauri.conf.json` declares `bundle.externalBin: ["binaries/qvac-sidecar"]` and `bundle.resources: {"resources/qvac-worker/": "qvac-worker/", …}`. `beforeBuildCommand` is `npm run build && npm run sidecar:build`. `src-tauri/build.rs` writes a zero-byte placeholder when the sidecar has not been built, so plain `cargo build`/`cargo test` work. The app detects the placeholder and reports "AI engine not bundled", and Layers 1–2 keep working. Measured result:
+- `node_modules` goes from 521 MB down to 1,903 files / 69 MB.
+- The tree passes the protocol test from the bundle layout, including under `sandbox-exec` with `(deny network*)`, which shows OCR, completion and `assessFit` on local files need no network at all.
+
+**Rust (`src-tauri/src/qvac/`, `cfg(desktop)` only):**
+- `client.rs` holds the `QvacClient`. It spawns via `std::process`, not tauri-plugin-shell: the mechanism is the same piped stdio, and avoiding the plugin keeps a shell API and its capability surface out of the webview and gives direct control over env, kill and tests.
+  - Spawn is lazy, with a `ready` line + `hello` protocol check.
+  - Every request carries an id and a timeout, and supports a `CancelToken`. A timeout or cancel sends `cancel{target}`.
+  - A crash fails in-flight requests. The next call restarts the sidecar with exponential backoff (500 ms × 2ⁿ). After 3 restarts in 5 min it is unavailable for the session.
+  - Shutdown sends `shutdown`, then kills after 2 s.
+  - Stderr goes to the app log, truncated to 300 characters per line. Non-JSON stdout is ignored.
+  - The child gets a cleared, allow-listed environment.
+- `catalog.rs` is the pinned catalog (below).
+- `models.rs` holds the `ModelStore`:
+  - HTTPS-only `ureq` (rustls) downloads, streamed with progress, cancellable, verified against size and SHA-256, and atomically renamed into place.
+  - Import from file: catalog files are matched by SHA-256. Unknown `.gguf` files are accepted only with explicit consent, as custom LLMs recorded with their hash.
+  - Delete.
+- `mod.rs` holds the `QvacService`:
+  - Settings in `<app data>/ai-settings.json`.
+  - SHA-256 re-check of each model before its first load in a session.
+  - `assessFit` on installed local files only, cached.
+  - A model-load cache keyed by sidecar generation.
+  - Idle stop after 5 min.
+  - The capability probe, OCR, and a self-test on synthetic inputs (the `ai_self_test` command, or the launch flag `--qvac-self-test <models dir>`).
+- The app calls `shutdown()` on `RunEvent::Exit`.
+
+**Layer 3 on QVAC (`llm/llm_scanner.rs`).**
+- **Chunking:** 150-word chunks with 20 words of overlap, as before.
+- **Prompt:** a system prompt plus one few-shot example.
+- **Constrained output:** `responseFormat: json_schema` `{entities:[{text (2–120 chars), category ∈ 23 PiiCategory names}]}`, at most 40 items, temperature 0, at most 512 tokens, ctx 4096.
+- **Validation:** JSON shape, a known category, and per-category plausibility rules. These reject the whole-sentence answers small models give when a chunk has no PII.
+- **Offset mapping:** each returned string is mapped to *every* occurrence in the chunk. Matching is case-insensitive, any whitespace run matches any whitespace run, and matches must sit on word boundaries.
+- **Merging:** ranges found by Layers 1–2 are skipped, duplicates across overlapping chunks are dropped, and offsets are page-global.
+- **Output:** confidence 0.70, `detection_layer = "llm"` (as before).
+
+Failures are handled per chunk or for the rest of the scan:
+- A chunk error (timeout, invalid JSON, crash with restart) skips that chunk.
+- A fatal error (sidecar unavailable or restart cap reached) stops Layer 3 for the rest of the scan.
+- The scan always finishes with Layers 1–2. `scan_document_text` emits `layer3-status` (`ran|partial|skipped` + reason), and the viewer shows a notice.
+
+**Audit log (metadata only):**
+- `model_download_start`, `model_download`, `model_download_failed`, `model_download_cancelled`
+- `model_import` (custom imports are flagged `user_accepted_unknown_checksum=true`)
+- `model_delete`, `model_load` (model, duration), `ai_settings`, `ai_self_test`
+- `ai_scan` per document: layer, model, status, duration, entity count, pages, failed chunks, skip reason.
+
+**Removed:** GLiNER (`llm/model_manager.rs`, `LlmState`, `llm_*` commands); the `ort`, `ort-tract`, `ndarray`, `tokenizers` and `hf-hub` crates; the `llm`/`cuda`/`metal` features. New commands: `ai_capabilities`, `ai_list_models`, `ai_download_model`, `ai_cancel_download`, `ai_import_model`, `ai_delete_model`, `ai_assess_fit`, `ai_set_layer3`, `ai_self_test`. The log plugin now runs in release builds too (Warn; Info for `qvac`), so sidecar diagnostics reach the app log.
+
+**Pinned model catalog:**
+
+| id | File | Size (bytes) | SHA-256 | Licence | Source |
+|---|---|---|---|---|---|
+| `qwen2.5-0.5b-instruct-q4_k_m` (default Layer 3) | `qwen2.5-0.5b-instruct-q4_k_m.gguf` | 491,400,032 | `74a4da8c…7a9db` | Apache-2.0 | HF `Qwen/Qwen2.5-0.5B-Instruct-GGUF` @ `9217f5d` |
+| `qwen2.5-1.5b-instruct-q4_k_m` | `qwen2.5-1.5b-instruct-q4_k_m.gguf` | 1,117,320,736 | `6a1a2eb6…e9407e` | Apache-2.0 | HF `Qwen/Qwen2.5-1.5B-Instruct-GGUF` @ `91cad51` |
+| `easyocr-craft-mlt-25k` | `craft_mlt_25k.gguf` | 83,133,856 | `74501993…a875aa` | MIT (CRAFT) + Apache-2.0 (conversion) | **import only** |
+| `easyocr-latin-g2` | `latin_g2.gguf` | 15,396,512 | `dd1c7a43…e10768` | Apache-2.0 | **import only** |
+
+How the hashes were checked:
+- I downloaded both Qwen files once and computed their SHA-256 myself. They match the HF LFS object ids.
+- The two OCR hashes are QVAC's catalog values (`OCR_CRAFT`/`OCR_LATIN`), and they match the files fetched in the Phase 0 spike.
+
+> ⚠ **Flag: OCR model hosting.** QVAC's GGUF conversions of CRAFT and latin_g2 exist only in the QVAC registry, which is Hyperswarm/P2P. The registry's `s3` source has no public URL. There is no copy on Hugging Face, and there are no GitHub release assets. I did not invent a URL. The OCR entries therefore have `url: None`: the UI offers *Import from file* only, and the file is verified against the pinned hash. To enable one-click download, upload the two files unchanged to a Qvault-controlled Hugging Face repo (both licences allow redistribution), then set `url` to a revision-pinned `resolve/<sha>/…` link. The hash and size stay the same. OCR is not yet used by the scan pipeline (Phase 2).
+
+**CI and other platforms (follow-up).** `build.mjs` builds only for the host platform. npm installs only the host's `bare-runtime-*` and `@qvac/fabric-*` optional packages, so cross-builds are refused. Each desktop CI job therefore has to run `npm --prefix sidecar ci --legacy-peer-deps` on its own runner before `tauri build`, which `beforeBuildCommand` does. Not done or verified in this phase:
+- **Linux/Windows layout:** the fabric backend `.so`/`.dll` files (Vulkan ~100 MB; HIP ~75 MB on Linux) sit under `@qvac/fabric-<host>/addon/prebuilds/<host>/qvac__fabric/`, and the prune keeps them. Expect larger installers, and decide whether to drop HIP.
+- **macOS signing:** the `.bare` dylibs in `Resources/qvac-worker` and the Bare binary need codesigning and notarization under the hardened runtime. This build is unsigned and local.
+- **Intel Mac:** `x86_64-apple-darwin` needs a build on an Intel runner (or `npm --cpu=x64` installs).
+- **Universal macOS binaries:** not possible, because the prebuilds are per-architecture.
+- **Mobile:** the module and commands are `cfg(desktop)`, `ureq` is a non-mobile target dependency, and `build.rs` skips the placeholder on iOS/Android. Mobile builds were not run.
+
 ---
 
 ## 5. Spike results
@@ -137,13 +222,35 @@ The two misses are both emails: `j.richardson@atlasdigital.com` came back as `j 
 
 ## 6. Installer size
 
-| | macOS arm64 DMG | Installed `.app` |
-|---|---|---|
-| Baseline (`Qvault_0.2.2_aarch64.dmg`, release, `llm` feature on) | **13.2 MB** | ~35 MB binary |
-| QVAC sidecar (OCR + LLM + embeddings, standalone), compressed in a UDZO DMG | **+44.1 MB** | +125 MB |
-| **Estimated total** | **~57 MB (≈4.3×)** | ~160 MB |
+Measured on 2026-10-12 with `npx tauri build --bundles dmg` on Apple Silicon. The build is release, unsigned, and has the sidecar bundled as described in §4.3.
 
-Models are not bundled (OCR pair 98 MB; an LLM 0.4–5 GB), consistent with "optional, user-started downloads". Linux and Windows will be larger: fabric ships Vulkan (~100 MB) and on Linux HIP (~75 MB) backends; dropping HIP and, if possible, Vulkan is an open question. Real per-platform numbers come with the Phase 1 CI build. If Layer 3 moves to QVAC later, removing `ort`/`ort-tract`/`tokenizers`/`hf-hub` shrinks the Rust binary somewhat.
+| | macOS arm64 DMG | Installed `Qvault.app` |
+|---|---|---|
+| Baseline (`Qvault_0.2.2_aarch64.dmg`, GLiNER/`ort-tract` build) | 13.2 MB | main binary ~35 MB |
+| **Phase 1B (QVAC sidecar bundled, GLiNER removed)** | **52.6 MB** (52,625,425 bytes, ≈4.0×) | **160 MB** |
+| — main `qvault` binary | | 17.7 MB (ort/tract/tokenizers gone: about −17 MB) |
+| — `MacOS/qvac-sidecar` (Bare 1.34.1 runtime) | | 67.9 MB |
+| — `Resources/qvac-worker` (worker + pruned node_modules, 1,903 files) | | 74 MB on disk (69 MB of file data) |
+
+This is about 4 MB under the Phase 0 single-file estimate (57 MB). No models are bundled.
+
+**The built app was exercised end to end through the bundled sidecar.** I ran `Qvault.app/Contents/MacOS/qvault --qvac-self-test <models dir>`, mounted read-only from the DMG. The checks run on synthetic inputs only and use a throw-away cache:
+- The sidecar was ready in 0.6 s.
+- OCR on the bundled fixture returned `Client: Jane Doe | Phone: 555-867-5309 | Case No. 2024-CV-01187`.
+- Layer 3 with Qwen2.5-0.5B returned 2 items for the sample sentence.
+- The sidecar exited cleanly on shutdown.
+
+First-run cost from a new install location is about 8 s per native addon load (OCR 7.9 s, LLM 8.7 s), because macOS scans the new dylibs. Warm loads are 0.09 s (OCR) and 0.6–0.9 s (Qwen 0.5B).
+
+Warm timings on CPU, measured outside the app:
+
+| Task | Time |
+|---|---|
+| OCR, 900×220 fixture | 1.2–1.8 s |
+| Layer 3, one chunk (~40 words) | 0.2–0.6 s |
+| `assessFit` on the local 0.5B file | verdict `likely-fits` (`native-fit`) |
+
+Linux and Windows will be larger (see §4.3 CI notes); their real numbers come with the CI build.
 
 ---
 
@@ -151,14 +258,15 @@ Models are not bundled (OCR pair 98 MB; an LLM 0.4–5 GB), consistent with "opt
 
 1. **Windows needs Vulkan ≥ 1.4 even for CPU inference** (QVAC docs). VMs and older iGPUs may fail → those users get Layers 1–2 only. Needs a test on a real Windows VM.
 2. **Windows bugs open upstream:** #4394 (first model load times out on fresh install), #4151 (pre-AVX2 crash; fix in 0.21.0 dependency chain, unconfirmed on hardware).
-3. **Packaging:** single-file sidecar unproven on Linux/Windows; notarization of self-extracted dylibs unproven → plan is runtime-as-externalBin + addons-as-resources.
+3. **Packaging:** built as runtime-as-externalBin + addons-as-resources (§4.3), so single-file self-extraction is no longer an issue. Still open: codesigning/notarizing the `.bare` dylibs under the hardened runtime, and the Linux/Windows backend libraries.
 4. **Bundle size** (§6) roughly quadruples the macOS installer. Alternative: ship the sidecar as an optional "AI pack" download. That adds a download path we must secure, but keeps the base installer at ~13 MB. Your call.
 5. **OCR quality/speed:** 17 s/page at 200 DPI on Apple Silicon CPU; 7/9 PII strings on one page. Phase 2 needs the normalisation and word-splitting described in §5 and a recall tolerance agreed up front (proposal: ≥ 95 % of the text-layer recall on the scanned `demo.pdf`).
 6. **QVAC writes Buffer inputs unencrypted to `<cacheDir>/tmp`.** We'll set an app-private `cacheDir` and wipe it after each job; page images are already in plaintext while rendering, so this doesn't change the threat model, but it must be cleaned up.
-7. **Model hosting:** without Hyperswarm, someone has to host the GGUF files (e.g. Hugging Face URLs with pinned SHA-256). Each model's licence must allow redistribution/use.
+7. **Model hosting:** without Hyperswarm, someone has to host the GGUF files. Resolved for the LLMs (Qwen on Hugging Face at a pinned revision). **Still open for OCR:** QVAC's CRAFT/latin_g2 GGUFs have no HTTPS host, so they are import-only until Qvault mirrors them (§4.3).
 8. **Plaintext PII in SQLite** (§1.3) — separate from QVAC but undermines "encrypted on device". Recommend a follow-up (SQLCipher or field-level encryption).
 9. **API churn:** contained by the sidecar allow-list; upgrading QVAC means editing one JS file and re-running the protocol tests.
 10. **Licensing contradiction in the repo:** `README.md` says "Proprietary. All rights reserved."; the website, Layer 3 post and release notes say MIT. Phase 7 should settle this. (The license server and `LICENSE_SYSTEM.md` were removed in `ab3c8ce`.)
+11. **Layer 3 quality is unmeasured.** Qwen2.5-0.5B with the few-shot prompt finds names, addresses, dates and IDs in quick checks. It also produces false positives (e.g. "Riverside clinic" as an Address) and is not deterministic across runs. The 1.5B model was not better in a 4-sentence spot check. The Phase 3 eval harness has to set the bar; until then, every Layer 3 finding stays in review at 0.70.
 
 ---
 
