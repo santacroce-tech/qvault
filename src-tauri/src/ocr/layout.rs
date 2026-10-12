@@ -18,8 +18,13 @@
 //!      and a domain that sit apart on the line (`maria.santos`
 //!      `meridian-consulting.com`), a stray glyph in its place
 //!      (`r.fernandes~`), a dropped dot after an initial (`j richardson@`),
-//!      spaces after dots (`consulting. com`), and an address split across
-//!      two lines.
+//!      spaces after dots or around the `@` (`consulting. com`,
+//!      `r.fernandes@ atlas…`), and an address split across two lines;
+//!    - a `$` read as `S` or `8` in front of an amount is restored where that
+//!      is unambiguous (`S50,000.00`, the mis-grouped `8150,000.00`); after
+//!      "Dollars (" an amount without a currency sign gets a `$` inserted
+//!      (`Dollars (885,000.00)` → `Dollars ($885,000.00)`), digits unchanged,
+//!      so Layer 1 detects it and the box still covers every glyph.
 //! 4. **Keeps a map from every character of the normalised text to a box**
 //!    on the page (or to no box, for inserted separators). The map is stored
 //!    as consecutive segments, so the frontend can draw review highlights and
@@ -279,6 +284,8 @@ impl Builder {
 enum Edit {
     Delete,
     Replace(char),
+    /// Insert a character before the cell, mapped to that cell's box.
+    InsertBefore(char),
 }
 
 fn apply(builder: &mut Builder, mut edits: Vec<(usize, Edit)>) {
@@ -296,6 +303,10 @@ fn apply(builder: &mut Builder, mut edits: Vec<(usize, Edit)>) {
                 it.next();
                 match e {
                     Edit::Delete => {}
+                    Edit::InsertBefore(ch) => {
+                        out.push(Cell { ch, b: c.b, gap: None });
+                        out.push(c.clone());
+                    }
                     Edit::Replace(ch) => {
                         let b = match c.b {
                             Some(b) => Some(b),
@@ -346,7 +357,7 @@ fn re_email() -> &'static Regex {
     static R: OnceLock<Regex> = OnceLock::new();
     R.get_or_init(|| {
         Regex::new(
-            r"(?:\b(?P<init>[A-Za-z])(?P<isep> ))?(?P<local>[A-Za-z0-9][A-Za-z0-9_%+-]*(?:\. ?[A-Za-z0-9][A-Za-z0-9_%+-]*)*)@(?P<domain>[A-Za-z0-9][A-Za-z0-9-]*(?:(?:\. ?|- ?)[A-Za-z0-9][A-Za-z0-9-]*)*\. ?[A-Za-z]{2,24})\b",
+            r"(?:\b(?P<init>[A-Za-z])(?P<isep> ))?(?P<local>[A-Za-z0-9][A-Za-z0-9_%+-]*(?:\. ?[A-Za-z0-9][A-Za-z0-9_%+-]*)*)(?P<pre> )?@(?P<post> )?(?P<domain>[A-Za-z0-9][A-Za-z0-9-]*(?:(?:\. ?|- ?)[A-Za-z0-9][A-Za-z0-9-]*)*\. ?[A-Za-z]{2,24})\b",
         )
         .unwrap()
     })
@@ -403,7 +414,52 @@ fn repair_emails(builder: &mut Builder) {
                 }
             }
         }
+        for part in ["pre", "post"] {
+            if let Some(m) = c.name(part) {
+                if builder.cells[at[m.start()]].b.is_none() {
+                    edits.push((at[m.start()], Edit::Delete));
+                }
+            }
+        }
     }
+    apply(builder, edits);
+}
+
+fn re_amount_s() -> &'static Regex {
+    static R: OnceLock<Regex> = OnceLock::new();
+    // `S50,000.00`: S never starts an amount with decimals.
+    R.get_or_init(|| Regex::new(r"(?:^|[\s(\[])(?P<sym>S)\d{1,3}(?:,\d{3})*\.\d{2}\b").unwrap())
+}
+
+fn re_amount_8() -> &'static Regex {
+    static R: OnceLock<Regex> = OnceLock::new();
+    // `8150,000.00`: four digits before the first group separator is not a
+    // valid grouping, so the leading 8 is the currency sign.
+    R.get_or_init(|| Regex::new(r"(?:^|[\s(\[])(?P<sym>8)\d{3}(?:,\d{3})+(?:\.\d{2})?\b").unwrap())
+}
+
+fn re_amount_after_dollars() -> &'static Regex {
+    static R: OnceLock<Regex> = OnceLock::new();
+    R.get_or_init(|| {
+        Regex::new(r"(?i:\b(?:dollars|d[oó]lares)) ?\((?P<num>\d{1,3}(?:,\d{3})+\.\d{2})\)").unwrap()
+    })
+}
+
+/// Whole text: restore currency signs OCR misread (see the module docs).
+fn repair_currency(builder: &mut Builder) {
+    let (s, at) = cell_string(&builder.cells);
+    let mut edits = Vec::new();
+    for re in [re_amount_s(), re_amount_8()] {
+        for c in re.captures_iter(&s) {
+            edits.push((at[c.name("sym").unwrap().start()], Edit::Replace('$')));
+        }
+    }
+    apply(builder, edits);
+    let (s, at) = cell_string(&builder.cells);
+    let edits = re_amount_after_dollars()
+        .captures_iter(&s)
+        .map(|c| (at[c.name("num").unwrap().start()], Edit::InsertBefore('$')))
+        .collect();
     apply(builder, edits);
 }
 
@@ -539,6 +595,7 @@ pub fn build_layout(blocks: &[RawBlock], img_w: u32, img_h: u32, page_w_pt: f64,
     }
     builder.cells = joined;
     repair_emails(&mut builder);
+    repair_currency(&mut builder);
 
     // Segments and boxes in points.
     let sx = page_w_pt / img_w.max(1) as f64;
@@ -674,6 +731,44 @@ mod tests {
             blk("atlas-digital.com).", 752.0, 1369.0, 971.0, 1402.0),
         ]);
         assert_eq!(l.text, "(r.fernandes@atlas-digital.com).");
+    }
+
+    #[test]
+    fn spaces_around_at_and_after_dots_are_removed() {
+        // PDF.js render at 200 DPI: '@' kept but split from the domain, and a
+        // space after the dot in the local part.
+        let l = layout(&[
+            blk("Engineering (r.fernandes@", 197.0, 1363.0, 754.0, 1403.0),
+            blk("atlas-digital.com) .", 771.0, 1366.0, 970.0, 1403.0),
+        ]);
+        assert_eq!(l.text, "Engineering (r.fernandes@atlas-digital.com) .");
+        let l = layout(&[
+            blk("maria. santos", 199.0, 632.0, 362.0, 662.0),
+            blk("meridian-consulting.com; phone:", 385.0, 627.0, 865.0, 667.0),
+        ]);
+        assert_eq!(l.text, "maria.santos@meridian-consulting.com; phone:");
+    }
+
+    #[test]
+    fn currency_sign_misreads() {
+        let l = layout(&[blk("Dollars (S50,000.00) shall", 0.0, 0.0, 520.0, 30.0)]);
+        assert_eq!(l.text, "Dollars ($50,000.00) shall");
+        let l = layout(&[blk("Dollars (8150,000.00) for", 0.0, 0.0, 500.0, 30.0)]);
+        assert_eq!(l.text, "Dollars ($150,000.00) for");
+        // Ambiguous: digits are kept, a sign is inserted (mapped to the
+        // number's box, so the burn-in covers the same glyphs).
+        let l = layout(&[blk("Dollars (885,000.00) shall", 0.0, 0.0, 520.0, 30.0)]);
+        assert_eq!(l.text, "Dollars ($885,000.00) shall");
+        let s = l.text.find('$').unwrap();
+        assert_eq!(l.boxes_for_range(s, s + 1), l.boxes_for_range(s + 1, s + 2));
+        // Ordinary numbers are left alone.
+        for t in ["Section 8 applies", "code S12", "8,000 units", "paid 8150 dollars", "(885,000.00) shares"] {
+            assert_eq!(layout(&[blk(t, 0.0, 0.0, 400.0, 30.0)]).text, t);
+        }
+        // Detection now sees the amounts.
+        let l = layout(&[blk("Fifty Thousand Dollars (S50,000.00) shall", 0.0, 0.0, 800.0, 30.0)]);
+        let found = crate::pipeline::run_pipeline_no_llm(&l.text, 0, &["global", "us"]);
+        assert!(found.iter().any(|e| e.text == "$50,000.00"), "{:?}", found);
     }
 
     #[test]

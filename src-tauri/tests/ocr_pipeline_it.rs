@@ -13,8 +13,9 @@
 //! QVAC_IT_LAYER3=1 (also run Layer 3; needs the Qwen model in the dir).
 //!
 //! Rasterisation: the app renders pages with PDF.js in the webview; here
-//! poppler's `pdftoppm` stands in for it (both rasterise the same embedded
-//! image), so this test needs `pdftoppm` on PATH. Plain `cargo test` skips it.
+//! poppler's `pdftoppm` stands in for it by default (needs `pdftoppm` on
+//! PATH), or set QVAC_IT_RENDERER=pdfjs to render with the app's PDF.js in
+//! headless Chrome. Plain `cargo test` skips this file.
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -103,16 +104,28 @@ fn dpis() -> Vec<u32> {
         .collect()
 }
 
-/// Rasterise every page of `pdf` at `dpi` (PNG), like the viewer does.
+/// Rasterise every page of `pdf` at `dpi` (PNG), like the viewer does:
+/// with poppler's pdftoppm, or — with QVAC_IT_RENDERER=pdfjs — with the
+/// app's own PDF.js build in headless Chrome (tools/render-pdfjs.mjs; needs
+/// node and the npm dev dependencies).
 fn rasterize(pdf: &Path, dpi: u32, dir: &Path) -> Vec<PathBuf> {
     std::fs::create_dir_all(dir).unwrap();
-    let prefix = dir.join("p");
-    let st = Command::new("pdftoppm")
-        .args(["-r", &dpi.to_string(), "-png"])
-        .arg(pdf)
-        .arg(&prefix)
-        .status()
-        .expect("pdftoppm (poppler) is needed for this test");
+    let st = if std::env::var("QVAC_IT_RENDERER").map(|v| v == "pdfjs").unwrap_or(false) {
+        Command::new("node")
+            .arg(manifest().join("../tools/render-pdfjs.mjs"))
+            .arg(pdf)
+            .arg(dpi.to_string())
+            .arg(dir)
+            .status()
+            .expect("node is needed for QVAC_IT_RENDERER=pdfjs")
+    } else {
+        Command::new("pdftoppm")
+            .args(["-r", &dpi.to_string(), "-png"])
+            .arg(pdf)
+            .arg(dir.join("p"))
+            .status()
+            .expect("pdftoppm (poppler) is needed for this test")
+    };
     assert!(st.success());
     let mut pages: Vec<PathBuf> = std::fs::read_dir(dir)
         .unwrap()
@@ -304,11 +317,14 @@ fn scanned_recall_vs_text_layer() {
 
     // The bar: scanned recall >= 90 % of the text-layer recall, on both
     // measures. It is asserted at the app's default resolution; other
-    // resolutions are reported. Measured 2026-10-12 (Apple Silicon, CPU):
-    //   150 dpi: detections 88.6 %, known 67.6 % -> below the bar
-    //   200 dpi: detections 97.7 %, known 79.4 % (text layer 79.4 %) -> passes
-    //   300 dpi: detections 90.9 %, known 70.6 % (bar 71.5 %) -> 1 entity short
-    // which is why the default is 200 DPI (docs/qvac-integration.md §10.2).
+    // resolutions are reported. Measured 2026-10-12 (Apple Silicon, CPU,
+    // Layers 1-2; "detections" = text-layer detections found on the scan,
+    // "known" = the 25 demo entities, text layer 79.4 %, bar 71.5 %):
+    //   renderer   150 dpi          200 dpi          300 dpi
+    //   pdftoppm   88.6 % / 67.6 %  97.7 % / 79.4 %  90.9 % / 70.6 % (below)
+    //   PDF.js     -                97.7 % / 79.4 %  95.5 % / 73.5 %
+    // ~16 s/page at every resolution. Hence the 200 DPI default
+    // (docs/qvac-integration.md §10.2).
     let text_known_recall = pct(total(&text_known));
     let mut checked = false;
     for ((dpi, det), (_, known)) in det_rows.iter().zip(&known_rows) {
