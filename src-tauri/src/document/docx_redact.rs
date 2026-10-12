@@ -328,6 +328,13 @@ fn is_thumbnail_rel(e: &BytesStart) -> bool {
     })
 }
 
+/// `<Override PartName="/docProps/thumbnail.*">` in `[Content_Types].xml`.
+fn is_thumbnail_override(e: &BytesStart) -> bool {
+    e.attributes().with_checks(false).flatten().any(|a| {
+        a.key.as_ref() == b"PartName" && is_thumbnail(String::from_utf8_lossy(&a.value).trim_start_matches('/'))
+    })
+}
+
 fn redact_part(
     name: &str,
     xml: &str,
@@ -379,7 +386,9 @@ fn redact_part(
                 Event::Start(ne)
             }
             Event::Empty(e) => {
-                if is_root_rels && is_thumbnail_rel(&e) {
+                if (is_root_rels && is_thumbnail_rel(&e))
+                    || (name == "[Content_Types].xml" && is_thumbnail_override(&e))
+                {
                     continue;
                 }
                 let ext = is_external(&e);
