@@ -173,7 +173,7 @@
     "checking": "Verificando…",
     "layer3Toggle": "Usar detecção por IA (camada 3) ao analisar",
     "layer3NeedsModel": "Baixe ou importe um modelo de detecção abaixo para ativar a detecção por IA.",
-    "layer3Review": "Os achados da IA entram com 70% de confiança e sempre aguardam sua revisão — nada é aplicado automaticamente.",
+    "layer3Review": "Os achados da IA entram com 60–85% de confiança (conforme o tipo; abaixo das camadas de regras) e sempre aguardam sua revisão — nada é aplicado automaticamente.",
     "detectionModels": "Modelos de detecção (camada 3)",
     "ocrModels": "Modelos de OCR",
     "ocrModelsDesc": "Lê PDFs digitalizados e imagens (PNG, JPEG, TIFF). Importe estes dois arquivos para ativar o OCR.",

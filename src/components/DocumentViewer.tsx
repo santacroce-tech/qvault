@@ -283,6 +283,26 @@ export default function DocumentViewer({ documentId, onRedactedPagesReady, advan
     return () => { unlisten.then((fn) => fn()); };
   }, [documentId]);
 
+  // Detections are stored page by page (Layers 1-2 first, then Layer 3);
+  // refresh the review list as they arrive instead of only at the end.
+  useEffect(() => {
+    let pending: ReturnType<typeof setTimeout> | null = null;
+    const unlisten = listen<{ documentId: string; page: number; layer: string; count: number }>(
+      "scan-page-results",
+      (event) => {
+        if (event.payload.documentId !== documentId || event.payload.count === 0 || pending) return;
+        pending = setTimeout(() => {
+          pending = null;
+          reloadRedactions().catch((e) => console.warn("[Qvault] reload during scan failed:", e));
+        }, 400);
+      }
+    );
+    return () => {
+      if (pending) clearTimeout(pending);
+      unlisten.then((fn) => fn());
+    };
+  }, [documentId, reloadRedactions]);
+
   // Listen for granular LLM inference progress
   useEffect(() => {
     const unlisten = listen<{ documentId: string; page: number; tokensGenerated: number; phase: string }>(

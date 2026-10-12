@@ -173,7 +173,7 @@
     "checking": "Comprobando…",
     "layer3Toggle": "Usar detección con IA (capa 3) al escanear",
     "layer3NeedsModel": "Descarga o importa un modelo de detección para activar la detección con IA.",
-    "layer3Review": "Los hallazgos de la IA se añaden con un 70 % de confianza y siempre esperan tu revisión; nada se aplica automáticamente.",
+    "layer3Review": "Los hallazgos de la IA se añaden con un 60–85 % de confianza (según el tipo; por debajo de las capas de reglas) y siempre esperan tu revisión; nada se aplica automáticamente.",
     "detectionModels": "Modelos de detección (capa 3)",
     "ocrModels": "Modelos OCR",
     "ocrModelsDesc": "Lee PDF escaneados e imágenes (PNG, JPEG, TIFF). Importe estos dos archivos para activar el OCR.",
