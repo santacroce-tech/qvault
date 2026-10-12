@@ -5,6 +5,7 @@ pub mod document;
 pub mod pipeline;
 pub mod storage;
 pub mod llm;
+pub mod ocr;
 #[cfg(desktop)]
 pub mod qvac;
 

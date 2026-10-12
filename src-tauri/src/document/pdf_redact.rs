@@ -267,7 +267,7 @@ fn missed_message(pages: &BTreeSet<u32>, cats: &BTreeSet<&str>) -> String {
 
 // ─── Page geometry ───────────────────────────────────────────────────────────
 
-fn inherited<'a>(doc: &'a Document, page_id: ObjectId, key: &[u8]) -> Option<&'a Object> {
+pub(crate) fn inherited<'a>(doc: &'a Document, page_id: ObjectId, key: &[u8]) -> Option<&'a Object> {
     let mut current = doc.get_dictionary(page_id).ok()?;
     for _ in 0..32 {
         if let Ok(v) = current.get(key) {
@@ -282,7 +282,7 @@ fn inherited<'a>(doc: &'a Document, page_id: ObjectId, key: &[u8]) -> Option<&'a
     None
 }
 
-fn as_rect(doc: &Document, obj: &Object) -> Option<[f64; 4]> {
+pub(crate) fn as_rect(doc: &Document, obj: &Object) -> Option<[f64; 4]> {
     let arr = obj.as_array().ok()?;
     if arr.len() != 4 {
         return None;
@@ -304,7 +304,7 @@ fn as_rect(doc: &Document, obj: &Object) -> Option<[f64; 4]> {
 
 /// Size in points of the page as displayed (crop box, after /Rotate), which is
 /// what PDF.js renders at scale 1.
-fn displayed_size(doc: &Document, page_id: ObjectId) -> (f64, f64) {
+pub(crate) fn displayed_size(doc: &Document, page_id: ObjectId) -> (f64, f64) {
     let media = inherited(doc, page_id, b"MediaBox")
         .and_then(|o| as_rect(doc, o))
         .unwrap_or([0.0, 0.0, 612.0, 792.0]);

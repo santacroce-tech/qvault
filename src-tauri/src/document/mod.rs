@@ -3,7 +3,7 @@ pub mod docx_parser;
 pub mod redactor;
 pub mod text_match;
 pub mod pdf_text;
-mod pdf_redact;
+pub(crate) mod pdf_redact;
 mod docx_redact;
 
 use pdf_parser::PageText;

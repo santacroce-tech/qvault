@@ -140,6 +140,113 @@ pub fn contains(haystack: &str, needle: &Needle) -> bool {
     Folded::new(haystack).count(needle) > 0
 }
 
+// ─── OCR text ────────────────────────────────────────────────────────────────
+//
+// OCR text differs from a text layer in ways the strict matcher above does
+// not forgive: dropped or swapped punctuation (`maria.santos meridian.com`,
+// `Richardson;`), spaces after dots (`consulting. com`). For OCR'd pages we
+// therefore also match on letters and digits only. This is used both to place
+// boxes on scanned pages and to look for leaks in OCR of the exported pages,
+// so it errs towards finding more, never fewer, occurrences.
+
+/// Needles with fewer letters/digits than this use the strict matcher, so
+/// that "Ana" or "$5" cannot match noise.
+pub const LOOSE_MIN_ALNUM: usize = 4;
+
+/// An approved string reduced to its case-folded letters and digits.
+#[derive(Debug, Clone)]
+pub struct LooseNeedle {
+    chars: Vec<char>,
+}
+
+impl LooseNeedle {
+    /// `None` when the string has fewer than [`LOOSE_MIN_ALNUM`] letters/digits.
+    pub fn new(s: &str) -> Option<Self> {
+        let mut chars = Vec::new();
+        for c in s.chars() {
+            fold(c, &mut |f| {
+                if f.is_alphanumeric() {
+                    chars.push(f)
+                }
+            });
+        }
+        (chars.len() >= LOOSE_MIN_ALNUM).then_some(LooseNeedle { chars })
+    }
+}
+
+/// A haystack reduced to folded letters/digits, with source positions.
+pub struct LooseFolded<'a> {
+    src: &'a str,
+    chars: Vec<char>,
+    pos: Vec<(usize, usize)>,
+}
+
+impl<'a> LooseFolded<'a> {
+    pub fn new(src: &'a str) -> Self {
+        let mut chars = Vec::new();
+        let mut pos = Vec::new();
+        for (b, c) in src.char_indices() {
+            let e = b + c.len_utf8();
+            fold(c, &mut |f| {
+                if f.is_alphanumeric() {
+                    chars.push(f);
+                    pos.push((b, e));
+                }
+            });
+        }
+        LooseFolded { src, chars, pos }
+    }
+
+    /// Non-overlapping matches (byte ranges into the source). A match must not
+    /// continue a word: the source characters just outside it must not be
+    /// letters or digits.
+    pub fn find_all(&self, needle: &LooseNeedle) -> Vec<(usize, usize)> {
+        let n = &needle.chars;
+        let m = n.len();
+        let mut out = Vec::new();
+        let mut i = 0;
+        while m > 0 && i + m <= self.chars.len() {
+            if self.chars[i..i + m] == n[..] {
+                let start = self.pos[i].0;
+                let end = self.pos[i + m - 1].1;
+                let before_ok = !self.src[..start].chars().next_back().map_or(false, |c| c.is_alphanumeric());
+                let after_ok = !self.src[end..].chars().next().map_or(false, |c| c.is_alphanumeric());
+                if before_ok && after_ok {
+                    out.push((start, end));
+                    i += m;
+                    continue;
+                }
+            }
+            i += 1;
+        }
+        out
+    }
+}
+
+/// A needle for OCR text: loose (letters/digits only) when long enough,
+/// strict otherwise.
+#[derive(Debug, Clone)]
+pub enum OcrNeedle {
+    Loose(LooseNeedle),
+    Strict(Needle),
+}
+
+impl OcrNeedle {
+    pub fn new(s: &str) -> Option<Self> {
+        LooseNeedle::new(s).map(OcrNeedle::Loose).or_else(|| Needle::new(s).map(OcrNeedle::Strict))
+    }
+
+    /// Every occurrence in `haystack` (byte ranges). The union of strict and
+    /// loose matches is not needed: a strict match of a long needle is always
+    /// a loose match too, unless it sits inside a longer word.
+    pub fn find_all(&self, haystack: &str) -> Vec<(usize, usize)> {
+        match self {
+            OcrNeedle::Loose(n) => LooseFolded::new(haystack).find_all(n),
+            OcrNeedle::Strict(n) => Folded::new(haystack).find_all(n),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -180,5 +287,24 @@ mod tests {
     #[test]
     fn empty_needles_are_rejected() {
         assert!(Needle::new(" \n\t").is_none());
+    }
+
+    #[test]
+    fn ocr_matching_ignores_punctuation_but_keeps_word_edges() {
+        let n = OcrNeedle::new("j.richardson@atlas-digital.com").unwrap();
+        assert!(matches!(n, OcrNeedle::Loose(_)));
+        let s = "email: j richardson@atlas- digital.com; phone";
+        let hits = n.find_all(s);
+        assert_eq!(hits.len(), 1);
+        assert_eq!(&s[hits[0].0..hits[0].1], "j richardson@atlas- digital.com");
+        // Inside a longer word: no match.
+        assert!(n.find_all("xj.richardson@atlas-digital.com").is_empty());
+        assert_eq!(OcrNeedle::new("Maria Santos").unwrap().find_all("by Maria Santos; and MARIA-SANTOS").len(), 2);
+        assert!(OcrNeedle::new("Maria Santos").unwrap().find_all("Mariana Santos").is_empty());
+        // Short needles fall back to the strict matcher.
+        let short = OcrNeedle::new("$5").unwrap();
+        assert!(matches!(short, OcrNeedle::Strict(_)));
+        assert!(short.find_all("pay 5 now").is_empty());
+        assert_eq!(short.find_all("pay $5 now").len(), 1);
     }
 }

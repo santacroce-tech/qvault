@@ -91,7 +91,10 @@ fn walk_content(
     visited: &mut HashSet<ObjectId>,
     fonts: &mut FontCache,
 ) {
-    let Ok(content) = Content::decode(content) else {
+    // Inline images carry binary data the content parser cannot skip; without
+    // this, one inline image hides all the text on its page.
+    let cleaned = crate::ocr::classify::strip_inline_images(content);
+    let Ok(content) = Content::decode(&cleaned) else {
         return;
     };
     let mut font: Option<std::rc::Rc<FontDecoder>> = None;
