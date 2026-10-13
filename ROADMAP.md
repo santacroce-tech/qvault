@@ -20,16 +20,7 @@ Last updated: 2026-10-13.
 
 ## Next
 
-Queued after the work in progress:
-
-- **Evaluate OpenAI Privacy Filter** ([openai/privacy-filter](https://huggingface.co/openai/privacy-filter),
-  Apache-2.0, 1.5B parameters with 50M active, ONNX). A token classifier that returns exact spans in
-  one pass, with tunable recall. Measure it offline on the eval set (EN/ES/PT; the card says
-  "primarily English") against Qwen3-1.7B, alone and combined with Layers 1–2, with speed and
-  memory. Only if it clearly wins, choose a runtime: ONNX Runtime in Rust (a second runtime next
-  to QVAC) or Transformers.js in the webview with local files only.
-
-Then, ordered by expected value.
+Ordered by expected value.
 
 1. **Layer 2 name precision.** The name heuristic is about 52 % precise and
    caps combined precision at about 85 %; with a strong model, Layer 3 alone
@@ -93,6 +84,18 @@ Then, ordered by expected value.
   Manager, OCR and offline setup are already covered on the Models page).
 
 ## Parked
+
+- **OpenAI Privacy Filter as a fast complement to Layer 3.** Measured offline
+  ([report](eval/reports/privacy-filter.md), docs §14). Combined with
+  Layers 1–2 it matches Qwen3-1.7B (F1 89.2 vs 88.8, recall 96.3 vs 93.1,
+  held-out recall 90.0 vs 85.0) and runs at about 0.2 s/page on CPU instead
+  of 6.2 s/page on GPU. Not adopted: no company, amount or case-number labels,
+  national and tax IDs come back as `account_number` (type accuracy 74 % vs
+  93 %), weaker Portuguese, and about 3× more false suggestions. Both models
+  together would miss 7 labels instead of 30. If CPU-only speed or maximum
+  recall becomes the priority: run the int8 ONNX file through `@qvac/onnx`
+  in the existing sidecar (+20.7 MB on macOS arm64), with OpenAI's Viterbi
+  decoder, after checking Spanish and Portuguese on more data.
 
 - **Local LoRA fine-tuning (original Phase 5).** Built and measured, then
   stopped. Training works on the pinned QVAC version, but on a simulated
