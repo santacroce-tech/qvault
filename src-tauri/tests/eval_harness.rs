@@ -726,3 +726,9 @@ mod layer3;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[path = "eval_support/entities.rs"]
 mod entities;
+
+// ── learning from review decisions (§13) ─────────────────────────────────
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[path = "eval_support/learning.rs"]
+mod learning;
