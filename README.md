@@ -164,6 +164,8 @@ React UI ──Tauri IPC──▶ Rust backend ──JSON lines over stdio──
 - `site/`: the website (`node site/build.mjs` → `site/dist`, deployed by
   `.github/workflows/pages.yml`).
 
+Planned and parked work: [ROADMAP.md](ROADMAP.md).
+
 More detail: the [architecture page](https://santacroce-tech.github.io/qvault/architecture.html)
 and the design notes in [docs/qvac-integration.md](docs/qvac-integration.md).
 
