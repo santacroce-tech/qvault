@@ -206,3 +206,54 @@ The CI test fails when applied / after-review / accepted precision or
 recall or proposal precision drops by more than 1 point below
 `entity-baseline.json`, when a knowledge-base scenario recovers fewer
 labels, or when it adds more than one extra false suggestion.
+
+## Learning from review decisions (§13)
+
+Results and decisions: [docs/qvac-integration.md §13](../docs/qvac-integration.md#13-learning-from-review-decisions-replaces-phase-5-lora).
+Code: `../src-tauri/tests/eval_support/learning.rs` (part of the
+`eval_harness` test binary).
+
+| Path | What |
+|---|---|
+| `reports/learning-layers12.{md,json}` | Decision memory and the "Not personal data" list on Layers 1–2 |
+| `reports/learning-fewshot-<model>.{md,json}` | Few-shot examples in the Layer 3 prompt, plus memory and list on Layers 1–3 |
+
+There is no labelled review history, so it is simulated from the detection
+fixtures. A detection that overlaps a required label is *approved*. One that
+overlaps no label is *rejected*. One that touches only optional labels gets
+no decision.
+
+The history is always split **by document**: each fixture is scanned with
+the memory of the *other* fixtures (leave one out, holdout fixtures
+included). A second split uses the history of the dev fixtures to scan the
+holdout fixtures.
+
+Measured:
+
+- **memory**: false positives marked "rejected before", and correct
+  detections marked by mistake;
+- **list**: false positives suppressed, correct detections suppressed, and
+  *labels lost* (required labels covered before suppression and not after).
+  The list is filled three ways: suggested candidates (rejected ≥ 3 times),
+  every rejected string, and a stress case with every string rejected
+  anywhere, the scanned document included;
+- **few-shot**: Layers 1+2+3 precision, recall, F1, covered recall and the
+  holdout split, seconds per page and prompt length, with and without
+  examples. Each document gets examples only from the other documents.
+  Variants are `mixed<N>` (half rejected, half approved), `rejected<N>`, and
+  `placebo<N>`, a control with generic terms that no review produced. The
+  control separates "the user's decisions help" from "any prompt change
+  moves the numbers".
+
+```sh
+# CI (no model): memory and list on Layers 1-2. Fails if the list ever
+# removes a labelled item, in any scenario.
+cargo test --test eval_harness learning::decision_memory_layers12 -- --nocapture
+QVAULT_EVAL_OUT=../eval/reports cargo test --test eval_harness learning::decision_memory_layers12
+
+# Few-shot Layer 3 with a real model (about 2 minutes per variant for Qwen3-1.7B on Apple M4 Pro)
+QVAULT_EVAL_FEWSHOT=1 QVAC_MODELS_DIR=/path/with/catalog/files QVAULT_EVAL_MODELS=qwen3-1.7b-q8_0 \
+QVAULT_EVAL_FEWSHOT_VARIANTS=mixed2,mixed6,rejected3,rejected6,placebo3 \
+QVAULT_EVAL_OUT=../eval/reports \
+cargo test --release --test eval_harness fewshot_layer3 -- --nocapture --test-threads 1
+```

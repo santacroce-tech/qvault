@@ -1,6 +1,6 @@
 # QVAC integration — Phase 0 design
 
-Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1B (sidecar, Model Manager, Layer 3 on QVAC) built — see [§4.3](#43-as-built-phase-1b) and [§6](#6-installer-size). Phase 2 (OCR for scanned PDFs and images) built — see [§10](#10-phase-2-as-built-ocr-for-scanned-pdfs-and-images). Phase 3 (eval harness, Layer 1 gaps, Layer 3 quality, model choice) built — see [§11](#11-phase-3-layer-3-quality-model-choice-and-the-eval-harness). Phase 4 (entity grouping and known-entity suggestions) built — see [§12](#12-phase-4-entity-resolution).**
+Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1B (sidecar, Model Manager, Layer 3 on QVAC) built — see [§4.3](#43-as-built-phase-1b) and [§6](#6-installer-size). Phase 2 (OCR for scanned PDFs and images) built — see [§10](#10-phase-2-as-built-ocr-for-scanned-pdfs-and-images). Phase 3 (eval harness, Layer 1 gaps, Layer 3 quality, model choice) built — see [§11](#11-phase-3-layer-3-quality-model-choice-and-the-eval-harness). Phase 4 (entity grouping and known-entity suggestions) built — see [§12](#12-phase-4-entity-resolution). Phase 5 (LoRA fine-tuning) measured and dropped; replaced by learning from review decisions — see [§13](#13-learning-from-review-decisions-replaces-phase-5-lora).**
 Date: 2026-10-12. Branch: `feature/qvac-integration`.
 
 This document covers what Qvault looks like today, the export redaction audit, what QVAC actually provides at the version we would pin, the proposed sidecar architecture, measured size impact, and open questions. Where the original task prompt turned out to be wrong, that is called out in [§8](#8-corrections-to-the-task-prompt).
@@ -809,3 +809,149 @@ All the false suggestions are repeats of Layer 2's own false positives elsewhere
 - **Two-name extensions are proposed, not merged** ("João Santos" / "João Pedro Silva Santos"). This is more conservative than "group variants into one canonical entity" for that case.
 - **"Documents mentioning this entity" is built** (exact, from occurrences); there is no semantic search.
 - **Known-entity suggestions also use the document's own unreviewed detections**, not only previously approved ones, because the fixtures showed that is where the in-document misses are recovered.
+
+---
+
+## 13. Learning from review decisions (replaces Phase 5 LoRA)
+
+Measured on Apple M4 Pro (48 GB, Metal) with the pinned QVAC 0.21.0 and Qwen3-1.7B Q8_0 (the default; SHA-256 `061b54da…590cb1a` checked). Reports: [`eval/reports/learning-layers12.md`](../eval/reports/learning-layers12.md) and [`eval/reports/learning-fewshot-qwen3-1.7b-q8_0.md`](../eval/reports/learning-fewshot-qwen3-1.7b-q8_0.md). How to rerun: [`eval/README.md`](../eval/README.md#learning-from-review-decisions-13).
+
+### 13.1 Why LoRA was dropped
+
+Phase 5 planned opt-in local LoRA fine-tuning of the Layer 3 model on the user's own review decisions. It was built far enough to measure: QVAC `finetune` in the sidecar, a dataset from reviewed findings split by document, an adapter store and an adapter-aware Layer 3. Then it was stopped, because on a simulated review history **every adapter made held-out results worse**:
+
+| model | Layer 3 F1 without adapter | with adapter |
+|---|---:|---:|
+| Qwen3-1.7B | 76.8 | 49.1 |
+| Qwen3-0.6B | 63.0 | 62.9 / 16.7 (two training settings) |
+
+Each training run took 14–36 minutes on this machine. A few hundred reviewed spans are far too little data for the model to learn anything general; it learned the documents instead. The code and reports are on branch `experiment/phase5-lora`, which is not merged.
+
+Two ideas from that branch were kept in spirit but reimplemented independently and much smaller:
+- evaluation with a simulated review;
+- splitting that history **by document**, so nothing is ever scored on its own decisions.
+
+### 13.2 What was built instead
+
+Three local mechanisms, with no training. All of them work with Layers 1–2 only, so no AI model is needed. Only the few-shot option involves Layer 3, and it is not shipped (§13.4).
+
+| | what it does | automatic? |
+|---|---|---|
+| **Decision memory** | Every approval and rejection is remembered per reviewed occurrence as (normalised text, category, layer, document). On later scans, a finding whose text and category were **rejected before and never approved** is *marked*. It stays listed and pending, with a "Rejected before (N times)" badge. Its confidence is halved and capped at 0.35, below every layer, and it is sorted after the other findings of its type. The sidebar offers **"Reject all previously rejected"**. | Marking is automatic. Rejecting always takes a click. Nothing is hidden. |
+| **"Not personal data" list** | Whole strings, per category, that later scans leave out. Matching ignores case, accents and spacing and never uses substrings. It applies to Layers 1–3 and to known-entity suggestions alike. Every suppressed finding is stored with its position. The sidebar says how many were left out ("N findings are not listed: they are on your Not personal data list"), lists them, and can **restore** each one into the review list. | Items get on the list **only by explicit user action**: "Never flag this again" on a rejected finding, adding in Settings, accepting a suggestion, or importing a file after its preview. |
+| **Suggestions for the list** | Settings lists strings rejected ≥ 3 times and never approved, each with an "Add to list" button. | Suggestion only; adding is a click. |
+
+Details:
+
+- **Normalisation** (`learning::key`): accents are folded and text is lower-cased (the Phase 4 `fold`), whitespace is collapsed, and surrounding punctuation and quotes are removed. So "EFFECTIVE  Date," is the same as "Effective Date". "Effective Dates" and "John Effective Date" are different strings.
+- **"Rejected before"** means rejected at least once and never approved. A string approved anywhere is never marked; this is the same rule as Phase 4's known-entity sources.
+- **Counting:**
+  - counts are per occurrence, so clicking reject again does not count twice;
+  - the latest decision wins;
+  - setting a finding back to pending forgets its decision;
+  - documents are counted separately.
+- **Known-entity suggestions** (Phase 4) already re-suggest *approved* strings across documents, and that is unchanged. This feature adds only the other direction (rejections). The list and the marks also apply to known-entity suggestions, and a range the list suppressed is not re-suggested by the known-entity layer.
+- **Settings → Learning from your reviews:**
+  - the list, with search, remove, and add (text + type);
+  - **export** to a JSON file and **import**, so a firm can share one list. Import validates the file and shows a preview before anything is applied: the items to add, the items already listed or repeated, and the invalid items with their reason;
+  - the suggestions;
+  - the number of remembered decisions;
+  - **"Forget all review decisions"**.
+- **File format**: `{"format":"qvault-not-personal-data","version":1,"exportedAt":…,"items":[{"text","category","note"?}]}`. Import rejects:
+  - other formats or versions;
+  - files over 8 MB or with more than 10,000 items;
+  - items with an unknown category, empty text, more than 200 characters, or control characters.
+- **Storage is plaintext.** Four SQLite tables in the app data folder, **unencrypted** like the rest of the database (§7.8); the Settings screen says so:
+  - decisions (`review_decisions`);
+  - the list (`not_personal_data`);
+  - marks (`redaction_memory`);
+  - suppressed findings (`suppressed_detections`).
+
+  Deleting a document deletes its marks, its suppressed findings and its *approvals*. Its *rejections* stay in the memory, because they are strings the user said are not personal data, until "Forget all review decisions". "Reset app data" clears all four tables.
+- **Schema version 2** (`PRAGMA user_version`) adds the four tables. A backfill turns already reviewed redactions into decisions, so existing users start with a memory.
+- **Audit log** (counts and ids only, never the strings):
+  - `review_memory_scan marked_rejected_before=… suppressed_by_list=… list_items=…` per scan;
+  - `reject_previously_rejected count=…`;
+  - `suppressed_restored redaction=…`;
+  - `not_personal_data_add category=… source=… item=…`, `not_personal_data_remove item=…`, `not_personal_data_export items=…`, `not_personal_data_import offered=… added=…`;
+  - `review_memory_cleared decisions=…`.
+
+  Nothing about decisions is written to the app log.
+- **Commands**: `get_document_learning`, `reject_previously_rejected`, `restore_suppressed_finding`, `get_not_personal_data`, `add_not_personal_data`, `remove_not_personal_data`, `export_not_personal_data`, `preview_not_personal_data_import`, `apply_not_personal_data_import`, `get_not_personal_data_candidates`, `get_learning_summary`, `clear_review_memory`. Approvals and rejections are recorded by the existing `update_redaction` and `bulk_approve`.
+
+### 13.3 Decision memory and list, measured
+
+The review is simulated on the 16 detection fixtures (461 labels, holdout included):
+- a detection that overlaps a required label is approved;
+- one that overlaps no label is rejected;
+- one that touches only optional labels gets no decision.
+
+Each document is scanned with the memory of the **other** documents (leave one document out). *Labels lost* = required labels that some detection covered before suppression and none covered after.
+
+| on top of | scenario | false positives | FP marked | FP suppressed | correct detections marked / suppressed | labels lost | P / R before → after |
+|---|---|---:|---:|---:|---:|---:|---|
+| Layers 1–2 | memory only | 68 | **9 (13 %)** | 0 | 0 / 0 | 0 | 84.9 / 83.1, unchanged |
+| Layers 1–2 | list = suggested candidates (≥ 3 rejections) | 68 | 9 | 0 | 0 / 0 | 0 | unchanged |
+| Layers 1–2 | list = every rejected string | 68 | 0 | **9 (13 %)** | 0 / 0 | **0** | 84.9 / 83.1 → 86.6 / 83.1 |
+| Layers 1–2 | stress: list = every string rejected anywhere, this document included | 68 | 0 | 68 (100 %) | 0 / 0 | **0** | 84.9 / 83.1 → 100.0 / 83.1 |
+| Layers 1–2 | dev history → holdout documents | 6 | 0 | 0 | 0 / 0 | 0 | unchanged |
+| Layers 1+2+3 (Qwen3-1.7B) | memory only | 76 | 9 (12 %) | 0 | 0 / 0 | 0 | 84.9 / 93.1, unchanged |
+| Layers 1+2+3 | list = every rejected string | 76 | 0 | 9 (12 %) | 0 / 0 | **0** | 84.9 / 93.1 → 86.4 / 93.1 |
+| Layers 1+2+3 | stress (as above) | 76 | 0 | 75 (99 %) | 0 / 0 | **0** | 84.9 / 93.1 → 99.8 / 93.1 |
+
+- **Safety:** the list suppressed **no detection of labelled data and lost no label** in any scenario. That includes the stress case, where every false-positive string of the whole set is on the list. This is a CI test (`eval_harness learning::decision_memory_layers12`).
+- **The effect is modest on this set.** The fixtures are independent documents by different (fictional) parties, so few false positives repeat across documents. What repeats is legal boilerplate taken for names: "Effective Date" (3 documents), and "Confidential Information", "Managing Director" and "São Paulo" (2 each). A firm's real documents reuse the same templates and defined terms, so the share should be higher there; that is not measured here.
+- The ≥ 3 suggestion threshold produced no candidate in leave-one-out, because no false positive was rejected 3 times in the other documents. That is the conservative intent.
+- No correct detection was ever marked "rejected before" on this set.
+
+### 13.4 Few-shot examples for Layer 3: measured, not shipped
+
+`llm_scanner::messages_with_examples` can append the user's own unanimous decisions to the system prompt:
+
+> This user's earlier review decisions … rejected, do NOT extract: "Effective Date" (not a PersonName); … confirmed as personal data: …
+
+`learning::select_examples` chooses them: most frequent first, spread over categories, at most 60 characters each. For each fixture, the examples came from the simulated review of the *other* fixtures' baseline Layers 1+2+3 detections. Each variant is one deterministic run (temp 0, seed 42); the baseline reproduced §11.4 exactly.
+
+| variant | L1+2+3 P | R | F1 | covered R | holdout R | holdout F1 | s/page | prompt chars added |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| **no examples (app)** | 84.9 | 93.1 | 88.8 | 85.0 | 85.0 | 87.1 | 6.21 | 0 |
+| 2 mixed (1 rejected + 1 approved) | 84.6 | 93.7 | 88.9 | 85.7 | 85.0 | 85.6 | 6.24 | 206 |
+| 6 mixed (3 + 3) | 84.9 | 92.8 | 88.7 | 84.8 | **81.7** | 84.4 | 6.09 | 338 |
+| 3 rejected | 84.7 | 94.4 | 89.3 | 86.3 | 85.0 | 86.3 | 6.25 | 224 |
+| 6 rejected | 84.8 | 93.5 | 88.9 | 85.5 | 85.0 | 85.6 | 6.28 | 344 |
+| **control: 3 generic "rejected" terms not from any review** | 84.4 | 94.4 | 89.1 | 86.3 | 85.0 | 85.6 | 6.23 | 216 |
+
+**Decision: not shipped.** The app's Layer 3 prompt is unchanged and `Layer3Session.examples` stays empty, because:
+
+- The best variant (3 rejected) gains +0.5 F1 and +1.3 recall overall. But the **control, with generic terms no reviewer chose, gains the same recall** (94.4) and almost the same F1 (89.1). The gain comes from changing the prompt, not from the user's decisions.
+- No variant improves the **held-out** documents. Holdout F1 drops in every variant (87.1 → 84.4–86.3), and 6 mixed examples lose holdout recall (85.0 → 81.7). Recall is what matters for redaction.
+- Precision never improves, though that is what the rejected examples were supposed to fix.
+- Speed is unchanged within noise in the final run (6.09–6.28 s/page against 6.21; up to 344 more prompt characters per chunk). Earlier runs with other work on the machine showed 6.4–6.9 s/page; the accuracy numbers were identical across all runs.
+- The differences are 1–6 labels out of 461 on single runs, within what an unrelated prompt change produces.
+
+The code path and the opt-in eval stay, so this can be measured again on a larger, more repetitive document set or with another model.
+
+### 13.5 Tests
+
+- `cargo test`:
+  - lib 103 (6 new in `learning`, 1 in `llm_scanner`);
+  - `learning_store_test` 5 (new);
+  - `eval_harness` 9: `learning::decision_memory_layers12` (new, runs in CI) and `learning::fewshot_layer3` (new, opt-in);
+  - all earlier suites unchanged, except that `entity_store_test` now checks the current schema version constant.
+- `learning_store_test` covers:
+  - **migration from schema version 1**: data intact, decisions backfilled, re-opening is a no-op, and a fresh database starts at version 2;
+  - decisions: per-occurrence counting, the latest decision wins, pending forgets, bulk approval, document deletion keeps only rejections, and clearing;
+  - the scan outcome: a marked finding stays pending with a lowered confidence, a listed one is suppressed, the one-click rejection is remembered, restore works, removing an item works, and deletion cleans up;
+  - the list applied to known-entity suggestions;
+  - the list itself: add, validation, export, import preview and apply, candidates.
+- CI (`.github/workflows/ci.yml`) runs `eval_harness learning::decision_memory_layers12`.
+
+### 13.6 Known limits
+
+- **Exact strings only.** "Effective Date" on the list does not cover a longer span such as "the Effective Date of this Agreement", nor another category. This is deliberate, so that a partial match can never hide personal data, but users may need several items for one term.
+- **Across documents only.** Rejecting one occurrence does not change other pending occurrences of the same string in the same document. "Reject all previously rejected" covers only strings rejected in *earlier* scans.
+- **Suppression is per category.** A string that Layer 2 calls a name and Layer 3 calls a company needs two items.
+- **The list's effect depends on the user.** The safety result covers the eval set's false positives. A user can still put real personal data on the list, for example a client's name typed in Settings. Every suppression is counted and shown with a restore button so that it can be noticed, and the list is visible and editable.
+- **Plaintext:** the list and the rejected strings are stored unencrypted (§7.8), and rejections survive document deletion until cleared.
+- **Not measured on real firm documents**, where repeated boilerplate should make the memory more useful than on this synthetic, deliberately varied set.
+- Branch `experiment/phase5-lora` also used schema version 2, for different tables; it must not be merged as is.
