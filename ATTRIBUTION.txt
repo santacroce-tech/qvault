@@ -78,6 +78,13 @@ C. EasyOCR Latin recognizer gen-2 (latin_g2.gguf)
    Source: https://github.com/JaidedAI/EasyOCR, via the QVAC model
            registry (OCR_LATIN)
 
+D. Nomic Embed Text v2 MoE, GGUF Q8_0 (nomic-embed-text-v2-moe.Q8_0.gguf),
+   optional model for grouping entity variants
+   Copyright: Nomic AI
+   License: Apache-2.0
+   Source: https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF
+           (rev ffbcf4c)
+
 ────────────────────────────────────────────────────────────────────────
 
                            Apache License

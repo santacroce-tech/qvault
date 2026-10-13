@@ -1,6 +1,6 @@
 # QVAC integration — Phase 0 design
 
-Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1B (sidecar, Model Manager, Layer 3 on QVAC) built — see [§4.3](#43-as-built-phase-1b) and [§6](#6-installer-size). Phase 2 (OCR for scanned PDFs and images) built — see [§10](#10-phase-2-as-built-ocr-for-scanned-pdfs-and-images). Phase 3 (eval harness, Layer 1 gaps, Layer 3 quality, model choice) built — see [§11](#11-phase-3-layer-3-quality-model-choice-and-the-eval-harness).**
+Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1B (sidecar, Model Manager, Layer 3 on QVAC) built — see [§4.3](#43-as-built-phase-1b) and [§6](#6-installer-size). Phase 2 (OCR for scanned PDFs and images) built — see [§10](#10-phase-2-as-built-ocr-for-scanned-pdfs-and-images). Phase 3 (eval harness, Layer 1 gaps, Layer 3 quality, model choice) built — see [§11](#11-phase-3-layer-3-quality-model-choice-and-the-eval-harness). Phase 4 (entity grouping and known-entity suggestions) built — see [§12](#12-phase-4-entity-resolution).**
 Date: 2026-10-12. Branch: `feature/qvac-integration`.
 
 This document covers what Qvault looks like today, the export redaction audit, what QVAC actually provides at the version we would pin, the proposed sidecar architecture, measured size impact, and open questions. Where the original task prompt turned out to be wrong, that is called out in [§8](#8-corrections-to-the-task-prompt).
@@ -646,3 +646,166 @@ Qwen2.5-0.5B and 1.5B stay in the catalog (marked superseded) so existing instal
 - Streaming is per page (Layers 1–2 first, then Layer 3), not per chunk.
 - The eval runner is a Rust integration test (env-driven), not a separate binary, to reuse the app's pipeline and sidecar client unchanged.
 - The CI workflow was written and its steps run locally on macOS; it was not run on Linux (no container runtime on this machine).
+
+---
+
+## 12. Phase 4: entity resolution
+
+Measured on Apple M4 Pro (48 GB, Metal) with the pinned QVAC 0.21.0 / `@qvac/embed-llamacpp@0.43.0` (no upgrade). Reports: [`eval/reports/entity-resolution*.md`](../eval/reports/) and [`eval/reports/known-entity-*.md`](../eval/reports/); how to rerun: [`eval/README.md`](../eval/README.md#entity-resolution-and-known-entity-suggestions-phase-4).
+
+### 12.1 What was built
+
+- **`src-tauri/src/entities/`** (all platforms, no model needed):
+  - `normalize` / `forms`: per-category analysis and pair rules. Covers accent folding, EN/ES/PT honorifics with the gender they imply, name connectors (de/da/dos/del/van/von…), "Last, First" order, initials ("J.M."), generational suffixes (Jr./Sr./Filho/Neto), post-nominals, company legal forms (LLC/Inc/Ltd/GmbH/SA/S.L./S/A/Ltda/Limitada/EIRELI/S.A. de C.V., written-out forms), address abbreviations, and numbers compared by their characters only.
+  - `resolve`: grouping. Candidate pairs are found by blocking on shared tokens. Automatic merges use union-find, with a check that refuses any merge where a conflict or a user "keep apart" decision exists between the two groups, so a short name can never chain two people. Proposals are made per pair of groups.
+  - `known`: known-entity suggestions on a page.
+  - `service`: SQLite side.
+- **Decision levels** (`forms::compare`):
+
+| level | when | effect |
+|---|---|---|
+| Same | same text after normalisation (case, accents, honorifics, spacing, "Last, First"), a company with/without its legal form, the same number with other separators or a country code, a name of ≥ 3 full names extended by more full names | **merged automatically** |
+| Likely | an initial ("M. Santos"), the surname alone ("Ms. Santos"), a two-name extension ("Maria Santos" / "Maria Fernanda Santos"), middle name used as first name, near-identical spelling (one edit, typo/OCR), a shorter company name, an acronym, most of an address, a different legal form (blocks automatic merging), Jr. on one side only, and (with a model) high cosine similarity | **proposed for review**, never applied |
+| Conflict | same surname and another given name / other initial; same first and last name and other middle names; same given name and other surname; Mr vs Ms; Jr vs Sr; another house number; same first company word and another rest | blocks merges and proposals between the two groups |
+
+  A weak proposal (initial or surname only) is flagged **ambiguous** when the short form also matches another group that is a different person. The reviewer sees the flag, and ambiguous proposals are listed last.
+- **Never across categories.** Items are grouped per category and the pair function returns Conflict for different kinds; the eval asserts it.
+- **Embeddings** (optional): they never merge anything. They can add a proposal (cosine ≥ 0.90 and whole-string Jaro-Winkler ≥ 0.80) for pairs the rules call unrelated. The sweep also measured withdrawing proposals (veto) and overriding conflicts; both are off by default (§12.3).
+- **Storage** (schema version 1, `PRAGMA user_version`; databases from before Phase 4 upgrade in place and their entities are grouped on the first regroup):
+  - `entity_variants`: one row per distinct (category, text), with its group, a "pinned by the user" flag, and the vector as a little-endian f32 blob plus the model id. Only vectors of the current model are compared. Comparison is brute-force cosine in Rust: per category the sets are small, so sqlite-vec was not needed.
+  - `entity_groups`: stable ids across regroups.
+  - `entity_cannot_link`: split and "keep separate" decisions.
+  - `entity_proposals`.
+  - `redaction_notes`: why a suggestion was made.
+  - Like the rest of the database, this is **plaintext** (§7.8).
+- **When grouping runs:**
+  - after every scan, in the background, embedding new variants first when the model is installed (the sidecar starts if needed);
+  - when the entity overview opens: rules plus stored vectors, no sidecar;
+  - on *Re-check groups*.
+
+  Without the model, or with the sidecar unavailable, grouping uses the rules and any vectors already stored; an embedding failure is logged and the regroup continues.
+- **Known-entity suggestions:** after Layers 1–3, on every page of the document. Sources are:
+  - strings the user **approved** in any document;
+  - strings detected but **not yet reviewed in this document**.
+
+  A string the user rejected and never approved is not a source; suggestions are not sources for themselves; dates and amounts are excluded. Patterns:
+  - the same text (case-, accent- and spacing-insensitive);
+  - "Last, First" ⇄ "First Last";
+  - honorific + surname, gender-checked;
+  - initial + surname;
+  - a company without its legal form, when the remaining name has ≥ 2 words;
+  - numbers with any separators.
+
+  Ranges any layer already found are skipped. Each hit is a **pending** redaction with layer `known-entity` and a confidence of 0.40–0.60, below every other layer: 0.60 for the same or reordered text from an approved source, 0.45 for honorific/initial + surname, −0.10 when the source is unreviewed, −0.20 when the source is one of Layer 2's low-confidence (< 0.85) guesses. A note records the rule, the source text, how many documents approved it, and the group. Nothing is approved automatically. *Approve all* in the sidebar remains a user action, as before.
+- **UI:**
+  - *Sensitive Data* lists groups. Each group shows its variants, occurrences and documents (opening a document from there works), with *Split out* per variant and multi-select *Merge* (same type only). Suggested merges show the reason, the cosine when present and the ambiguity flag, with *Merge* / *Keep separate*. There is a *Re-check groups* button.
+  - The review sidebar shows a "Known entity" badge and why the suggestion was made.
+  - The Model Manager has an "Entity grouping model (optional)" section with download or import, an on/off switch and status, and the self-test covers it.
+  - All of this is in en / es / pt with `_one` / `_other` plurals.
+- **Commands:** `regroup_entities`, `get_entity_groups`, `get_entity_proposals`, `get_entity_group_documents`, `merge_entity_groups`, `split_entity_variant`, `dismiss_entity_proposal`, `get_redaction_notes`, `ai_set_entity_embeddings`.
+- **Audit log (counts and ids only, never entity text):**
+  - `known_entity_scan`: suggestions, pages, duration;
+  - `entity_regroup`: variants, groups, proposals, number embedded, model, whether embedding failed, timings;
+  - `entity_merge`, `entity_split`, `entity_proposal_dismissed`;
+  - `ai_settings entity_embeddings=…`.
+- **Sidecar:** the embeddings config allow-list used snake_case keys that QVAC 0.21.0's `embedConfigBaseSchema` ignores. It now lists the schema's keys (`device`, `gpuLayers`, `batchSize`, `pooling`, `attention`, `embdNormalize`, `flashAttention`). `embed` accepts 1–256 strings of 1–2,000 characters. The protocol test covers `embed`.
+
+### 12.2 Embedding model
+
+Two multilingual GGUF models from their original authors were downloaded at pinned revisions and their SHA-256 computed (both equal the HF LFS ids). Both load and run on the pinned addon.
+
+| model | file | licence | dim | load | speed (198 strings, batches of 64) | peak RSS (sidecar) | cosine same entity, median | cosine different entities, median / p90 |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| **nomic-embed-text-v2-moe Q8_0** (catalog) | 512,225,120 B, `06e7a7e5…dc3cff`, `nomic-ai/nomic-embed-text-v2-moe-GGUF` @ `ffbcf4c` | Apache-2.0 | 768 | 1.7 s | **1.4 ms/string** | **1.55 GB** | 0.80 | 0.18 / 0.31 |
+| Qwen3-Embedding-0.6B Q8_0 | 639,150,592 B, `06507c7b…e439`, `Qwen/Qwen3-Embedding-0.6B-GGUF` @ `370f27d` | Apache-2.0 | 1024 | 1.4 s | 8.6 ms/string | **5.18 GB** | 0.89 | 0.52 / 0.68 |
+
+**Choice: nomic-embed-text-v2-moe** (catalog id `nomic-embed-text-v2-moe-q8_0`, `ram_needed` 1.75 GiB), not the plan's first candidate:
+- Qwen3-Embedding-0.6B allocates its full 32k-token context. `@qvac/embed-llamacpp@0.43.0` exposes no context-size option (its config schema has none), so the model needs ~5 GB of memory on the pinned addon, which is too much for 8 GB laptops.
+- Nomic separates different entities far better.
+- It is 6× faster and a smaller download.
+- Both produce the same grouping results (below).
+
+Inputs use each model's documented query format: `search_query: <text>` for nomic, and an instruction for Qwen3. The self-test, the opt-in IT and the protocol test all pass with it.
+
+### 12.3 Grouping results
+
+`eval/entities/variants.json` has 59 entities and 199 mentions: EN 160, ES 76 and PT 78 same-category mention pairs that are the same entity. Pairwise scores are over all same-category mention pairs. "After review" assumes a reviewer accepts the correct proposals and dismisses the wrong ones.
+
+| system | applied automatically P / R / F1 | B³ P / R | after review P / R | proposals (precision) | of which flagged ambiguous (correct) |
+|---|---|---|---|---|---|
+| **rules + string similarity, no model** (CI baseline) | **99.2 / 37.9 / 54.8** | 99.5 / 60.0 | **96.3 / 99.0** | 137 (67.9 %) | 55 (30) |
+| + nomic, default (τ 0.90, s 0.80) | 99.2 / 37.9 / 54.8 | 99.5 / 60.0 | 96.3 / 99.0 | 137 (67.9 %) | 55 (30) |
+| + nomic, veto < 0.6 | 99.2 / 37.9 | 99.5 / 60.0 | 96.2 / 97.8 | 122 (72.1 %) | 45 (30) |
+| + Qwen3-Embedding, default | 99.2 / 37.9 | 99.5 / 60.0 | 96.3 / 99.0 | 138 (68.1 %) | 55 (30) |
+| + Qwen3-Embedding, override conflicts ≥ 0.85 | 99.2 / 37.9 | 99.5 / 60.0 | 96.3 / **100.0** | 156 (62.8 %) | 54 (28) |
+| rules, ambiguous proposals dropped instead of flagged | 99.2 / 37.9 | 99.5 / 60.0 | 99.6 / 82.8 | 82 (76.8 %) | – |
+
+How to read these numbers:
+- **Applied automatically there are no wrong merges.** The only false pair is the identical string "J. Santos" used for two people, which one variant per string cannot separate. Applied recall is low on purpose: everything that relies on an initial or a surname alone waits for review. By category (applied → after review, recall): companies 81 → 100, addresses 56 → 100, numbers and e-mails 100. Names: 24 → 99 (precision 98.3 applied).
+- **Embeddings do not change the outcome on this set.** The rules already bring 99 % of same-entity pairs within reach of one review click. What remains is nicknames ("Bob" / "Robert Feeney", "Bill" / "William Hart") and a middle name used as first name. Qwen3 at an override threshold of 0.85 recovers "Bill Hart", at the cost of 18 extra proposals (4 of them correct). Nomic's veto at 0.6 removes 10 wrong proposals but also 5 correct ones. Neither is worth turning on by default. The model stays optional, adds proposals only, and is documented as such in the UI ("measured almost as well without it").
+- **Proposal precision is 68 %.** Most wrong proposals are surname-only or initial links in families of people who share a surname. 55 of the proposals are flagged *ambiguous*, and only 30 of those are correct. Dropping them instead would raise proposal precision to 77 % but lose 16 points of reachable recall, so they are kept and flagged (the reviewer decides).
+
+### 12.4 Known-entity suggestions
+
+Measured on the 16 detection fixtures (461 labels). The fixtures are independent documents, so the realistic in-app scenario is the first row: the document's own unreviewed detections, right after the scan.
+
+| on top of | knowledge base | labels missed before | recovered | suggestions | false | overlap R before → after | overlap P before → after |
+|---|---|---:|---:|---:|---:|---|---|
+| Layers 1–2 (CI) | same document, unreviewed | 78 | **13** | 23 | **10** | 83.1 → 85.9 | 84.9 → 83.5 |
+| Layers 1–2 | same document, after review | 78 | 13 | 13 | 0 | 83.1 → 85.9 | 84.9 → 85.3 |
+| Layers 1–2 | approved in an earlier document (upper bound) | 78 | 65 | 67 | 1 | 83.1 → 97.2 | 84.9 → 86.6 |
+| Layers 1–3, Qwen3-1.7B | same document, unreviewed | 32 | **5** | 15 | **9** | 93.1 → 94.1 | 84.9 → 83.6 |
+| Layers 1–3, Qwen3-1.7B | same document, after review | 32 | 5 | 6 | 0 | 93.1 → 94.1 | 84.9 → 85.1 |
+| Layers 1–3, Qwen3-1.7B | approved in an earlier document (upper bound) | 32 | 26 | 27 | 0 | 93.1 → 98.7 | 84.9 → 85.7 |
+
+What the suggestions recover:
+- "Ms. Holloway"-style surnames after a title;
+- "J. Whitfield" from a known full name;
+- "LLORENTE ESCRIVÁ, Nuria" in the other order;
+- upper-case repeats ("LORNA FETTERMAN");
+- names split across a line break;
+- companies written again in capitals.
+
+All the false suggestions are repeats of Layer 2's own false positives elsewhere in the same document ("New York", "Managing Partner", "Entire Agreement", "JUICIO VERBAL"). They get the lowest confidence (0.40). Rejecting the source does not reject them automatically; that is deliberate, because nothing is skipped automatically. Excluding Layer 2's low-confidence guesses as sources was measured: false suggestions fell from 12 to 3, but recoveries fell from 13 to 3. So they are kept, at lower confidence. A one-word company core ("Delaware" from "Delaware limited liability company") produced only false suggestions and is no longer used. The upper-bound rows show the main value: once a matter's parties have been approved in one document, 83 % of what the layers miss in a related document comes back as suggestions, with ~1 false suggestion.
+
+### 12.5 Tests
+
+- `cargo test`:
+  - lib 96 (16 new entity unit tests);
+  - `entity_store_test` 5 (new);
+  - `eval_harness` 7: the 4 new entity tests, of which 2 opt-in;
+  - `ocr_export_test` 7, `pipeline_test` 24, `redaction_export_test` 7;
+  - the opt-in ITs skip without models.
+- `entity_store_test` covers:
+  - **migration from the pre-Phase-4 schema** (data intact, user_version 1, lazy grouping, re-open is a no-op) and a fresh database;
+  - stable group ids;
+  - merge, split and dismiss surviving regroups;
+  - cross-category merges refused;
+  - deletion pruning variants and notes;
+  - stored vectors and an engine failure falling back to rules;
+  - audit text without entity strings;
+  - known-entity suggestions with notes, rejected strings not used, no self-propagation.
+- `npx tsc --noEmit` clean. `npm --prefix sidecar test` passes, and with `QVAC_EMBED` set it checks the dimension, the normalisation and a similarity ordering, with no inet sockets.
+- Opt-in with real models: `QVAC_SIDECAR_IT=1 … qvac_sidecar_it` passes 2 tests, including the new `real_sidecar_embeddings_and_grouping` (load + embed 1.9 s on a warm cache; regroup with vectors stored). The entity embedding eval and the Layers 1–3 known-entity eval also ran (tables above).
+- CI (`.github/workflows/ci.yml`) runs `eval_harness entities::` against `eval/entity-baseline.json` (no model).
+- The UI was checked in the browser preview with mock data (groups, suggestions, expanded group with documents, the sidebar note). It was not exercised against the real backend in the Tauri app.
+
+### 12.6 Known limits
+
+- **Small, self-written sets.** There are 199 mentions and one author, and the rules were tuned on the same set; there is no held-out entity set yet. The detection fixtures are independent documents, so cross-document recovery is only estimated (the upper-bound rows).
+- **Identical strings are one variant.** Two different people both written "J. Santos" share a group (the existing overview already worked per string). Use *Split out* only when the variants differ; a split cannot separate occurrences of the same string.
+- **Nicknames and a middle name used as first name** ("Bob" / "Robert", "Inmaculada Ferrándiz" / "María Ferrándiz") are left apart. The rules call them conflicts, and embeddings did not separate them reliably.
+- **Gender** comes only from honorifics. There is no first-name lexicon, so "Ms. Santos" is still proposed with "James Santos" (flagged ambiguous when another Santos exists).
+- **Known-entity suggestions use text patterns, not embeddings.** Suggestions from unreviewed Layer 2 guesses repeat its false positives (at 0.40). `cleaned_text` of a page does not include suggestions (it never included review decisions either).
+- **The grouping model** needs ~1.5 GB while loaded. It is loaded on the first regroup after a scan and unloaded with the sidecar's idle stop. Its suggestions were never better than the rules on the eval.
+- **Memory** is measured as the peak RSS of the sidecar process tree (Metal). It is not measured on CPU-only machines or on Windows/Linux.
+- **Plaintext:** variants, vectors and notes contain PII in SQLite, like `entities` already did (§7.8). Vectors of names are personal data too.
+
+### 12.7 Differences from the plan
+
+- The **embedding model is nomic-embed-text-v2-moe, not Qwen3-Embedding-0.6B** (the first candidate). Qwen3-Embedding loads on the pinned addon but needs ~5 GB of memory because its context cannot be configured. multilingual-e5 and bge-m3 have no GGUF from their original authors.
+- **Embeddings only add proposals.** They never merge and do not take part in known-entity suggestions. The measured gain over rules on the eval is nil, so the model is optional and labelled as such.
+- **Vectors are stored as SQLite blobs with brute-force cosine,** not sqlite-vec.
+- **Two-name extensions are proposed, not merged** ("João Santos" / "João Pedro Silva Santos"). This is more conservative than "group variants into one canonical entity" for that case.
+- **"Documents mentioning this entity" is built** (exact, from occurrences); there is no semantic search.
+- **Known-entity suggestions also use the document's own unreviewed detections**, not only previously approved ones, because the fixtures showed that is where the in-document misses are recovered.

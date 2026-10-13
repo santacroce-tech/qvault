@@ -1,0 +1,130 @@
+{
+  "rules": {
+    "accepted": {
+      "fn": 3,
+      "fp": 273,
+      "tp": 311
+    },
+    "ambiguous": 55,
+    "ambiguous_correct": 30,
+    "auto": {
+      "fn": 195,
+      "fp": 1,
+      "tp": 119
+    },
+    "bcubed_auto": [
+      0.9949748743718593,
+      0.6002153625269205
+    ],
+    "by_category_accepted": {
+      "Address": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 9
+      },
+      "CompanyName": {
+        "fn": 0,
+        "fp": 5,
+        "tp": 58
+      },
+      "Email": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "IBAN": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "PersonName": {
+        "fn": 3,
+        "fp": 268,
+        "tp": 235
+      },
+      "PhoneNumber": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 3
+      },
+      "SocialSecurityNumber": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 3
+      },
+      "TaxId": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      }
+    },
+    "by_category_auto": {
+      "Address": {
+        "fn": 4,
+        "fp": 0,
+        "tp": 5
+      },
+      "CompanyName": {
+        "fn": 11,
+        "fp": 0,
+        "tp": 47
+      },
+      "Email": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "IBAN": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "PersonName": {
+        "fn": 180,
+        "fp": 1,
+        "tp": 58
+      },
+      "PhoneNumber": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 3
+      },
+      "SocialSecurityNumber": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 3
+      },
+      "TaxId": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      }
+    },
+    "by_lang_auto": {
+      "en": {
+        "fn": 112,
+        "fp": 1,
+        "tp": 48
+      },
+      "es": {
+        "fn": 48,
+        "fp": 0,
+        "tp": 28
+      },
+      "pt": {
+        "fn": 35,
+        "fp": 0,
+        "tp": 43
+      }
+    },
+    "name": "rules + string similarity (no model)",
+    "proposals": 137,
+    "proposals_correct": 93,
+    "reviewed": {
+      "fn": 3,
+      "fp": 12,
+      "tp": 311
+    },
+    "rules_of_wrong_merges": {}
+  }
+}
