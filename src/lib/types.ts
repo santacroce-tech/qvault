@@ -49,7 +49,7 @@ export interface Redaction {
   original_text: string;
   replacement: string;
   category: PiiCategory;
-  detection_layer: "regex" | "ner" | "heuristic" | "manual";
+  detection_layer: "regex" | "ner" | "heuristic" | "llm" | "manual" | "known-entity";
   confidence: number;
   status: RedactionStatus;
   reviewed_at: string | null;
@@ -74,6 +74,84 @@ export interface EntitySummary {
   category: string;
   occurrence_count: number;
   document_count: number;
+}
+
+/** One way an entity is written (a distinct string of one category). */
+export interface EntityVariant {
+  id: string;
+  text: string;
+  occurrences: number;
+  documents: number;
+  approved: number;
+  /** Placed by a user decision (merge / split); kept on regrouping. */
+  pinned: boolean;
+  hasEmbedding: boolean;
+}
+
+/** Variants grouped as one entity. */
+export interface EntityGroup {
+  id: string;
+  category: string;
+  label: string;
+  occurrences: number;
+  documents: number;
+  approved: number;
+  variants: EntityVariant[];
+  proposals: number;
+}
+
+export type MergeRule =
+  | "same-name" | "reordered" | "name-extension" | "legal-form" | "same-number" | "initial"
+  | "surname-only" | "partial-name" | "similar-spelling" | "different-legal-form" | "acronym"
+  | "similar-address" | "embedding";
+
+/** A suggested merge of two groups, waiting for review. */
+export interface EntityProposal {
+  groupA: string;
+  groupB: string;
+  labelA: string;
+  labelB: string;
+  variantA: string;
+  variantB: string;
+  category: string;
+  rule: MergeRule;
+  score: number;
+  cosine: number | null;
+  /** The short form also matches another, different person. */
+  ambiguous: boolean;
+}
+
+export interface EntityGroupDocument {
+  documentId: string;
+  filename: string;
+  createdAt: string;
+  occurrences: number;
+}
+
+export interface RegroupReport {
+  variants: number;
+  groups: number;
+  mergedGroups: number;
+  proposals: number;
+  embedded: number;
+  embeddingModel: string | null;
+  embeddingError: string | null;
+  embedMs: number;
+  durationMs: number;
+}
+
+export type KnownEntityRule = "same-text" | "reordered" | "honorific-surname" | "initial-surname" | "company-without-legal-form";
+
+/** Why a known-entity suggestion was made. */
+export interface RedactionNote {
+  redactionId: string;
+  kind: "known-entity";
+  rule: KnownEntityRule;
+  sourceText: string;
+  sourceApproved: boolean;
+  documents: number;
+  groupId: string | null;
+  groupLabel: string | null;
 }
 
 export interface DocumentPage {

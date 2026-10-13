@@ -5,6 +5,11 @@ import type {
   EntityRow,
   EntitySummary,
   DocumentPage,
+  EntityGroup,
+  EntityProposal,
+  EntityGroupDocument,
+  RegroupReport,
+  RedactionNote,
 } from "./types";
 
 // Documents
@@ -63,6 +68,45 @@ export async function getDocumentEntities(documentId: string): Promise<EntityRow
 
 export async function getEntitySummary(): Promise<EntitySummary[]> {
   return invoke("get_entity_summary");
+}
+
+// Entity groups (Phase 4)
+
+/** Bring groups up to date. `embed` also embeds new variants with the embedding model (if installed). */
+export async function regroupEntities(embed = false): Promise<RegroupReport> {
+  return invoke("regroup_entities", { embed });
+}
+
+export async function getEntityGroups(): Promise<EntityGroup[]> {
+  return invoke("get_entity_groups");
+}
+
+export async function getEntityProposals(): Promise<EntityProposal[]> {
+  return invoke("get_entity_proposals");
+}
+
+export async function getEntityGroupDocuments(groupId: string): Promise<EntityGroupDocument[]> {
+  return invoke("get_entity_group_documents", { groupId });
+}
+
+/** Merge `others` into `target` (same category only). */
+export async function mergeEntityGroups(target: string, others: string[]): Promise<void> {
+  return invoke("merge_entity_groups", { target, others });
+}
+
+/** Take a variant out of its group; returns the new group id. */
+export async function splitEntityVariant(variantId: string): Promise<string> {
+  return invoke("split_entity_variant", { variantId });
+}
+
+/** "These are different": keep two groups apart. */
+export async function dismissEntityProposal(groupA: string, groupB: string): Promise<void> {
+  return invoke("dismiss_entity_proposal", { groupA, groupB });
+}
+
+/** Explanations of known-entity suggestions in a document. */
+export async function getRedactionNotes(documentId: string): Promise<RedactionNote[]> {
+  return invoke("get_redaction_notes", { documentId });
 }
 
 export async function getDocumentPages(documentId: string): Promise<DocumentPage[]> {
@@ -234,7 +278,7 @@ export async function bulkApprove(
 }
 
 // AI engine (QVAC sidecar) + Model Manager
-export type ModelPurpose = "ocr-detector" | "ocr-recognizer" | "llm";
+export type ModelPurpose = "ocr-detector" | "ocr-recognizer" | "llm" | "embedding";
 export type FitVerdict = "likely-fits" | "likely-too-large" | "unknown";
 
 export interface FitInfo {
@@ -284,6 +328,12 @@ export interface AiCapabilities {
   layer3Enabled: boolean;
   layer3Model: string | null;
   layer3Ready: boolean;
+  /** The entity-grouping embedding model is installed. */
+  embeddingInstalled: boolean;
+  /** User setting (default on). */
+  entityEmbeddingsEnabled: boolean;
+  /** Embeddings will be used for entity grouping. */
+  embeddingReady: boolean;
   models: ModelInfo[];
   /** Physical memory of this computer, when it can be read. */
   systemMemory: number | null;
@@ -304,6 +354,9 @@ export interface SelfTestReport {
   layer3Ms: number | null;
   layer3Entities: string[];
   layer3Error: string | null;
+  embeddingMs: number | null;
+  embeddingDims: number | null;
+  embeddingError: string | null;
 }
 
 /** `probe` starts the sidecar and computes fit verdicts for installed LLMs. */
@@ -342,6 +395,10 @@ export async function assessModelFit(id: string): Promise<FitInfo> {
 
 export async function setLayer3(enabled: boolean, modelId?: string): Promise<void> {
   return invoke("ai_set_layer3", { enabled, modelId: modelId ?? null });
+}
+
+export async function setEntityEmbeddings(enabled: boolean): Promise<void> {
+  return invoke("ai_set_entity_embeddings", { enabled });
 }
 
 export async function runAiSelfTest(): Promise<SelfTestReport> {

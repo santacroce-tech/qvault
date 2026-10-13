@@ -11,6 +11,7 @@ import {
   setLayer3,
   runAiSelfTest,
   setOcrDpi,
+  setEntityEmbeddings,
   type AiCapabilities,
   type ModelInfo,
   type SelfTestReport,
@@ -77,7 +78,8 @@ export default function ModelManager() {
   }, [refresh, t]);
 
   const llms = useMemo(() => caps?.models.filter((m) => m.purpose === "llm") ?? [], [caps]);
-  const ocr = useMemo(() => caps?.models.filter((m) => m.purpose !== "llm") ?? [], [caps]);
+  const ocr = useMemo(() => caps?.models.filter((m) => m.purpose === "ocr-detector" || m.purpose === "ocr-recognizer") ?? [], [caps]);
+  const embedding = useMemo(() => caps?.models.filter((m) => m.purpose === "embedding") ?? [], [caps]);
   const installedLlms = llms.filter((m) => m.installed);
 
   const run = async (key: string, fn: () => Promise<void>) => {
@@ -169,6 +171,9 @@ export default function ModelManager() {
       await setLayer3(caps?.layer3Enabled ?? false, id);
     });
 
+  const handleEmbeddingToggle = (enabled: boolean) =>
+    run("embedding-toggle", async () => { await setEntityEmbeddings(enabled); });
+
   const handleProbe = () => run("probe", async () => { await refresh(true); });
 
   const handleSelfTest = () =>
@@ -206,9 +211,9 @@ export default function ModelManager() {
             </div>
             <div className="text-xs text-gray-500">
               {formatBytes(m.size)} · {m.licence}
-              {m.purpose === "llm" && m.ramNeeded > 0 && <> · {t("ai.ramNeeded", { size: formatBytes(m.ramNeeded) })}</>}
+              {(m.purpose === "llm" || m.purpose === "embedding") && m.ramNeeded > 0 && <> · {t("ai.ramNeeded", { size: formatBytes(m.ramNeeded) })}</>}
             </div>
-            {m.purpose === "llm" && !m.installed && ramEstimate(m) && (
+            {(m.purpose === "llm" || m.purpose === "embedding") && !m.installed && ramEstimate(m) && (
               <div className={`text-xs mt-0.5 ${ramEstimate(m) === "ok" ? "text-gray-500" : "text-amber-600"}`}>
                 {ramEstimate(m) === "ok"
                   ? t("ai.ramEstimateOk", { total: formatBytes(caps.systemMemory!) })
@@ -402,6 +407,31 @@ export default function ModelManager() {
         <p className="text-xs text-gray-500 mt-1">{t("ai.ocrDpiHelp")}</p>
       </div>
 
+      <div>
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("ai.embeddingModels")}</h4>
+        <p className="text-xs text-gray-500 mt-1">{t("ai.embeddingModelsDesc")}</p>
+        <ul>{embedding.map(renderModel)}</ul>
+        <label className={`mt-1 flex items-center gap-3 ${!caps.embeddingInstalled ? "opacity-50" : "cursor-pointer"}`}>
+          <input
+            type="checkbox"
+            checked={caps.entityEmbeddingsEnabled}
+            disabled={!caps.embeddingInstalled || busy !== null}
+            onChange={(e) => handleEmbeddingToggle(e.target.checked)}
+            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+          />
+          <span className="text-sm text-gray-700">{t("ai.embeddingToggle")}</span>
+        </label>
+        <p className={`text-xs mt-1 ${caps.embeddingReady ? "text-green-700" : "text-gray-500"}`} role="status">
+          {caps.embeddingReady
+            ? t("ai.embeddingReady")
+            : !caps.embeddingInstalled
+            ? t("ai.embeddingNotInstalled")
+            : !caps.entityEmbeddingsEnabled
+            ? t("ai.embeddingOff")
+            : t("ai.embeddingEngineUnavailable")}
+        </p>
+      </div>
+
       <div className="flex flex-wrap gap-2">
         <button
           onClick={handleImport}
@@ -440,6 +470,13 @@ export default function ModelManager() {
                   ? t("ai.selfTestLayer3Skipped", { reason: selfTest.layer3Error })
                   : t("ai.selfTestLayer3", { ms: selfTest.layer3Ms ?? 0, count: selfTest.layer3Entities.length })}
               </div>
+              {(selfTest.embeddingMs !== null || selfTest.embeddingError) && (
+                <div>
+                  {selfTest.embeddingError
+                    ? t("ai.selfTestEmbeddingSkipped", { reason: selfTest.embeddingError })
+                    : t("ai.selfTestEmbedding", { ms: selfTest.embeddingMs ?? 0, dims: selfTest.embeddingDims ?? 0 })}
+                </div>
+              )}
             </>
           )}
         </div>
