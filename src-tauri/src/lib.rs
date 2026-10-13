@@ -2,6 +2,7 @@ use tauri::Manager;
 
 pub mod commands;
 pub mod document;
+pub mod entities;
 pub mod pipeline;
 pub mod storage;
 pub mod llm;
