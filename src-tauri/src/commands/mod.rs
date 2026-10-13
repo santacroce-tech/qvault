@@ -6,3 +6,4 @@ pub mod settings;
 pub mod ai;
 pub mod ocr;
 pub mod entities;
+pub mod learning;

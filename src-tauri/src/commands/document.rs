@@ -196,6 +196,14 @@ pub async fn scan_document_text(
     let mut layer3_entities = 0usize;
     let mut layer3_failed_chunks = 0usize;
 
+    // Review memory (§13): earlier decisions and the "Not personal data"
+    // list. Without it (database error) the scan runs as before.
+    let memory = crate::learning::service::load_memory(&state.db).unwrap_or_else(|e| {
+        log::warn!("review memory unavailable for this scan: {}", e);
+        crate::learning::Memory::new()
+    });
+    let mut learned = crate::learning::service::ScanLearning::default();
+
     // Store text and run PII pipeline per page
     let text_dir = state.storage_dir.join("text");
     std::fs::create_dir_all(&text_dir)
@@ -246,20 +254,21 @@ pub async fn scan_document_text(
 
         // Layers 1-2 first: stored and announced right away, so the review
         // list fills in while the (much slower) Layer 3 works on the page.
-        let mut entities = pipeline::run_pipeline_no_llm(text, page_num as u32, &jurisdictions);
-        store_page_entities(&state, &id, page_num, &entities)?;
+        let found = pipeline::run_pipeline_no_llm(text, page_num as u32, &jurisdictions);
+        // Layer 3 skips every range Layers 1-2 found, suppressed ones included.
+        let existing: Vec<(usize, usize)> = found.iter().map(|e| (e.start, e.end)).collect();
+        let mut entities = store_page_entities(&state, &id, page_num, found, &memory, &mut learned)?;
         let _ = app_handle.emit("scan-page-results", serde_json::json!({
             "documentId": id, "page": page_num, "layer": "rules", "count": entities.len(),
         }));
 
         if let Some(engine) = engine {
-            let existing: Vec<(usize, usize)> = entities.iter().map(|e| (e.start, e.end)).collect();
             let report = crate::llm::llm_scanner::scan(engine, text, page_num as u32, &existing, on_progress);
             layer3_entities += report.entities.len();
             layer3_failed_chunks += report.failed_chunks;
-            store_page_entities(&state, &id, page_num, &report.entities)?;
+            let kept = store_page_entities(&state, &id, page_num, report.entities, &memory, &mut learned)?;
             let _ = app_handle.emit("scan-page-results", serde_json::json!({
-                "documentId": id, "page": page_num, "layer": "llm", "count": report.entities.len(),
+                "documentId": id, "page": page_num, "layer": "llm", "count": kept.len(),
             }));
             if let Some(reason) = report.aborted {
                 log::warn!("Layer 3 stopped on page {}: {}", page_num, reason);
@@ -270,7 +279,7 @@ pub async fn scan_document_text(
                     layer3 = None;
                 }
             }
-            entities.extend(report.entities);
+            entities.extend(kept);
             entities.sort_by_key(|e| e.start);
         }
 
@@ -295,8 +304,10 @@ pub async fn scan_document_text(
     // before (or that a layer found elsewhere in this document) that no
     // layer flagged. Pending, with their own layer and an explanation.
     let known_started = std::time::Instant::now();
-    match crate::entities::service::flag_document(&state.db, &id, &pages) {
-        Ok(counts) => {
+    match crate::entities::service::flag_document_with(&state.db, &id, &pages, Some(&memory)) {
+        Ok((counts, known_learned)) => {
+            learned.marked += known_learned.marked;
+            learned.suppressed += known_learned.suppressed;
             for (page_num, n) in counts.iter().enumerate().filter(|(_, n)| **n > 0) {
                 let _ = app_handle.emit("scan-page-results", serde_json::json!({
                     "documentId": id, "page": page_num, "layer": crate::entities::known::LAYER, "count": n,
@@ -363,6 +374,20 @@ pub async fn scan_document_text(
         }));
     }
 
+    // Review memory outcome: counts only in the audit log; the sidebar reads
+    // the details (and can restore suppressed findings).
+    let _ = state.db.insert_audit_log(
+        Some(&id),
+        "review_memory_scan",
+        Some(&format!(
+            "marked_rejected_before={} suppressed_by_list={} list_items={}",
+            learned.marked, learned.suppressed, memory.list_len()
+        )),
+    );
+    let _ = app_handle.emit("review-memory", serde_json::json!({
+        "documentId": id, "marked": learned.marked, "suppressed": learned.suppressed,
+    }));
+
     // Group the new entities with the knowledge base (embedding them when
     // the model is installed) without holding up the review.
     crate::commands::entities::spawn_regroup(app_handle.clone(), "scan");
@@ -371,14 +396,20 @@ pub async fn scan_document_text(
 }
 
 /// Store detections for one page: a pending redaction (review workflow) and
-/// an entity row (cross-document knowledge base) each.
+/// an entity row (cross-document knowledge base) each. The review memory is
+/// applied first: findings on the "Not personal data" list are set aside
+/// (stored as suppressed, counted, shown in the sidebar), findings rejected
+/// before are marked with a lower confidence. Returns what was stored.
 fn store_page_entities(
     state: &State<'_, AppState>,
     doc_id: &str,
     page_num: usize,
-    entities: &[crate::pipeline::types::PiiEntity],
-) -> Result<(), String> {
-    for entity in entities {
+    entities: Vec<crate::pipeline::types::PiiEntity>,
+    memory: &crate::learning::Memory,
+    learned: &mut crate::learning::service::ScanLearning,
+) -> Result<Vec<crate::pipeline::types::PiiEntity>, String> {
+    let applied = memory.apply(entities);
+    for entity in &applied.kept {
         state
             .db
             .insert_redaction(
@@ -414,7 +445,10 @@ fn store_page_entities(
             )
             .map_err(|e| format!("Failed to store entity: {}", e))?;
     }
-    Ok(())
+    crate::learning::service::store_outcome(&state.db, doc_id, page_num as u32, &applied.marks, &applied.suppressed)?;
+    learned.marked += applied.marks.len();
+    learned.suppressed += applied.suppressed.len();
+    Ok(applied.kept)
 }
 
 /// Manually add a redaction (for advanced mode — user selects text)
@@ -792,6 +826,10 @@ pub async fn reset_app_data(
             DELETE FROM entity_cannot_link;
             DELETE FROM entity_proposals;
             DELETE FROM redaction_notes;
+            DELETE FROM redaction_memory;
+            DELETE FROM suppressed_detections;
+            DELETE FROM review_decisions;
+            DELETE FROM not_personal_data;
             DELETE FROM document_pages;
             DELETE FROM ocr_pages;
             DELETE FROM redactions;

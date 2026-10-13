@@ -644,29 +644,62 @@ pub fn known_entities(db: &Database, document_id: &str) -> Result<Vec<Known>, St
 /// suggestion as a pending redaction (layer `known-entity`), an entity
 /// occurrence, and a note explaining it. Returns the number per page.
 pub fn flag_document(db: &Database, document_id: &str, pages: &[String]) -> Result<Vec<usize>, String> {
+    flag_document_with(db, document_id, pages, None).map(|(c, _)| c)
+}
+
+/// [`flag_document`] that also applies the review memory (§13): a
+/// suggestion on the "Not personal data" list is suppressed (stored and
+/// counted), one rejected before is marked. Returns the number stored per
+/// page and the learning counters.
+pub fn flag_document_with(
+    db: &Database,
+    document_id: &str,
+    pages: &[String],
+    memory: Option<&crate::learning::Memory>,
+) -> Result<(Vec<usize>, crate::learning::service::ScanLearning), String> {
+    let mut learned = crate::learning::service::ScanLearning::default();
     let known = known_entities(db, document_id)?;
     let existing = db.get_redactions(document_id).map_err(sql)?;
     let mut counts = vec![0usize; pages.len()];
     if known.is_empty() {
-        return Ok(counts);
+        return Ok((counts, learned));
     }
+    // Ranges the list suppressed: not suggested again by this layer.
+    let suppressed_ranges: Vec<(i64, i64, i64)> = db
+        .with_conn(|c| {
+            let mut s = c.prepare("SELECT page, start_offset, end_offset FROM suppressed_detections WHERE document_id = ?1")?;
+            let rows = s.query_map(params![document_id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?.collect();
+            rows
+        })
+        .map_err(sql)?;
     for (p, text) in pages.iter().enumerate() {
-        let ranges: Vec<(usize, usize)> = existing
+        let mut ranges: Vec<(usize, usize)> = existing
             .iter()
             .filter(|r| r.page == p as i32)
             .map(|r| (r.start_offset.max(0) as usize, r.end_offset.max(0) as usize))
             .collect();
+        ranges.extend(suppressed_ranges.iter().filter(|r| r.0 == p as i64).map(|r| (r.1.max(0) as usize, r.2.max(0) as usize)));
         let flags = known::flag_page(text, &known, &ranges);
-        for f in &flags {
-            store_flag(db, document_id, p as u32, f)?;
+        let entities: Vec<crate::pipeline::types::PiiEntity> = flags.iter().map(|f| f.to_entity(p as u32)).collect();
+        let applied = match memory {
+            Some(m) => m.apply(entities),
+            None => crate::learning::Applied { kept: entities, ..Default::default() },
+        };
+        for e in &applied.kept {
+            if let Some(f) = flags.iter().find(|f| f.start == e.start && f.end == e.end) {
+                store_flag(db, document_id, e, f)?;
+            }
         }
-        counts[p] = flags.len();
+        crate::learning::service::store_outcome(db, document_id, p as u32, &applied.marks, &applied.suppressed)?;
+        learned.marked += applied.marks.len();
+        learned.suppressed += applied.suppressed.len();
+        counts[p] = applied.kept.len();
     }
-    Ok(counts)
+    Ok((counts, learned))
 }
 
-fn store_flag(db: &Database, document_id: &str, page: u32, f: &Flag) -> Result<(), String> {
-    let e = f.to_entity(page);
+fn store_flag(db: &Database, document_id: &str, e: &crate::pipeline::types::PiiEntity, f: &Flag) -> Result<(), String> {
+    let page = e.page;
     let cat = e.category.to_string();
     db.insert_redaction(&e.id, document_id, page as i32, e.start as i32, e.end as i32, &e.text, &e.replacement, &cat, &e.layer, e.confidence)
         .map_err(sql)?;
