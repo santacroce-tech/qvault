@@ -732,3 +732,8 @@ mod entities;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[path = "eval_support/learning.rs"]
 mod learning;
+
+// ── opt-in: predictions from outside Qvault scored as Layer 3 ────────────
+
+#[path = "eval_support/external.rs"]
+mod external;
