@@ -337,7 +337,7 @@ export async function bulkApprove(
 }
 
 // AI engine (QVAC sidecar) + Model Manager
-export type ModelPurpose = "ocr-detector" | "ocr-recognizer" | "llm" | "embedding";
+export type ModelPurpose = "ocr-detector" | "ocr-recognizer" | "llm" | "embedding" | "pii-classifier";
 export type FitVerdict = "likely-fits" | "likely-too-large" | "unknown";
 
 export interface FitInfo {
@@ -371,7 +371,11 @@ export interface ModelInfo {
   ramNeeded: number;
   /** Catalog note shown before download (licence or role caveats). */
   note: string | null;
+  /** Number of files (multi-file models; `size` is their total). */
+  fileCount: number;
 }
+
+export type Layer3Detector = "privacy-filter" | "llm";
 
 export interface AiCapabilities {
   supported: boolean;
@@ -396,12 +400,28 @@ export interface AiCapabilities {
   models: ModelInfo[];
   /** Physical memory of this computer, when it can be read. */
   systemMemory: number | null;
+  /** Effective Layer 3 detector. */
+  layer3Detector: Layer3Detector;
+  /** Also run the language model after Privacy Filter. */
+  layer3Thorough: boolean;
+  /** Privacy Filter's files are installed. */
+  pfInstalled: boolean;
+  /** The engine can run Privacy Filter here (null = not checked yet). */
+  pfEngine: boolean | null;
+  pfEngineReason: string | null;
 }
 
 export type ImportOutcome =
   | { status: "installed"; id: string }
   | { status: "needsConsent"; sha256: string; size: number; fileName: string }
-  | { status: "installedCustom"; id: string };
+  | { status: "installedCustom"; id: string }
+  | { status: "incomplete"; id: string; missing: string[] };
+
+export interface ImportSummary {
+  outcomes: ImportOutcome[];
+  /** Selected files that belong to no known model. */
+  ignored: number;
+}
 
 export interface SelfTestReport {
   sidecar: string | null;
@@ -416,6 +436,9 @@ export interface SelfTestReport {
   embeddingMs: number | null;
   embeddingDims: number | null;
   embeddingError: string | null;
+  pfMs: number | null;
+  pfEntities: string[];
+  pfError: string | null;
 }
 
 /** `probe` starts the sidecar and computes fit verdicts for installed LLMs. */
@@ -439,6 +462,11 @@ export async function importModel(path: string, acceptUnknown = false): Promise<
   return invoke("ai_import_model", { path, acceptUnknown });
 }
 
+/** Import several files and/or folders (models made of several files). */
+export async function importModelPaths(paths: string[]): Promise<ImportSummary> {
+  return invoke("ai_import_model_paths", { paths });
+}
+
 /** Open an import-only model's pinned download link in the system browser. */
 export async function openManualDownload(id: string): Promise<void> {
   return invoke("ai_open_manual_download", { id });
@@ -454,6 +482,10 @@ export async function assessModelFit(id: string): Promise<FitInfo> {
 
 export async function setLayer3(enabled: boolean, modelId?: string): Promise<void> {
   return invoke("ai_set_layer3", { enabled, modelId: modelId ?? null });
+}
+
+export async function setLayer3Detector(detector?: Layer3Detector, thorough?: boolean): Promise<void> {
+  return invoke("ai_set_layer3_detector", { detector: detector ?? null, thorough: thorough ?? null });
 }
 
 export async function setEntityEmbeddings(enabled: boolean): Promise<void> {

@@ -478,6 +478,11 @@ export default function RedactionSidebar({
                         {t('sidebar.knownEntity')}
                       </span>
                     )}
+                    {(r.detection_layer === "privacy-filter" || r.detection_layer === "llm") && (
+                      <span className="text-[10px] tracking-wide bg-violet-50 text-violet-700 px-1.5 py-0.5 rounded">
+                        {r.detection_layer === "privacy-filter" ? t('sidebar.layerPf') : t('sidebar.layerLlm')}
+                      </span>
+                    )}
                     {marks[r.id] && (
                       <span
                         className="text-[10px] uppercase tracking-wide bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded"

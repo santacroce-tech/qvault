@@ -1,14 +1,21 @@
 //! On-disk model store under `<app data>/models/`.
 //!
-//! * Catalog models live at `models/<file_name>`; a file counts as installed
-//!   when its size matches the catalog (the SHA-256 is verified when the file
-//!   is written by a download or import, and again before the sidecar loads it
-//!   for the first time in a session — see `QvacService`).
+//! * Single-file catalog models live at `models/<file_name>`; multi-file
+//!   models (a set of files that must sit side by side, e.g. Privacy Filter's
+//!   ONNX graph, its external weights, tokenizer and calibration) live in
+//!   `models/<dir>/`. A model counts as installed when every file is present
+//!   with the catalog size (the SHA-256 of each file is verified when it is
+//!   written by a download or import, and again before the sidecar loads the
+//!   model for the first time in a session — see `QvacService`).
+//! * Multi-file models are installed atomically: files are collected and
+//!   verified in `models/.partial/<dir>/` (a download, or one or more
+//!   imports), and the directory is renamed into place only when the set is
+//!   complete.
 //! * Files the user imported that match no catalog entry are accepted only
 //!   with explicit consent, only as LLMs, and are recorded in
 //!   `models/custom/custom.json` with their SHA-256.
 //! * Downloads are HTTPS-only, streamed with progress, cancellable, verified
-//!   (size + SHA-256) and atomically renamed into place.
+//!   (size + SHA-256 per file) and atomically renamed into place.
 
 use std::fs::{self, File};
 use std::io::{Read, Write};
@@ -17,7 +24,7 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
-use super::catalog::{self, CatalogModel, ModelPurpose};
+use super::catalog::{self, CatalogFile, CatalogModel, ModelPurpose};
 use super::client::CancelToken;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -30,6 +37,8 @@ pub enum ModelError {
     ChecksumMismatch,
     Cancelled,
     InvalidName,
+    /// A folder / multi-file import found no file of any catalog model.
+    NothingToImport,
 }
 
 impl std::fmt::Display for ModelError {
@@ -45,6 +54,7 @@ impl std::fmt::Display for ModelError {
             ModelError::ChecksumMismatch => write!(f, "SHA-256 checksum mismatch; the file was discarded"),
             ModelError::Cancelled => write!(f, "cancelled"),
             ModelError::InvalidName => write!(f, "invalid file name"),
+            ModelError::NothingToImport => write!(f, "none of the selected files belongs to a known model"),
         }
     }
 }
@@ -68,12 +78,25 @@ pub struct CustomModel {
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase", tag = "status")]
 pub enum ImportOutcome {
-    /// Matched a catalog entry by SHA-256 and was installed.
+    /// Matched a catalog entry by SHA-256 and was installed (for a multi-file
+    /// model: the last missing file arrived and the set was installed).
     Installed { id: String },
     /// Unknown file; the caller must ask the user and retry with consent.
     NeedsConsent { sha256: String, size: u64, file_name: String },
     /// Unknown file installed with the user's consent as a custom LLM.
     InstalledCustom { id: String },
+    /// Verified file(s) of a multi-file model were kept; these files are
+    /// still needed before it is installed.
+    Incomplete { id: String, missing: Vec<String> },
+}
+
+/// Result of importing several files or a folder.
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportSummary {
+    pub outcomes: Vec<ImportOutcome>,
+    /// Files that belong to no catalog model (not imported).
+    pub ignored: usize,
 }
 
 pub struct ModelStore {
@@ -94,8 +117,17 @@ impl ModelStore {
         &self.dir
     }
 
+    /// Path of a model's primary file (the one the sidecar loads).
     pub fn path_of(&self, m: &CatalogModel) -> PathBuf {
-        self.dir.join(m.file_name)
+        self.file_path(m, m.file_name)
+    }
+
+    /// Path of one file of a catalog model.
+    pub fn file_path(&self, m: &CatalogModel, name: &str) -> PathBuf {
+        match m.dir {
+            Some(d) => self.dir.join(d).join(name),
+            None => self.dir.join(name),
+        }
     }
 
     fn custom_dir(&self) -> PathBuf {
@@ -106,8 +138,15 @@ impl ModelStore {
         self.dir.join(".partial")
     }
 
+    /// Where the files of a multi-file model are collected before install.
+    fn staging_dir(&self, m: &CatalogModel) -> PathBuf {
+        self.partial_dir().join(m.dir.unwrap_or(m.id))
+    }
+
     pub fn is_installed(&self, m: &CatalogModel) -> bool {
-        fs::metadata(self.path_of(m)).map(|md| md.is_file() && md.len() == m.size).unwrap_or(false)
+        m.files().iter().all(|f| {
+            fs::metadata(self.file_path(m, f.name)).map(|md| md.is_file() && md.len() == f.size).unwrap_or(false)
+        })
     }
 
     pub fn custom_models(&self) -> Vec<CustomModel> {
@@ -132,7 +171,7 @@ impl ModelStore {
         fs::rename(&tmp, self.custom_dir().join("custom.json")).map_err(io)
     }
 
-    /// Resolve an installed model id (catalog or custom) to its path.
+    /// Resolve an installed model id (catalog or custom) to its (primary) path.
     pub fn installed_path(&self, id: &str) -> Option<PathBuf> {
         if let Some(m) = catalog::find(id) {
             return if self.is_installed(m) { Some(self.path_of(m)) } else { None };
@@ -146,8 +185,27 @@ impl ModelStore {
         Ok(sha.eq_ignore_ascii_case(expected_sha256))
     }
 
+    /// Re-hash every file of an installed catalog model. Returns the name of
+    /// the first file that does not match, if any.
+    pub fn verify_model(&self, m: &CatalogModel) -> Result<Option<String>, ModelError> {
+        for f in m.files() {
+            if !Self::verify_file(&self.file_path(m, f.name), f.sha256)? {
+                return Ok(Some(f.name.to_string()));
+            }
+        }
+        Ok(None)
+    }
+
     pub fn delete(&self, id: &str) -> Result<(), ModelError> {
         if let Some(m) = catalog::find(id) {
+            if let Some(d) = m.dir {
+                let p = self.dir.join(d);
+                if p.exists() {
+                    fs::remove_dir_all(&p).map_err(io)?;
+                }
+                let _ = fs::remove_dir_all(self.staging_dir(m));
+                return Ok(());
+            }
             let p = self.path_of(m);
             if p.exists() {
                 fs::remove_file(&p).map_err(io)?;
@@ -166,7 +224,57 @@ impl ModelStore {
         self.save_custom(&list)
     }
 
-    /// Import a local file. Catalog files are recognised by SHA-256; anything
+    /// Files of a multi-file model that are neither installed nor staged.
+    fn missing_parts(&self, m: &CatalogModel) -> Vec<String> {
+        let staged = self.staging_dir(m);
+        m.files()
+            .into_iter()
+            .filter(|f| {
+                let ok = |p: PathBuf| fs::metadata(p).map(|md| md.is_file() && md.len() == f.size).unwrap_or(false);
+                !ok(staged.join(f.name))
+            })
+            .map(|f| f.name.to_string())
+            .collect()
+    }
+
+    /// Move a complete staging directory into place (replacing any earlier
+    /// copy). Every file was verified when it was staged; sizes are checked
+    /// again here.
+    fn install_staged(&self, m: &CatalogModel) -> Result<(), ModelError> {
+        let staged = self.staging_dir(m);
+        for f in m.files() {
+            let len = fs::metadata(staged.join(f.name)).map_err(io)?.len();
+            if len != f.size {
+                return Err(ModelError::SizeMismatch { expected: f.size, actual: len });
+            }
+        }
+        let dest = self.dir.join(m.dir.ok_or(ModelError::InvalidName)?);
+        if dest.exists() {
+            fs::remove_dir_all(&dest).map_err(io)?;
+        }
+        fs::rename(&staged, &dest).map_err(io)
+    }
+
+    /// Stage one verified part of a multi-file model; install the model when
+    /// the set is complete.
+    fn import_part(&self, source: &Path, m: &CatalogModel, f: &CatalogFile, sha: &str) -> Result<ImportOutcome, ModelError> {
+        if self.is_installed(m) {
+            // Same verified bytes as the installed copy: nothing to do.
+            return Ok(ImportOutcome::Installed { id: m.id.to_string() });
+        }
+        let staged = self.staging_dir(m);
+        fs::create_dir_all(&staged).map_err(io)?;
+        copy_atomic(source, &self.partial_dir(), &staged.join(f.name), Some(sha))?;
+        let missing = self.missing_parts(m);
+        if missing.is_empty() {
+            self.install_staged(m)?;
+            return Ok(ImportOutcome::Installed { id: m.id.to_string() });
+        }
+        Ok(ImportOutcome::Incomplete { id: m.id.to_string(), missing })
+    }
+
+    /// Import a local file. Catalog files are recognised by SHA-256 (a part
+    /// of a multi-file model is kept until the set is complete); anything
     /// else needs `accept_unknown` (explicit user consent) and is stored as a
     /// custom LLM.
     pub fn import(&self, source: &Path, accept_unknown: bool) -> Result<ImportOutcome, ModelError> {
@@ -183,6 +291,12 @@ impl ModelStore {
             }
             copy_atomic(source, &self.partial_dir(), &self.path_of(m), Some(&sha))?;
             return Ok(ImportOutcome::Installed { id: m.id.to_string() });
+        }
+        if let Some((m, f)) = catalog::find_part_by_sha256(&sha) {
+            if size != f.size {
+                return Err(ModelError::SizeMismatch { expected: f.size, actual: size });
+            }
+            return self.import_part(source, m, &f, &sha);
         }
 
         let original = source
@@ -215,8 +329,61 @@ impl ModelStore {
         Ok(ImportOutcome::InstalledCustom { id })
     }
 
-    /// Download a catalog model over HTTPS. `progress(received, total)` is
-    /// called as bytes arrive.
+    /// Import several files and/or folders (a folder contributes its files
+    /// and those of an `onnx/` subfolder, as in the Hugging Face layout).
+    /// Only files that match a catalog file by size and SHA-256 are taken;
+    /// the rest are counted as ignored (no custom-model consent here: unknown
+    /// models are imported one file at a time).
+    pub fn import_paths(&self, paths: &[PathBuf], cancel: Option<&CancelToken>) -> Result<ImportSummary, ModelError> {
+        let mut files: Vec<PathBuf> = Vec::new();
+        for p in paths {
+            let md = fs::metadata(p).map_err(io)?;
+            if md.is_dir() {
+                for d in [p.clone(), p.join("onnx")] {
+                    if let Ok(rd) = fs::read_dir(&d) {
+                        let mut v: Vec<PathBuf> = rd.filter_map(|e| e.ok().map(|e| e.path())).filter(|p| p.is_file()).collect();
+                        v.sort();
+                        files.extend(v);
+                    }
+                }
+            } else if md.is_file() {
+                files.push(p.clone());
+            }
+        }
+        let mut outcomes: Vec<ImportOutcome> = Vec::new();
+        let mut ignored = 0;
+        for f in files {
+            if cancel.map(|c| c.is_cancelled()).unwrap_or(false) {
+                return Err(ModelError::Cancelled);
+            }
+            let size = fs::metadata(&f).map(|m| m.len()).unwrap_or(0);
+            if !catalog::has_file_of_size(size) {
+                ignored += 1;
+                continue;
+            }
+            let (sha, _) = hash_file(&f, cancel)?;
+            let known = catalog::find_by_sha256(&sha).is_some() || catalog::find_part_by_sha256(&sha).is_some();
+            if !known {
+                ignored += 1;
+                continue;
+            }
+            let out = self.import(&f, false)?;
+            // Keep one outcome per model: the latest state wins.
+            let id = match &out {
+                ImportOutcome::Installed { id } | ImportOutcome::Incomplete { id, .. } => id.clone(),
+                _ => unreachable!("catalog files never need consent"),
+            };
+            outcomes.retain(|o| !matches!(o, ImportOutcome::Installed { id: i } | ImportOutcome::Incomplete { id: i, .. } if *i == id));
+            outcomes.push(out);
+        }
+        if outcomes.is_empty() {
+            return Err(ModelError::NothingToImport);
+        }
+        Ok(ImportSummary { outcomes, ignored })
+    }
+
+    /// Download a catalog model over HTTPS (every file of a multi-file
+    /// model). `progress(received, total)` covers all files.
     #[cfg(desktop)]
     pub fn download(
         &self,
@@ -224,14 +391,10 @@ impl ModelStore {
         cancel: &CancelToken,
         mut progress: impl FnMut(u64, u64),
     ) -> Result<PathBuf, ModelError> {
-        let url = m.url.ok_or_else(|| ModelError::NoDownloadUrl(m.id.to_string()))?;
-        if !url.starts_with("https://") {
-            return Err(ModelError::Network("refusing non-HTTPS URL".into()));
+        let files = m.files();
+        if files.iter().any(|f| f.url.is_none()) {
+            return Err(ModelError::NoDownloadUrl(m.id.to_string()));
         }
-        fs::create_dir_all(self.partial_dir()).map_err(io)?;
-        let part = self.partial_dir().join(format!("{}.part", m.file_name));
-        let _ = fs::remove_file(&part);
-
         let agent = ureq::AgentBuilder::new()
             .https_only(true)
             .timeout_connect(Duration::from_secs(30))
@@ -239,57 +402,101 @@ impl ModelStore {
             .redirects(5)
             .user_agent(concat!("Qvault/", env!("CARGO_PKG_VERSION")))
             .build();
-        let resp = agent.get(url).call().map_err(|e| ModelError::Network(short_ureq_error(&e)))?;
-        if let Some(len) = resp.header("content-length").and_then(|v| v.parse::<u64>().ok()) {
-            if len != m.size {
-                return Err(ModelError::SizeMismatch { expected: m.size, actual: len });
-            }
+        let total = m.total_size();
+        fs::create_dir_all(self.partial_dir()).map_err(io)?;
+        if !m.is_multi_file() {
+            let part = self.partial_dir().join(format!("{}.part", m.file_name));
+            download_file(&agent, &files[0], &part, cancel, 0, total, &mut progress)?;
+            let dest = self.path_of(m);
+            fs::rename(&part, &dest).map_err(io)?;
+            return Ok(dest);
         }
-        let mut reader = resp.into_reader();
+        // Multi-file: everything into a fresh staging dir, then one rename.
+        let staged = self.staging_dir(m);
+        let _ = fs::remove_dir_all(&staged);
+        fs::create_dir_all(&staged).map_err(io)?;
+        let mut done = 0u64;
         let result = (|| -> Result<(), ModelError> {
-            let mut file = File::create(&part).map_err(io)?;
-            let mut ctx = ring::digest::Context::new(&ring::digest::SHA256);
-            let mut buf = vec![0u8; 256 * 1024];
-            let mut received: u64 = 0;
-            let mut last_report = std::time::Instant::now();
-            progress(0, m.size);
-            loop {
-                if cancel.is_cancelled() {
-                    return Err(ModelError::Cancelled);
-                }
-                let n = reader.read(&mut buf).map_err(|e| ModelError::Network(e.kind().to_string()))?;
-                if n == 0 {
-                    break;
-                }
-                received += n as u64;
-                if received > m.size {
-                    return Err(ModelError::SizeMismatch { expected: m.size, actual: received });
-                }
-                ctx.update(&buf[..n]);
-                file.write_all(&buf[..n]).map_err(io)?;
-                if last_report.elapsed() >= Duration::from_millis(150) {
-                    progress(received, m.size);
-                    last_report = std::time::Instant::now();
-                }
+            for f in &files {
+                let part = staged.join(format!("{}.part", f.name));
+                download_file(&agent, f, &part, cancel, done, total, &mut progress)?;
+                fs::rename(&part, staged.join(f.name)).map_err(io)?;
+                done += f.size;
             }
-            progress(received, m.size);
-            if received != m.size {
-                return Err(ModelError::SizeMismatch { expected: m.size, actual: received });
-            }
-            if hex::encode(ctx.finish().as_ref()) != m.sha256 {
-                return Err(ModelError::ChecksumMismatch);
-            }
-            file.sync_all().map_err(io)?;
-            Ok(())
+            self.install_staged(m)
         })();
         if let Err(e) = result {
-            let _ = fs::remove_file(&part);
+            let _ = fs::remove_dir_all(&staged);
             return Err(e);
         }
-        let dest = self.path_of(m);
-        fs::rename(&part, &dest).map_err(io)?;
-        Ok(dest)
+        Ok(self.path_of(m))
     }
+}
+
+/// Download one file to `part`, verifying size and SHA-256. `offset` and
+/// `total` place this file's bytes in the whole model's progress.
+#[cfg(desktop)]
+fn download_file(
+    agent: &ureq::Agent,
+    f: &CatalogFile,
+    part: &Path,
+    cancel: &CancelToken,
+    offset: u64,
+    total: u64,
+    progress: &mut impl FnMut(u64, u64),
+) -> Result<(), ModelError> {
+    let url = f.url.ok_or(ModelError::NoDownloadUrl(f.name.to_string()))?;
+    if !url.starts_with("https://") {
+        return Err(ModelError::Network("refusing non-HTTPS URL".into()));
+    }
+    let _ = fs::remove_file(part);
+    let resp = agent.get(url).call().map_err(|e| ModelError::Network(short_ureq_error(&e)))?;
+    if let Some(len) = resp.header("content-length").and_then(|v| v.parse::<u64>().ok()) {
+        if len != f.size {
+            return Err(ModelError::SizeMismatch { expected: f.size, actual: len });
+        }
+    }
+    let mut reader = resp.into_reader();
+    let result = (|| -> Result<(), ModelError> {
+        let mut file = File::create(part).map_err(io)?;
+        let mut ctx = ring::digest::Context::new(&ring::digest::SHA256);
+        let mut buf = vec![0u8; 256 * 1024];
+        let mut received: u64 = 0;
+        let mut last_report = std::time::Instant::now();
+        progress(offset, total);
+        loop {
+            if cancel.is_cancelled() {
+                return Err(ModelError::Cancelled);
+            }
+            let n = reader.read(&mut buf).map_err(|e| ModelError::Network(e.kind().to_string()))?;
+            if n == 0 {
+                break;
+            }
+            received += n as u64;
+            if received > f.size {
+                return Err(ModelError::SizeMismatch { expected: f.size, actual: received });
+            }
+            ctx.update(&buf[..n]);
+            file.write_all(&buf[..n]).map_err(io)?;
+            if last_report.elapsed() >= Duration::from_millis(150) {
+                progress(offset + received, total);
+                last_report = std::time::Instant::now();
+            }
+        }
+        progress(offset + received, total);
+        if received != f.size {
+            return Err(ModelError::SizeMismatch { expected: f.size, actual: received });
+        }
+        if hex::encode(ctx.finish().as_ref()) != f.sha256 {
+            return Err(ModelError::ChecksumMismatch);
+        }
+        file.sync_all().map_err(io)?;
+        Ok(())
+    })();
+    if result.is_err() {
+        let _ = fs::remove_file(part);
+    }
+    result
 }
 
 /// Stream a file through SHA-256. Returns (hex digest, size).
@@ -423,6 +630,81 @@ mod tests {
         assert!(store.installed_path(m.id).is_none());
         store.delete(m.id).unwrap();
         assert!(!store.path_of(m).exists());
+        let _ = fs::remove_dir_all(d);
+    }
+
+    #[test]
+    fn multi_file_models_live_in_their_directory_and_need_every_file() {
+        let d = tmpdir("multi");
+        let store = ModelStore::new(&d);
+        let pf = catalog::privacy_filter();
+        assert_eq!(store.path_of(pf), d.join("models").join("openai-privacy-filter-int8").join("model_quantized.onnx"));
+        assert!(!store.is_installed(pf));
+        // Only the small files present (right sizes): still not installed.
+        let dir = d.join("models").join(pf.dir.unwrap());
+        fs::create_dir_all(&dir).unwrap();
+        for f in pf.files().iter().filter(|f| f.size < 1_000_000) {
+            let file = File::create(dir.join(f.name)).unwrap();
+            file.set_len(f.size).unwrap();
+        }
+        assert!(!store.is_installed(pf));
+        assert!(store.installed_path(pf.id).is_none());
+        // A sparse file of the right size for the weights completes the set
+        // as far as `is_installed` goes (hashes are checked before loading).
+        let big = pf.files().into_iter().find(|f| f.size > 1_000_000).unwrap();
+        File::create(dir.join(big.name)).unwrap().set_len(big.size).unwrap();
+        let tok = pf.files().into_iter().find(|f| f.name == "tokenizer.json").unwrap();
+        File::create(dir.join(tok.name)).unwrap().set_len(tok.size).unwrap();
+        assert!(store.is_installed(pf));
+        assert_eq!(store.verify_model(pf).unwrap().as_deref(), Some("model_quantized.onnx"), "contents are checked by hash");
+        store.delete(pf.id).unwrap();
+        assert!(!dir.exists());
+        let _ = fs::remove_dir_all(d);
+    }
+
+    #[test]
+    fn folder_import_ignores_unknown_files() {
+        let d = tmpdir("folder");
+        let store = ModelStore::new(&d);
+        let src = d.join("src");
+        fs::create_dir_all(src.join("onnx")).unwrap();
+        fs::write(src.join("README.md"), b"hello").unwrap();
+        fs::write(src.join("onnx").join("other.onnx"), b"x").unwrap();
+        assert_eq!(store.import_paths(&[src.clone()], None).unwrap_err(), ModelError::NothingToImport);
+        let _ = fs::remove_dir_all(d);
+    }
+
+    /// The published `viterbi_calibration.json` (372 bytes), byte for byte.
+    const PF_CALIBRATION: &str = "{\n  \"operating_points\": {\n    \"default\": {\n      \"biases\": {\n        \"transition_bias_background_stay\": 0.0,\n        \"transition_bias_background_to_start\": 0.0,\n        \"transition_bias_end_to_background\": 0.0,\n        \"transition_bias_end_to_start\": 0.0,\n        \"transition_bias_inside_to_continue\": 0.0,\n        \"transition_bias_inside_to_end\": 0.0\n      }\n    }\n  }\n}\n";
+
+    #[test]
+    fn a_part_of_a_multi_file_model_is_kept_until_the_set_is_complete() {
+        let d = tmpdir("part");
+        let store = ModelStore::new(&d);
+        let pf = catalog::privacy_filter();
+        let src = d.join("dl");
+        fs::create_dir_all(&src).unwrap();
+        let cal = src.join("viterbi_calibration.json");
+        fs::write(&cal, PF_CALIBRATION).unwrap();
+        let (sha, size) = hash_file(&cal, None).unwrap();
+        assert_eq!((sha.as_str(), size), (pf.extra_files[2].sha256, 372), "fixture is the published file");
+        match store.import(&cal, false).unwrap() {
+            ImportOutcome::Incomplete { id, missing } => {
+                assert_eq!(id, pf.id);
+                assert_eq!(missing, vec!["model_quantized.onnx", "model_quantized.onnx_data", "tokenizer.json"]);
+            }
+            other => panic!("unexpected {:?}", other),
+        }
+        assert!(!store.is_installed(pf));
+        assert!(d.join("models/.partial/openai-privacy-filter-int8/viterbi_calibration.json").is_file());
+        // folder import: same file found through the folder, unknown files ignored
+        fs::write(src.join("notes.txt"), b"x").unwrap();
+        let sum = store.import_paths(&[src.clone()], None).unwrap();
+        assert_eq!(sum.ignored, 1);
+        assert!(matches!(&sum.outcomes[..], [ImportOutcome::Incomplete { .. }]));
+        // deleting the model also drops what was staged
+        store.delete(pf.id).unwrap();
+        assert!(!d.join("models/.partial/openai-privacy-filter-int8").exists());
         let _ = fs::remove_dir_all(d);
     }
 

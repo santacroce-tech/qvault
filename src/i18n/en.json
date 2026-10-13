@@ -96,7 +96,9 @@
     "suppressedRestoreTitle": "Put this finding back in the review list for this document",
     "neverFlag": "Never flag this again",
     "neverFlagTitle": "Add “{{text}}” ({{category}}) to your “Not personal data” list. Future scans will not list it for this type; each scan says how many were set aside. You can remove it in Settings.",
-    "neverFlagDone": "Added to your “Not personal data” list"
+    "neverFlagDone": "Added to your “Not personal data” list",
+    "layerPf": "AI · Privacy Filter",
+    "layerLlm": "AI · language model"
   },
   "history": {
     "title": "Document History",
@@ -309,7 +311,40 @@
     "embeddingOff": "Turned off: entity grouping uses spelling rules only.",
     "embeddingEngineUnavailable": "AI engine unavailable: entity grouping uses spelling rules only.",
     "selfTestEmbedding": "Entity grouping model: {{ms}} ms ({{dims}} dimensions)",
-    "selfTestEmbeddingSkipped": "Entity grouping model not tested: {{reason}}"
+    "selfTestEmbeddingSkipped": "Entity grouping model not tested: {{reason}}",
+    "layer3Detector": "AI detector",
+    "detectorPf": "Privacy Filter (recommended): fast, runs well without a GPU",
+    "detectorLlm": "Language model (Qwen3): slower, also finds company names, amounts and case numbers",
+    "layer3Thorough": "Also run the language model (thorough, slower)",
+    "layer3ThoroughHelp": "Runs the selected language model after Privacy Filter and keeps the longer of two overlapping findings. Finds the most, at the language model's speed.",
+    "layer3ThoroughNeedsLlm": "Install a language model below to use the thorough pass.",
+    "layer3LlmModel": "Language model",
+    "pfNotInstalled": "Privacy Filter is not installed: scans use the language model if one is installed.",
+    "pfEngineUnavailable": "Privacy Filter cannot run on this computer ({{reason}}). Scans use the language model if one is installed, otherwise Layers 1–2.",
+    "pfModels": "Privacy Filter (recommended detector)",
+    "pfModelsDesc": "OpenAI's on-device PII detector. Four files (model, weights, tokenizer, calibration), checked one by one before use.",
+    "llmModels": "Language models (optional thorough pass)",
+    "llmModelsDesc": "Use one instead of Privacy Filter, or in addition to it for the thorough pass.",
+    "files_one": "{{count}} file",
+    "files_other": "{{count}} files",
+    "importFolder": "Import folder…",
+    "importIncomplete_one": "{{name}}: files verified and kept; still missing {{count}} file: {{files}}. Import it to finish.",
+    "importIncomplete_other": "{{name}}: files verified and kept; still missing {{count}} files: {{files}}. Import them to finish.",
+    "importIgnored_one": "{{count}} selected file is not part of any known model and was not imported.",
+    "importIgnored_other": "{{count}} selected files are not part of any known model and were not imported.",
+    "selfTestPf": "Privacy Filter: {{ms}} ms, {{count}} item(s) found in the sample sentence",
+    "selfTestPfSkipped": "Privacy Filter not tested: {{reason}}",
+    "layer3ReviewPf": "AI findings are added with 40–80% confidence (by type; below the rule-based layers) and always wait for your review — nothing is applied automatically. The review list shows which detector found each one.",
+    "modelNotes": {
+      "openai_privacy_filter_int8": "Fast on any computer (well under a second per page without a GPU). Finds names, addresses, dates, contact details and account-style numbers; company names, amounts and case numbers stay with the rules (and the language model, if you also run it).",
+      "qwen3_0_6b_q8_0": "For computers with little memory: finds less than the default model.",
+      "qwen3_4b_q4_k_m": "Finds more, about twice as slow as the default. Best with 16 GB of memory or a GPU.",
+      "qwen3_8b_q4_k_m": "Highest recall in the eval, about 3.5× slower than the default. Needs a GPU workstation.",
+      "qwen2_5_0_5b_instruct_q4_k_m": "Superseded by Qwen3 0.6B, which finds more and is faster.",
+      "qwen2_5_1_5b_instruct_q4_k_m": "Superseded by Qwen3 1.7B (more precise suggestions).",
+      "nomic_embed_text_v2_moe_q8_0": "Optional. Adds similarity-based suggestions when grouping name variants; grouping works without it."
+    },
+    "modelFiles": "Model files"
   },
   "learning": {
     "intro": "Qvault remembers what you approve and reject. Text you rejected before is still shown when it appears again, marked and listed last, so you can reject it in one click. Only text you put on the “Not personal data” list is left out of future scans, and every scan says how many findings it set aside.",

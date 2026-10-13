@@ -8,6 +8,7 @@ pub mod pipeline;
 pub mod storage;
 pub mod llm;
 pub mod ocr;
+pub mod privacy_filter;
 #[cfg(desktop)]
 pub mod qvac;
 
@@ -147,7 +148,11 @@ pub fn run() {
             #[cfg(desktop)]
             commands::ai::ai_assess_fit,
             #[cfg(desktop)]
+            commands::ai::ai_import_model_paths,
+            #[cfg(desktop)]
             commands::ai::ai_set_layer3,
+            #[cfg(desktop)]
+            commands::ai::ai_set_layer3_detector,
             #[cfg(desktop)]
             commands::ai::ai_self_test,
             commands::ai::ai_open_manual_download,

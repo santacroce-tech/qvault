@@ -24,6 +24,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::llm::llm_scanner::{self, Layer3Engine, Layer3Error, PromptVersion};
+use crate::privacy_filter::decoder::Biases;
+use crate::privacy_filter::scanner::PfEngine;
+use crate::privacy_filter::tokenizer::O200kTokenizer;
 use catalog::{CatalogModel, ModelPurpose};
 use client::{CallOptions, CancelToken, ClientConfig, QvacClient, QvacError, SpawnSpec};
 use models::{ImportOutcome, ModelError, ModelStore};
@@ -35,6 +38,8 @@ const COMPLETE_TIMEOUT: Duration = Duration::from_secs(120);
 const OCR_TIMEOUT: Duration = Duration::from_secs(180);
 const FIT_TIMEOUT: Duration = Duration::from_secs(90);
 const EMBED_TIMEOUT: Duration = Duration::from_secs(120);
+/// One Privacy Filter window (at most 4,096 tokens; ~0.2 s per page measured).
+const CLASSIFY_TIMEOUT: Duration = Duration::from_secs(60);
 /// Strings per `embed` request (the sidecar accepts up to 256).
 const EMBED_BATCH: usize = 64;
 const LLM_CTX: u64 = 4096;
@@ -88,7 +93,21 @@ pub struct AiSettings {
     /// `None` = on.
     #[serde(default)]
     pub entity_embeddings: Option<bool>,
+    /// Layer 3 detector: "privacy-filter" or "llm". `None` = [`DEFAULT_DETECTOR`].
+    #[serde(default)]
+    pub layer3_detector: Option<String>,
+    /// With Privacy Filter as the detector, also run the language model
+    /// ("thorough", slower). `None` = off.
+    #[serde(default)]
+    pub layer3_thorough: Option<bool>,
 }
+
+/// Layer 3 detector ids (settings, capabilities, audit log).
+pub const DETECTOR_PF: &str = "privacy-filter";
+pub const DETECTOR_LLM: &str = "llm";
+/// The Layer 3 detector used when the user has not chosen one
+/// (docs/qvac-integration.md §15: decided on the eval's default gate).
+pub const DEFAULT_DETECTOR: &str = DETECTOR_PF;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -131,6 +150,8 @@ pub struct ModelInfo {
     pub ram_needed: u64,
     /// Short catalog note shown before download (licence or role caveats).
     pub note: Option<String>,
+    /// Number of files (more than one for multi-file models; `size` is the total).
+    pub file_count: usize,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -158,6 +179,17 @@ pub struct Capabilities {
     pub models: Vec<ModelInfo>,
     /// Physical memory of this computer, when it can be read (macOS, Linux).
     pub system_memory: Option<u64>,
+    /// Effective Layer 3 detector setting ("privacy-filter" | "llm").
+    pub layer3_detector: String,
+    /// Also run the language model after Privacy Filter.
+    pub layer3_thorough: bool,
+    /// The Privacy Filter model files are installed.
+    pub pf_installed: bool,
+    /// The sidecar can run Privacy Filter on this platform (`@qvac/onnx`
+    /// loaded). `None` until the sidecar has been started.
+    pub pf_engine: Option<bool>,
+    /// Why the Privacy Filter engine is unavailable, when it is.
+    pub pf_engine_reason: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -193,6 +225,17 @@ pub struct QvacService {
     /// One OCR request at a time: results of concurrent requests on one OCR
     /// model must never be able to cross (see `discard_engine_after_abandoned_ocr`).
     ocr_lock: Mutex<()>,
+    /// Whether the running sidecar has the ONNX engine: (generation, ok, reason).
+    onnx: Mutex<Option<(u64, bool, Option<String>)>>,
+    /// Privacy Filter's tokenizer and calibration, loaded once per session.
+    pf_assets: Mutex<Option<Arc<PfAssets>>>,
+}
+
+/// What Privacy Filter needs besides the ONNX session.
+pub struct PfAssets {
+    pub tokenizer: O200kTokenizer,
+    /// Published operating point (`viterbi_calibration.json`).
+    pub calibration: Biases,
 }
 
 /// Physical memory, for the Model Manager's pre-download estimate (the
@@ -252,6 +295,8 @@ impl QvacService {
             active: AtomicUsize::new(0),
             reaper_started: AtomicBool::new(false),
             ocr_lock: Mutex::new(()),
+            onnx: Mutex::new(None),
+            pf_assets: Mutex::new(None),
         }
     }
 
@@ -318,6 +363,33 @@ impl QvacService {
             self.unload_all_llms();
         }
         Ok(())
+    }
+
+    /// Choose the Layer 3 detector and whether the language model also runs
+    /// after Privacy Filter ("thorough").
+    pub fn set_layer3_detector(&self, detector: Option<String>, thorough: Option<bool>) -> Result<(), String> {
+        if let Some(d) = &detector {
+            if d != DETECTOR_PF && d != DETECTOR_LLM {
+                return Err(format!("unknown detector {}", d));
+            }
+        }
+        let mut s = self.settings.lock().unwrap();
+        if detector.is_some() {
+            s.layer3_detector = detector;
+        }
+        if thorough.is_some() {
+            s.layer3_thorough = thorough;
+        }
+        self.save_settings(&s)
+    }
+
+    /// The effective detector setting.
+    pub fn layer3_detector(&self) -> String {
+        self.settings.lock().unwrap().layer3_detector.clone().unwrap_or_else(|| DEFAULT_DETECTOR.to_string())
+    }
+
+    pub fn pf_installed(&self) -> bool {
+        self.store.is_installed(catalog::privacy_filter())
     }
 
     /// The LLM Layer 3 would use: the selected one if installed, else the
@@ -442,6 +514,16 @@ impl QvacService {
         if self.verified.lock().unwrap().contains(id) {
             return Ok(path);
         }
+        if let Some(m) = catalog::find(id).filter(|m| m.is_multi_file()) {
+            return match self.store.verify_model(m) {
+                Ok(None) => {
+                    self.verified.lock().unwrap().insert(id.to_string());
+                    Ok(path)
+                }
+                Ok(Some(file)) => Err(format!("model {} failed its SHA-256 check ({}); delete and re-install it", id, file)),
+                Err(e) => Err(e.to_string()),
+            };
+        }
         let sha = self.expected_sha(id).ok_or_else(|| format!("unknown model {}", id))?;
         match ModelStore::verify_file(&path, &sha) {
             Ok(true) => {
@@ -477,6 +559,7 @@ impl QvacService {
             ModelPurpose::OcrDetector => return Err(QvacError::Protocol("load the recognizer instead".into())),
             // Model defaults (pooling and normalisation from the GGUF).
             ModelPurpose::Embedding => ("embeddings", json!({})),
+            ModelPurpose::PiiClassifier => ("token-classifier", json!({})),
         };
         let started = Instant::now();
         let r = self.call(
@@ -608,6 +691,162 @@ impl QvacService {
             }
             Err(e) => Err(Layer3Error::Chunk(e.to_string())),
         }
+    }
+
+    // ── Privacy Filter (Layer 3, ONNX) ────────────────────────────────────
+
+    /// Whether the running sidecar can run ONNX models (asked once per
+    /// sidecar process with `hello`). Starts the sidecar.
+    pub fn onnx_engine(&self) -> Result<(), String> {
+        let client = self.client().map_err(|e| e.to_string())?;
+        client.ensure_started().map_err(|e| e.to_string())?;
+        let generation = client.generation();
+        if let Some((g, ok, reason)) = self.onnx.lock().unwrap().clone() {
+            if g == generation {
+                return if ok { Ok(()) } else { Err(reason.unwrap_or_else(|| "unavailable".into())) };
+            }
+        }
+        let hello = self.call("hello", json!({}), CallOptions::timeout(Duration::from_secs(15))).map_err(|e| e.to_string())?;
+        let ok = hello.get("onnx").map(|v| v.is_string()).unwrap_or(false);
+        let reason = (!ok).then(|| {
+            hello
+                .get("onnxError")
+                .and_then(|v| v.as_str())
+                .map(|e| format!("the Privacy Filter engine (ONNX) is not available on this computer: {}", e))
+                .unwrap_or_else(|| "the Privacy Filter engine (ONNX) is not available on this computer".into())
+        });
+        *self.onnx.lock().unwrap() = Some((client.generation(), ok, reason.clone()));
+        match reason {
+            None => Ok(()),
+            Some(r) => Err(r),
+        }
+    }
+
+    /// Tokenizer and calibration of the installed Privacy Filter (read once;
+    /// the files' hashes are checked by `verified_path` first).
+    fn pf_assets(&self) -> Result<Arc<PfAssets>, String> {
+        if let Some(a) = self.pf_assets.lock().unwrap().clone() {
+            return Ok(a);
+        }
+        let m = catalog::privacy_filter();
+        self.verified_path(m.id)?;
+        let tokenizer = O200kTokenizer::from_file(&self.store.file_path(m, "tokenizer.json")).map_err(|e| e.to_string())?;
+        let cal = std::fs::read(self.store.file_path(m, "viterbi_calibration.json")).map_err(|e| e.kind().to_string())?;
+        let calibration = Biases::from_calibration_json(&cal)?;
+        let a = Arc::new(PfAssets { tokenizer, calibration });
+        *self.pf_assets.lock().unwrap() = Some(Arc::clone(&a));
+        Ok(a)
+    }
+
+    /// Get Privacy Filter ready for a scan: installed, engine available,
+    /// files verified, tokenizer read, model loaded. Errors are user-facing
+    /// reasons (the scan then falls back; see `prepare_layer3_plan`).
+    pub fn prepare_privacy_filter(self: &Arc<Self>) -> Result<PfSession, String> {
+        let m = catalog::privacy_filter();
+        if !self.pf_installed() {
+            return Err("the Privacy Filter model is not installed".into());
+        }
+        if !self.is_bundled() {
+            return Err("AI engine is not bundled in this build".into());
+        }
+        self.onnx_engine()?;
+        let assets = self.pf_assets()?;
+        let (_, loaded_in) = self.ensure_loaded(m.id).map_err(|e| e.to_string())?;
+        Ok(PfSession { service: Arc::clone(self), model: m.id.to_string(), assets, loaded_in })
+    }
+
+    fn classify(&self, model: &str, ids: &[u32]) -> Result<Vec<f32>, Layer3Error> {
+        use base64::Engine;
+        let qid = match self.ensure_loaded(model) {
+            Ok((q, _)) => q,
+            Err(QvacError::Unavailable(r)) => return Err(Layer3Error::Fatal(r)),
+            Err(e) => return Err(Layer3Error::Chunk(e.to_string())),
+        };
+        let r = match self.call("classify", json!({"modelId": qid, "inputIds": ids}), CallOptions::timeout(CLASSIFY_TIMEOUT)) {
+            Ok(r) => r,
+            Err(QvacError::Unavailable(r)) => return Err(Layer3Error::Fatal(r)),
+            Err(QvacError::Remote { code, message }) if code == "MODEL_NOT_LOADED" => {
+                self.loaded.lock().unwrap().remove(model);
+                return Err(Layer3Error::Chunk(message));
+            }
+            Err(QvacError::Remote { code, message }) if code == "UNAVAILABLE" => return Err(Layer3Error::Fatal(message)),
+            Err(e) => return Err(Layer3Error::Chunk(e.to_string())),
+        };
+        let b64 = r.get("logits").and_then(|v| v.as_str()).ok_or_else(|| Layer3Error::Chunk("no logits in the answer".into()))?;
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(b64)
+            .map_err(|_| Layer3Error::Chunk("invalid logits encoding".into()))?;
+        if bytes.len() % 4 != 0 {
+            return Err(Layer3Error::Chunk("invalid logits length".into()));
+        }
+        Ok(bytes.chunks_exact(4).map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]])).collect())
+    }
+
+    /// Memory-based fit estimate for Privacy Filter (QVAC's assessFit covers
+    /// GGUF models only): physical memory against the measured need plus
+    /// 2 GiB for the system and the app.
+    pub fn pf_fit(&self) -> FitInfo {
+        let need = catalog::privacy_filter().ram_needed;
+        let verdict = match system_memory_bytes() {
+            Some(mem) if mem >= need + (2u64 << 30) => "likely-fits",
+            Some(_) => "likely-too-large",
+            None => "unknown",
+        };
+        FitInfo { verdict: verdict.into(), evidence: Some("memory-estimate".into()) }
+    }
+
+    /// Decide which Layer 3 detectors run for a scan, and prepare them.
+    /// Never fails: what cannot run is reported in `notices` / `skip_reason`
+    /// and the scan continues with what is available (at worst Layers 1–2).
+    pub fn prepare_layer3_plan(self: &Arc<Self>) -> Layer3Plan {
+        let mut plan = Layer3Plan::default();
+        let settings = self.settings();
+        if !settings.layer3_enabled {
+            plan.skip_reason = Some("disabled".into());
+            return plan;
+        }
+        let detector = settings.layer3_detector.clone().unwrap_or_else(|| DEFAULT_DETECTOR.to_string());
+        let thorough = settings.layer3_thorough.unwrap_or(false);
+        let mut want_llm = detector == DETECTOR_LLM || thorough;
+        if detector == DETECTOR_PF {
+            if self.pf_installed() {
+                match self.prepare_privacy_filter() {
+                    Ok(s) => plan.pf = Some(s),
+                    Err(reason) => {
+                        log::warn!("Layer 3: Privacy Filter unavailable: {}", reason);
+                        let fallback = !want_llm && self.layer3_model().is_some();
+                        plan.notices.push(if fallback {
+                            format!("Privacy Filter could not run ({}); the language model was used instead", reason)
+                        } else {
+                            format!("Privacy Filter could not run ({})", reason)
+                        });
+                        want_llm = want_llm || fallback;
+                    }
+                }
+            } else if self.layer3_model().is_some() {
+                // Not installed: the language model is what the user has.
+                want_llm = true;
+            }
+        }
+        if want_llm {
+            match self.prepare_layer3() {
+                Ok(s) => plan.llm = Some(s),
+                Err(reason) => {
+                    if plan.pf.is_some() {
+                        plan.notices.push(format!("the language model could not run ({})", reason));
+                    } else {
+                        plan.skip_reason = Some(reason);
+                    }
+                }
+            }
+        }
+        if plan.pf.is_none() && plan.llm.is_none() && plan.skip_reason.is_none() {
+            plan.skip_reason = Some(match plan.notices.first() {
+                Some(n) => n.clone(),
+                None => "no AI model installed".into(),
+            });
+        }
+        plan
     }
 
     // ── embeddings (entity grouping) ─────────────────────────────────────
@@ -771,7 +1010,7 @@ impl QvacService {
                 id: m.id.into(),
                 name: m.name.into(),
                 purpose: m.purpose,
-                size: m.size,
+                size: m.total_size(),
                 sha256: m.sha256.into(),
                 licence: m.licence.into(),
                 source: m.source.into(),
@@ -783,7 +1022,8 @@ impl QvacService {
                 ram_needed: m.ram_needed,
                 note: m.note.map(Into::into),
                 download: downloads.get(m.id).cloned(),
-                fit: fit.get(m.id).cloned(),
+                fit: if m.purpose == ModelPurpose::PiiClassifier { Some(self.pf_fit()) } else { fit.get(m.id).cloned() },
+                file_count: m.files().len(),
             })
             .collect();
         for c in self.store.custom_models() {
@@ -804,6 +1044,7 @@ impl QvacService {
                 note: None,
                 download: None,
                 fit: fit.get(&c.id).cloned(),
+                file_count: 1,
             });
         }
         out
@@ -815,6 +1056,9 @@ impl QvacService {
             match self.client().and_then(|c| c.ensure_started().map(|_| c)) {
                 Ok(_) => {
                     self.touch();
+                    if let Err(e) = self.onnx_engine() {
+                        log::warn!("qvac: {}", e);
+                    }
                     // Fit verdicts for installed LLMs (local files only).
                     for m in catalog::CATALOG.iter().filter(|m| m.purpose == ModelPurpose::Llm) {
                         if self.store.is_installed(m) {
@@ -831,6 +1075,11 @@ impl QvacService {
         let settings = self.settings();
         let layer3_model = self.layer3_model();
         let available = self.is_bundled() && client.as_ref().map(|c| c.is_available()).unwrap_or(true);
+        let generation = client.as_ref().map(|c| c.generation()).unwrap_or(0);
+        let onnx = self.onnx.lock().unwrap().clone().filter(|(g, _, _)| *g == generation);
+        let pf_installed = self.pf_installed();
+        let pf_engine = onnx.as_ref().map(|(_, ok, _)| *ok);
+        let pf_usable = pf_installed && pf_engine != Some(false);
         Capabilities {
             supported: true,
             sidecar_bundled: self.is_bundled(),
@@ -844,8 +1093,13 @@ impl QvacService {
             ocr_available: available && self.ocr_installed(),
             ocr_dpi: settings.ocr_dpi.unwrap_or(crate::ocr::DEFAULT_OCR_DPI),
             layer3_enabled: settings.layer3_enabled,
-            layer3_ready: settings.layer3_enabled && layer3_model.is_some() && available,
+            layer3_ready: settings.layer3_enabled && (layer3_model.is_some() || pf_usable) && available,
             layer3_model,
+            layer3_detector: settings.layer3_detector.clone().unwrap_or_else(|| DEFAULT_DETECTOR.to_string()),
+            layer3_thorough: settings.layer3_thorough.unwrap_or(false),
+            pf_installed,
+            pf_engine,
+            pf_engine_reason: onnx.and_then(|(_, _, r)| r),
             embedding_installed: self.store.is_installed(catalog::embedding_model()),
             entity_embeddings_enabled: settings.entity_embeddings != Some(false),
             embedding_ready: self.embedding_model().is_some() && available,
@@ -866,7 +1120,7 @@ impl QvacService {
         D: FnOnce(&str, Result<Duration, String>) + Send + 'static,
     {
         let m = catalog::find(id).ok_or("unknown model")?;
-        if m.url.is_none() {
+        if m.files().iter().any(|f| f.url.is_none()) {
             return Err(ModelError::NoDownloadUrl(m.id.into()).to_string());
         }
         let cancel = CancelToken::new();
@@ -875,7 +1129,7 @@ impl QvacService {
             if d.get(id).map(|s| s.active).unwrap_or(false) {
                 return Err("download already in progress".into());
             }
-            d.insert(id.into(), DownloadState { received: 0, total: m.size, active: true, error: None, cancel: cancel.clone() });
+            d.insert(id.into(), DownloadState { received: 0, total: m.total_size(), active: true, error: None, cancel: cancel.clone() });
         }
         let svc = Arc::clone(self);
         std::thread::Builder::new()
@@ -894,6 +1148,9 @@ impl QvacService {
                     Ok(_) => {
                         svc.verified.lock().unwrap().insert(id.to_string());
                         svc.downloads.lock().unwrap().remove(id);
+                        if m.purpose == ModelPurpose::PiiClassifier {
+                            *svc.pf_assets.lock().unwrap() = None;
+                        }
                         Ok(started.elapsed())
                     }
                     Err(e) => {
@@ -923,14 +1180,32 @@ impl QvacService {
 
     pub fn import_model(&self, path: &Path, accept_unknown: bool) -> Result<ImportOutcome, String> {
         let r = self.store.import(path, accept_unknown).map_err(|e| e.to_string())?;
-        match &r {
-            ImportOutcome::Installed { id } | ImportOutcome::InstalledCustom { id } => {
-                self.verified.lock().unwrap().insert(id.clone());
-                self.fit.lock().unwrap().remove(id);
-            }
-            ImportOutcome::NeedsConsent { .. } => {}
+        self.after_import(&r);
+        Ok(r)
+    }
+
+    /// Import several files and/or folders (multi-file models).
+    pub fn import_paths(&self, paths: &[PathBuf]) -> Result<models::ImportSummary, String> {
+        let r = self.store.import_paths(paths, None).map_err(|e| e.to_string())?;
+        for o in &r.outcomes {
+            self.after_import(o);
         }
         Ok(r)
+    }
+
+    fn after_import(&self, r: &ImportOutcome) {
+        match r {
+            ImportOutcome::Installed { id } | ImportOutcome::InstalledCustom { id } => {
+                // Every file was hashed while it was copied in.
+                self.verified.lock().unwrap().insert(id.clone());
+                self.fit.lock().unwrap().remove(id);
+                if models::purpose_of(id) == ModelPurpose::PiiClassifier {
+                    *self.pf_assets.lock().unwrap() = None;
+                    self.loaded.lock().unwrap().remove(id);
+                }
+            }
+            ImportOutcome::NeedsConsent { .. } | ImportOutcome::Incomplete { .. } => {}
+        }
     }
 
     pub fn delete_model(&self, id: &str) -> Result<(), String> {
@@ -939,7 +1214,7 @@ impl QvacService {
         }
         // Unload it (and the OCR pair if either half goes).
         let affected: Vec<String> = match models::purpose_of(id) {
-            ModelPurpose::Llm | ModelPurpose::Embedding => vec![id.to_string()],
+            ModelPurpose::Llm | ModelPurpose::Embedding | ModelPurpose::PiiClassifier => vec![id.to_string()],
             _ => {
                 let (d, r) = catalog::ocr_pair();
                 vec![d.id.to_string(), r.id.to_string()]
@@ -951,6 +1226,9 @@ impl QvacService {
             }
         }
         self.store.delete(id).map_err(|e| e.to_string())?;
+        if models::purpose_of(id) == ModelPurpose::PiiClassifier {
+            *self.pf_assets.lock().unwrap() = None;
+        }
         self.verified.lock().unwrap().remove(id);
         self.fit.lock().unwrap().remove(id);
         self.downloads.lock().unwrap().remove(id);
@@ -999,10 +1277,26 @@ impl QvacService {
                 Err(e) => rep.embedding_error = Some(e),
             }
         }
+        let sample = "Witness statement of Dr. Amara Okafor, born 14/02/1979, regarding the incident at Riverside clinic.";
+        if self.pf_installed() {
+            let t = Instant::now();
+            match self.prepare_privacy_filter() {
+                Ok(session) => {
+                    let cfg = crate::privacy_filter::scanner::PfConfig::default();
+                    match crate::privacy_filter::scanner::scan(&session, session.tokenizer(), session.calibration(), sample, 0, &[], &cfg) {
+                        Ok(r) => {
+                            rep.pf_ms = Some(t.elapsed().as_millis() as u64);
+                            rep.pf_entities = r.entities.iter().map(|e| format!("{}: {}", e.category.to_string(), e.text)).collect();
+                        }
+                        Err(e) => rep.pf_error = Some(format!("{:?}", e)),
+                    }
+                }
+                Err(e) => rep.pf_error = Some(e),
+            }
+        }
         match self.layer3_model() {
             Some(id) => {
                 let t = Instant::now();
-                let sample = "Witness statement of Dr. Amara Okafor, born 14/02/1979, regarding the incident at Riverside clinic.";
                 let session = Layer3Session {
                     service: Arc::clone(self),
                     model: id.clone(),
@@ -1048,6 +1342,9 @@ pub struct SelfTestReport {
     pub embedding_ms: Option<u64>,
     pub embedding_dims: Option<usize>,
     pub embedding_error: Option<String>,
+    pub pf_ms: Option<u64>,
+    pub pf_entities: Vec<String>,
+    pub pf_error: Option<String>,
 }
 
 /// The sidecar's embedding model as an entity-grouping [`Embedder`].
@@ -1063,6 +1360,42 @@ impl crate::entities::Embedder for QvacEmbedder {
     fn embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>, String> {
         self.service.embed_texts(&self.model, texts)
     }
+}
+
+/// A prepared Privacy Filter run; implements the PF scanner's engine trait.
+pub struct PfSession {
+    service: Arc<QvacService>,
+    pub model: String,
+    assets: Arc<PfAssets>,
+    /// Set when preparing the session loaded the model.
+    pub loaded_in: Option<Duration>,
+}
+
+impl PfSession {
+    pub fn tokenizer(&self) -> &O200kTokenizer {
+        &self.assets.tokenizer
+    }
+    /// The published operating point (the scan adds Qvault's on top).
+    pub fn calibration(&self) -> &Biases {
+        &self.assets.calibration
+    }
+}
+
+impl PfEngine for PfSession {
+    fn classify(&self, ids: &[u32]) -> Result<Vec<f32>, Layer3Error> {
+        self.service.classify(&self.model, ids)
+    }
+}
+
+/// The Layer 3 detectors prepared for one scan.
+#[derive(Default)]
+pub struct Layer3Plan {
+    pub pf: Option<PfSession>,
+    pub llm: Option<Layer3Session>,
+    /// Things the user should know (a detector fell back or could not run).
+    pub notices: Vec<String>,
+    /// Why Layer 3 does not run at all.
+    pub skip_reason: Option<String>,
 }
 
 /// A prepared Layer 3 run; implements the scanner's engine trait.

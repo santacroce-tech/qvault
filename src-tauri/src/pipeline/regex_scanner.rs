@@ -9,6 +9,22 @@ pub struct RegexScanner {
     dob_context: Regex,
 }
 
+/// A birth-date label right before a date ("born on", "fecha de nacimiento",
+/// "nascido em", …).
+const DOB_CONTEXT: &str = r"(?i)(?:date\s+of\s+birth|birth\s*date|born(?:\s+on)?|d\.?o\.?b\.?|nacid[oa](?:\s+el)?|fecha\s+de\s+nacimiento|nascid[oa](?:\s+em)?|data\s+de\s+nascimento|geboren(?:\s+am)?|geburtsdatum)\W{0,4}$";
+
+/// Whether a date starting at `start` follows a birth-date label (the rule
+/// Layer 1 uses to type DateOfBirth; also used for Layer 3 dates).
+pub fn after_dob_label(text: &str, start: usize) -> bool {
+    static RE: std::sync::OnceLock<Regex> = std::sync::OnceLock::new();
+    let re = RE.get_or_init(|| Regex::new(DOB_CONTEXT).unwrap());
+    let mut from = start.saturating_sub(40);
+    while !text.is_char_boundary(from) {
+        from += 1;
+    }
+    re.is_match(&text[from..start])
+}
+
 impl RegexScanner {
     pub fn new(jurisdictions: &[&str]) -> Self {
         let mut patterns = global_patterns();
@@ -29,10 +45,7 @@ impl RegexScanner {
         patterns.sort_by(|a, b| b.priority.cmp(&a.priority));
 
         // A date right after one of these is a date of birth.
-        let dob_context = Regex::new(
-            r"(?i)(?:date\s+of\s+birth|birth\s*date|born(?:\s+on)?|d\.?o\.?b\.?|nacid[oa](?:\s+el)?|fecha\s+de\s+nacimiento|nascid[oa](?:\s+em)?|data\s+de\s+nascimento|geboren(?:\s+am)?|geburtsdatum)\W{0,4}$",
-        )
-        .unwrap();
+        let dob_context = Regex::new(DOB_CONTEXT).unwrap();
 
         RegexScanner { patterns, dob_context }
     }

@@ -130,8 +130,10 @@ writeFileSync(join(stubDir, 'index.js'),
   "module.exports = { bare: require('bare-os').execPath() }\n")
 
 // Empty fabric header/share dirs left behind by the filter are harmless; drop them.
-for (const d of ['include', 'share']) {
-  rmSync(join(outDir, 'node_modules', '@qvac', 'fabric', 'prebuilds', d), { recursive: true, force: true })
+for (const pkgName of ['fabric', 'onnx']) {
+  for (const d of ['include', 'share']) {
+    rmSync(join(outDir, 'node_modules', '@qvac', pkgName, 'prebuilds', d), { recursive: true, force: true })
+  }
 }
 
 const info = {
@@ -139,7 +141,7 @@ const info = {
   host,
   builtAt: new Date().toISOString(),
   inference: readJson(join(nm, '@qvac', 'inference', 'package.json')).version,
-  addons: Object.fromEntries(['ocr-ggml', 'llm-llamacpp', 'embed-llamacpp', 'fabric'].map((a) =>
+  addons: Object.fromEntries(['ocr-ggml', 'llm-llamacpp', 'embed-llamacpp', 'fabric', 'onnx'].map((a) =>
     [a, readJson(join(nm, '@qvac', a, 'package.json')).version])),
   bare: readJson(join(nm, `bare-runtime-${host}`, 'package.json')).version
 }

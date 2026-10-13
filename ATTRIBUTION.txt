@@ -55,6 +55,41 @@ along with their copyright notices.
    License: Apache-2.0 / MIT
    Source: https://github.com/algesten/ureq
 
+7. @qvac/onnx 0.15.1 (QVAC's ONNX Runtime addon for Bare; runs the
+   Privacy Filter token classifier inside the QVAC sidecar)
+   Copyright 2026 Tether Data, S.A. de C.V.
+   License: Apache-2.0
+   Source: https://github.com/tetherto/qvac/tree/main/packages/onnx
+   NOTICE (ships unmodified under qvac-worker/node_modules/@qvac/onnx/):
+     "@qvac/onnx
+      Copyright 2026 Tether Data, S.A. de C.V.
+
+      This product includes third-party components under their
+      respective licenses. @qvac/onnx itself is licensed under
+      Apache-2.0; bundled dependencies are governed by the licenses
+      listed below.
+
+      C++ Dependencies
+      --- mit (MIT License) ---
+        onnxruntime
+          https://github.com/microsoft/onnxruntime"
+   ONNX Runtime: Copyright (c) Microsoft Corporation, MIT License.
+
+8. OpenAI Privacy Filter reference code ("opf"), decoding logic
+   Copyright: OpenAI
+   License: Apache-2.0
+   Source: https://github.com/openai/privacy-filter
+           (commit f7f00ca7fb869683eb732c010299d901457f19c3)
+   src-tauri/src/privacy_filter/decoder.rs is a Rust port of opf's
+   ViterbiCRFDecoder (opf/_core/decoding.py), labels_to_spans,
+   token_spans_to_char_spans and trim_char_spans_whitespace
+   (opf/_core/spans.py) and _select_non_overlapping_spans
+   (opf/_core/runtime.py). Changes: rewritten in Rust; offsets are UTF-8
+   bytes instead of Python characters; label space fixed to the published
+   model's. src-tauri/src/privacy_filter/tokenizer.rs follows tiktoken's
+   (MIT, Copyright (c) 2022 OpenAI, Shantanu Jain) byte-pair merge
+   algorithm and o200k_base pre-tokenizer pattern.
+
 ────────────────────────────────────────────────────────────────────────
 
 AI MODELS (not bundled; downloaded or imported only at the user's request)
@@ -84,6 +119,14 @@ D. Nomic Embed Text v2 MoE, GGUF Q8_0 (nomic-embed-text-v2-moe.Q8_0.gguf),
    License: Apache-2.0
    Source: https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF
            (rev ffbcf4c)
+
+E. OpenAI Privacy Filter, int8 ONNX (onnx/model_quantized.onnx and
+   model_quantized.onnx_data, tokenizer.json, viterbi_calibration.json),
+   recommended Layer 3 PII detector
+   Copyright: OpenAI
+   License: Apache-2.0
+   Source: https://huggingface.co/openai/privacy-filter
+           (rev 7ffa9a043d54d1be65afb281eddf0ffbe629385b)
 
 ────────────────────────────────────────────────────────────────────────
 

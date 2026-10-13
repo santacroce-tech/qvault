@@ -1,0 +1,3432 @@
+{
+  "chosen": "start-2 +page-wide",
+  "chosen_config": {
+    "address_needs_digit": false,
+    "argmax": false,
+    "birth_dates": true,
+    "drop_untyped_accounts": false,
+    "legal_context": true,
+    "legal_words": true,
+    "min_single_name_letters": 0,
+    "operating_point": {
+      "transition_bias_background_stay": 0.0,
+      "transition_bias_background_to_start": -2.0,
+      "transition_bias_end_to_background": 0.0,
+      "transition_bias_end_to_start": 0.0,
+      "transition_bias_inside_to_continue": 0.0,
+      "transition_bias_inside_to_end": 0.0
+    },
+    "page_wide_names": true,
+    "plausibility": true,
+    "retype_accounts": true,
+    "stoplist": true,
+    "trim_honorifics": true,
+    "year_only_accounts": true
+  },
+  "chosen_report": {
+    "by_category": {
+      "Address": {
+        "covered_recall": 0.8620689655172413,
+        "exact": {
+          "f1": 0.8928571428571429,
+          "precision": 0.9259259259259259,
+          "recall": 0.8620689655172413
+        },
+        "labels": 29,
+        "overlap": {
+          "f1": 0.9642857142857143,
+          "labels_found": 27,
+          "precision": 1.0,
+          "preds": 27,
+          "preds_correct": 27,
+          "recall": 0.9310344827586207
+        },
+        "type_accuracy": 1.0
+      },
+      "BankAccount": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 15,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 15,
+          "precision": 1.0,
+          "preds": 15,
+          "preds_correct": 15,
+          "recall": 1.0
+        },
+        "type_accuracy": 0.9333333333333333
+      },
+      "CaseNumber": {
+        "covered_recall": 0.8333333333333334,
+        "exact": {
+          "f1": 0.9090909090909091,
+          "precision": 1.0,
+          "recall": 0.8333333333333334
+        },
+        "labels": 6,
+        "overlap": {
+          "f1": 0.9090909090909091,
+          "labels_found": 5,
+          "precision": 1.0,
+          "preds": 5,
+          "preds_correct": 5,
+          "recall": 0.8333333333333334
+        },
+        "type_accuracy": 1.0
+      },
+      "ClientId": {
+        "covered_recall": 0.6,
+        "exact": {
+          "f1": 0.7499999999999999,
+          "precision": 1.0,
+          "recall": 0.6
+        },
+        "labels": 5,
+        "overlap": {
+          "f1": 0.888888888888889,
+          "labels_found": 4,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 0.8
+        },
+        "type_accuracy": 0.75
+      },
+      "CompanyName": {
+        "covered_recall": 0.5135135135135135,
+        "exact": {
+          "f1": 0.5483870967741935,
+          "precision": 0.68,
+          "recall": 0.4594594594594595
+        },
+        "labels": 37,
+        "overlap": {
+          "f1": 0.8769987699876999,
+          "labels_found": 31,
+          "precision": 0.92,
+          "preds": 25,
+          "preds_correct": 23,
+          "recall": 0.8378378378378378
+        },
+        "type_accuracy": 0.7419354838709677
+      },
+      "CourtFileNumber": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 1,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 1,
+          "precision": 1.0,
+          "preds": 1,
+          "preds_correct": 1,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "CreditCard": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 8,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 8,
+          "precision": 1.0,
+          "preds": 8,
+          "preds_correct": 8,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Date": {
+        "covered_recall": 0.9444444444444444,
+        "exact": {
+          "f1": 0.9645390070921985,
+          "precision": 0.9855072463768116,
+          "recall": 0.9444444444444444
+        },
+        "labels": 72,
+        "overlap": {
+          "f1": 0.9645390070921985,
+          "labels_found": 68,
+          "precision": 0.9855072463768116,
+          "preds": 69,
+          "preds_correct": 68,
+          "recall": 0.9444444444444444
+        },
+        "type_accuracy": 1.0
+      },
+      "DateOfBirth": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 9,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 9,
+          "precision": 1.0,
+          "preds": 9,
+          "preds_correct": 9,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "DriversLicense": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 4,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 4,
+          "precision": 1.0,
+          "preds": 4,
+          "preds_correct": 4,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Email": {
+        "covered_recall": 0.96,
+        "exact": {
+          "f1": 0.9795918367346939,
+          "precision": 1.0,
+          "recall": 0.96
+        },
+        "labels": 25,
+        "overlap": {
+          "f1": 0.9795918367346939,
+          "labels_found": 24,
+          "precision": 1.0,
+          "preds": 24,
+          "preds_correct": 24,
+          "recall": 0.96
+        },
+        "type_accuracy": 1.0
+      },
+      "IBAN": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 9,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 9,
+          "precision": 1.0,
+          "preds": 9,
+          "preds_correct": 9,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "IpAddress": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 6,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 6,
+          "precision": 1.0,
+          "preds": 6,
+          "preds_correct": 6,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "LicensePlate": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 5,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 5,
+          "precision": 1.0,
+          "preds": 5,
+          "preds_correct": 5,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "MedicalRecordNumber": {
+        "covered_recall": 0.75,
+        "exact": {
+          "f1": 0.75,
+          "precision": 0.75,
+          "recall": 0.75
+        },
+        "labels": 4,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 4,
+          "precision": 1.0,
+          "preds": 4,
+          "preds_correct": 4,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "MonetaryAmount": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 46,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 46,
+          "precision": 1.0,
+          "preds": 46,
+          "preds_correct": 46,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "NationalId": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 17,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 17,
+          "precision": 1.0,
+          "preds": 16,
+          "preds_correct": 16,
+          "recall": 1.0
+        },
+        "type_accuracy": 0.9411764705882353
+      },
+      "PassportNumber": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 3,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "PersonName": {
+        "covered_recall": 0.7787610619469026,
+        "exact": {
+          "f1": 0.5182724252491694,
+          "precision": 0.4148936170212766,
+          "recall": 0.6902654867256637
+        },
+        "labels": 113,
+        "overlap": {
+          "f1": 0.7577144895653724,
+          "labels_found": 108,
+          "precision": 0.6276595744680851,
+          "preds": 188,
+          "preds_correct": 118,
+          "recall": 0.9557522123893806
+        },
+        "type_accuracy": 1.0
+      },
+      "PhoneNumber": {
+        "covered_recall": 0.96,
+        "exact": {
+          "f1": 0.8962172647914646,
+          "precision": 0.9130434782608695,
+          "recall": 0.88
+        },
+        "labels": 25,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 25,
+          "precision": 1.0,
+          "preds": 23,
+          "preds_correct": 23,
+          "recall": 1.0
+        },
+        "type_accuracy": 0.92
+      },
+      "SocialSecurityNumber": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 3,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "TaxId": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 0.9473684210526316,
+          "precision": 0.9,
+          "recall": 1.0
+        },
+        "labels": 16,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 16,
+          "precision": 1.0,
+          "preds": 20,
+          "preds_correct": 20,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Url": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 3,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      }
+    },
+    "by_lang": {
+      "en": {
+        "covered_recall": 0.8712121212121212,
+        "exact": {
+          "f1": 0.7901234567901234,
+          "precision": 0.7392739273927392,
+          "recall": 0.8484848484848485
+        },
+        "labels": 264,
+        "overlap": {
+          "f1": 0.8837156900023942,
+          "labels_found": 250,
+          "precision": 0.8283828382838284,
+          "preds": 303,
+          "preds_correct": 251,
+          "recall": 0.946969696969697
+        },
+        "type_accuracy": 0.976
+      },
+      "es": {
+        "covered_recall": 0.8645833333333334,
+        "exact": {
+          "f1": 0.7817258883248732,
+          "precision": 0.7623762376237624,
+          "recall": 0.8020833333333334
+        },
+        "labels": 96,
+        "overlap": {
+          "f1": 0.9437957000982211,
+          "labels_found": 94,
+          "precision": 0.9108910891089109,
+          "preds": 101,
+          "preds_correct": 92,
+          "recall": 0.9791666666666666
+        },
+        "type_accuracy": 0.9468085106382979
+      },
+      "pt": {
+        "covered_recall": 0.900990099009901,
+        "exact": {
+          "f1": 0.835680751173709,
+          "precision": 0.7946428571428571,
+          "recall": 0.8811881188118812
+        },
+        "labels": 101,
+        "overlap": {
+          "f1": 0.9253959168097692,
+          "labels_found": 97,
+          "precision": 0.8928571428571429,
+          "preds": 112,
+          "preds_correct": 100,
+          "recall": 0.9603960396039604
+        },
+        "type_accuracy": 0.979381443298969
+      }
+    },
+    "by_split": {
+      "dev": {
+        "covered_recall": 0.9077306733167082,
+        "exact": {
+          "f1": 0.8186046511627906,
+          "precision": 0.7668845315904139,
+          "recall": 0.8778054862842892
+        },
+        "labels": 401,
+        "overlap": {
+          "f1": 0.9130126858351878,
+          "labels_found": 391,
+          "precision": 0.8583877995642701,
+          "preds": 459,
+          "preds_correct": 394,
+          "recall": 0.9750623441396509
+        },
+        "type_accuracy": 0.9744245524296675
+      },
+      "holdout": {
+        "covered_recall": 0.6666666666666666,
+        "exact": {
+          "f1": 0.6495726495726496,
+          "precision": 0.6666666666666666,
+          "recall": 0.6333333333333333
+        },
+        "labels": 60,
+        "overlap": {
+          "f1": 0.846286701208981,
+          "labels_found": 50,
+          "precision": 0.8596491228070176,
+          "preds": 57,
+          "preds_correct": 49,
+          "recall": 0.8333333333333334
+        },
+        "type_accuracy": 0.94
+      }
+    },
+    "false_negatives": [
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "partial",
+        "page": 1,
+        "text": "Marcus T. Feeney"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_court_complaint",
+        "kind": "partial",
+        "page": 1,
+        "text": "Marsh & Okonjo LLP"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "Okafor Whitfield PLLC"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "Harriet Pemberton-Shaw"
+      },
+      {
+        "category": "ClientId",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "NGM-24-0073318"
+      },
+      {
+        "category": "MedicalRecordNumber",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "MRN 00482913"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "j.richardson@atlas-  \n  digital.com"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "Address",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Westerdok 118, 1013 BH Amsterdam"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Felix Brandauer"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Zeeland Marine France SAS"
+      },
+      {
+        "category": "CaseNumber",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "16 O 248/24"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desert Sun Credit Union"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Calloway, Brent J."
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desert Sun Credit Union"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "partial",
+        "page": 1,
+        "text": "Ms Achterberg"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "partial",
+        "page": 1,
+        "text": "Achterberg, Siobhan"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "HALCYON DATA SYSTEMS LTD"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "partial",
+        "page": 1,
+        "text": "Constance Varga-Ellison"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Bufete Arriaga & Solís, S.C."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Tomás Ezequiel Barroso\nQuintanilla"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Inversiones Quintanilla Hermanos, S.L."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Tomás E. Barroso Quintanilla"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "partial",
+        "page": 1,
+        "text": "LLORENTE ESCRIVÁ, Nuria"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "partial",
+        "page": 1,
+        "text": "Reformas Turia Integral, S.L.U."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Naomi Fairbanks-Oyelaran"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Desmond Achebe-Kowalczyk"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Pellucid Freight Systems, Inc."
+      },
+      {
+        "category": "ClientId",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "M-25-0331"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Desmond Achebe-Kowalczyk"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "83 Lantern Hill Terrace, Unit 12, Marietta, GA 30064-3317"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desmond"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feb. 3, 2021"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Nov. 30, 2024"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Quist Harrow & Lyle LLP"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "TALLERES METÁLICOS ARGAÑA, S.L."
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "C/ Gran Vía de Don Diego López de Haro, 45, 48011 Bilbao"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Íñigo Zabaleta Urrutia"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Auditores Ibaizabal, S.L.P."
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Alameda de Recalde, 27, 5.º dcha., 48009 Bilbao"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "0034 944 555 120"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Íñigo Zabaleta Urrutia"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Vasconcelos"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 fev. 2025"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 mar. 2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Helena Cristina dos Santos Albuquerque"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Priscila\nFagundes Teixeira"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "LATICÍNIOS SERRA AZUL LTDA."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Helena Cristina dos Santos Albuquerque"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "MOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "partial",
+        "page": 1,
+        "text": "CARVALHO, Juliana Rezende de"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. M. T. Fonseca"
+      }
+    ],
+    "false_positives": [
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "See Burlington"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Civil Rights Act"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "layer": "privacy-filter",
+        "page": 1,
+        "text": "Sue"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Claims Department"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Claim No"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Dear Claims Representative"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "New York"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Because Mr"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Contract No"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Project Manager"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Client"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 2,
+        "text": "Internal Revenue Service"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 2,
+        "text": "Confidential Information"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "San Francisco"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "American Arbitration Association"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "Managing Partner"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "Chief Executive Officer"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "Senior Director"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Purchase Price"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Managing Director"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Creditor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Debtor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Recovery Manager"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Debtor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "American Express"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Debtor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Notary Public"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "privacy-filter",
+        "page": 1,
+        "text": "09/27"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "This Confidential Settlement Agreement"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Employee"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Data Incident"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "National Insurance"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Confidential Information"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Effective Date"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Data Protection Officer"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Neither Party"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "privacy-filter",
+        "page": 1,
+        "text": "Achterberg"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Delaware Limited"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Fair Market Value"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Force Majeure Event"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Internal Revenue Code"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Preferred Return"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Along Notice"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Effective Date"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Board"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Walt Disney Co"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Governing Law"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Entire Agreement"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Effective Date"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Managing Director"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Ciudad de México"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Estimada Sra"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "En Madrid"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Arrendamientos Urbanos"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Juicio Verbal"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Ley de Enjuiciamiento Civil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Código Civil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "En Valencia"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Litigation Team"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "layer": "privacy-filter",
+        "page": 1,
+        "text": "N.F."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "En Bilbao"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Prezado Sr"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Ofício de Registro de Imóveis de Belo Horizonte"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Lei do Inquilinato"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Belo Horizonte"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "privacy-filter",
+        "page": 1,
+        "text": "Fica V. Sa."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Banco do Brasil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Lei Geral de Proteção de Dados"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Foro da Comarca de São Paulo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "São Paulo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Código de Processo Civil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "São Paulo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Caro Sr"
+      }
+    ],
+    "overall": {
+      "covered_recall": 0.8763557483731019,
+      "exact": {
+        "f1": 0.7983623336745137,
+        "precision": 0.7558139534883721,
+        "recall": 0.8459869848156182
+      },
+      "labels": 461,
+      "overlap": {
+        "f1": 0.904921267592912,
+        "labels_found": 441,
+        "precision": 0.8585271317829457,
+        "preds": 516,
+        "preds_correct": 443,
+        "recall": 0.9566160520607375
+      },
+      "type_accuracy": 0.9705215419501134
+    }
+  },
+  "load_seconds": 1.171170209,
+  "model": "openai-privacy-filter-int8",
+  "model_seconds_per_page": 0.19607567350000002,
+  "pages": 18,
+  "peak_rss_mb": 2048.296875,
+  "seconds_per_page": 0.19655402294444446,
+  "summary": {
+    "Layers 1+2 + PF `app` + qwen3-1.7b-q8_0 (thorough)": {
+      "covered": 0.9067245119305857,
+      "dev_f1": 0.9082198718209918,
+      "dev_r": 0.9825436408977556,
+      "en_f1": 0.896157714745524,
+      "es_f1": 0.9400000000000001,
+      "f1": 0.911809560383051,
+      "false_suggestions": 13,
+      "false_suggestions_dev": 11,
+      "false_suggestions_holdout": 2,
+      "holdout_f1": 0.9365079365079364,
+      "holdout_r": 1.0,
+      "p": 0.8488805970149254,
+      "peak_rss_mb": 2425.765625,
+      "pt_f1": 0.9271884374147804,
+      "r": 0.9848156182212582,
+      "s_per_page": 6.548687460444445,
+      "type_accuracy": 0.9691629955947136
+    },
+    "Layers 1+2 + PF `start-2 +page-wide` + qwen3-1.7b-q8_0 (thorough)": {
+      "covered": 0.9023861171366594,
+      "dev_f1": 0.9092625616280289,
+      "dev_r": 0.9825436408977556,
+      "en_f1": 0.8903801301198904,
+      "es_f1": 0.9400000000000001,
+      "f1": 0.9094364538348977,
+      "false_suggestions": 12,
+      "false_suggestions_dev": 10,
+      "false_suggestions_holdout": 2,
+      "holdout_f1": 0.910958904109589,
+      "holdout_r": 0.95,
+      "p": 0.849624060150376,
+      "peak_rss_mb": 2425.765625,
+      "pt_f1": 0.9314217879645693,
+      "r": 0.9783080260303688,
+      "s_per_page": 6.548687460444445,
+      "type_accuracy": 0.9689578713968958
+    },
+    "Layers 1+2 + Privacy Filter, app default `app (PfConfig::default)`": {
+      "covered": 0.8806941431670282,
+      "dev_f1": 0.9115681141964452,
+      "dev_r": 0.972568578553616,
+      "en_f1": 0.8911600945770727,
+      "es_f1": 0.9437957000982211,
+      "f1": 0.907010363948676,
+      "false_suggestions": 5,
+      "false_suggestions_dev": 3,
+      "false_suggestions_holdout": 2,
+      "holdout_f1": 0.8749206349206349,
+      "holdout_r": 0.8833333333333333,
+      "p": 0.8588007736943907,
+      "peak_rss_mb": 2048.296875,
+      "pt_f1": 0.9154422496837599,
+      "r": 0.9609544468546638,
+      "s_per_page": 0.19655402294444446,
+      "type_accuracy": 0.9729119638826185
+    },
+    "Layers 1+2 + Privacy Filter, dev-chosen `start-2 +page-wide`": {
+      "covered": 0.8763557483731019,
+      "dev_f1": 0.9130126858351878,
+      "dev_r": 0.9750623441396509,
+      "en_f1": 0.8837156900023942,
+      "es_f1": 0.9437957000982211,
+      "f1": 0.904921267592912,
+      "false_suggestions": 5,
+      "false_suggestions_dev": 3,
+      "false_suggestions_holdout": 2,
+      "holdout_f1": 0.846286701208981,
+      "holdout_r": 0.8333333333333334,
+      "p": 0.8585271317829457,
+      "peak_rss_mb": 2048.296875,
+      "pt_f1": 0.9253959168097692,
+      "r": 0.9566160520607375,
+      "s_per_page": 0.19655402294444446,
+      "type_accuracy": 0.9705215419501134
+    },
+    "Layers 1+2 + Privacy Filter, opf raw `opf raw (labels mapped, nothing else)`": {
+      "covered": 0.8828633405639913,
+      "dev_f1": 0.8938991732251237,
+      "dev_r": 0.972568578553616,
+      "en_f1": 0.8868957962481173,
+      "es_f1": 0.9065939825977566,
+      "f1": 0.8917493551539167,
+      "false_suggestions": 23,
+      "false_suggestions_dev": 20,
+      "false_suggestions_holdout": 3,
+      "holdout_f1": 0.8768382352941176,
+      "holdout_r": 0.9,
+      "p": 0.8302238805970149,
+      "peak_rss_mb": 2048.296875,
+      "pt_f1": 0.8904874585896828,
+      "r": 0.9631236442516269,
+      "s_per_page": 0.19655402294444446,
+      "type_accuracy": 0.9662162162162162
+    },
+    "Layers 1+2 + qwen3-1.7b-q8_0": {
+      "covered": 0.8503253796095445,
+      "dev_f1": 0.8902646629787314,
+      "dev_r": 0.942643391521197,
+      "en_f1": 0.870967741935484,
+      "es_f1": 0.8966824644549762,
+      "f1": 0.8878715762637107,
+      "false_suggestions": 8,
+      "false_suggestions_dev": 8,
+      "false_suggestions_holdout": 0,
+      "holdout_f1": 0.8709016393442622,
+      "holdout_r": 0.85,
+      "p": 0.8489065606361829,
+      "peak_rss_mb": 2425.765625,
+      "pt_f1": 0.9245283018867925,
+      "r": 0.93058568329718,
+      "s_per_page": 6.352133437500001,
+      "type_accuracy": 0.9696969696969697
+    },
+    "layers12": {
+      "covered": 0.754880694143167,
+      "dev_f1": 0.8509252341194136,
+      "dev_r": 0.8553615960099751,
+      "en_f1": 0.8,
+      "es_f1": 0.8819362455726093,
+      "f1": 0.8395836689604382,
+      "false_suggestions": 0,
+      "false_suggestions_dev": 0,
+      "false_suggestions_holdout": 0,
+      "holdout_f1": 0.7536231884057971,
+      "holdout_r": 0.6666666666666666,
+      "p": 0.8485523385300668,
+      "peak_rss_mb": null,
+      "pt_f1": 0.9019607843137256,
+      "r": 0.8308026030368764,
+      "s_per_page": null,
+      "type_accuracy": 0.9712793733681462
+    }
+  },
+  "tokens": 11271,
+  "variants": {
+    "app (PfConfig::default)": {
+      "all": [
+        0.8588007736943907,
+        0.9609544468546638,
+        0.907010363948676
+      ],
+      "alone": [
+        0.9815384615384616,
+        0.6616052060737527,
+        0.7904250479316284
+      ],
+      "dev_f1": 0.9115681141964452,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "op0 +address-digit": {
+      "all": [
+        0.8588007736943907,
+        0.9609544468546638,
+        0.907010363948676
+      ],
+      "alone": [
+        0.9811320754716981,
+        0.6572668112798264,
+        0.7871899278059503
+      ],
+      "dev_f1": 0.9115681141964452,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "op0 +page-wide": {
+      "all": [
+        0.8576923076923076,
+        0.9631236442516269,
+        0.9073555623777166
+      ],
+      "alone": [
+        0.9787878787878788,
+        0.6681127982646421,
+        0.7941471124717115
+      ],
+      "dev_f1": 0.9119560520224712,
+      "dev_fs": 4,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "op0 -all-legal": {
+      "all": [
+        0.8380414312617702,
+        0.9631236442516269,
+        0.8962393600493526
+      ],
+      "alone": [
+        0.943952802359882,
+        0.6637744034707158,
+        0.7794502774085189
+      ],
+      "dev_f1": 0.900290892686085,
+      "dev_fs": 15,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 18,
+      "holdout_fs": 3,
+      "holdout_r": 0.8833333333333333
+    },
+    "op0 -legal-context": {
+      "all": [
+        0.8460076045627376,
+        0.9631236442516269,
+        0.9007748085773749
+      ],
+      "alone": [
+        0.9580838323353293,
+        0.6637744034707158,
+        0.7842257852669348
+      ],
+      "dev_f1": 0.9054765945410833,
+      "dev_fs": 10,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 13,
+      "holdout_fs": 3,
+      "holdout_r": 0.8833333333333333
+    },
+    "op0 -legal-words": {
+      "all": [
+        0.8522072936660269,
+        0.9609544468546638,
+        0.9033197317026685
+      ],
+      "alone": [
+        0.9696048632218845,
+        0.6616052060737527,
+        0.7865272994777772
+      ],
+      "dev_f1": 0.9073481669644077,
+      "dev_fs": 7,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 9,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "op0 -untyped": {
+      "all": [
+        0.8576998050682261,
+        0.9522776572668112,
+        0.9025177141762469
+      ],
+      "alone": [
+        0.9807692307692307,
+        0.6334056399132321,
+        0.7697118490761079
+      ],
+      "dev_f1": 0.9077413344508527,
+      "dev_fs": 3,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8666666666666667
+    },
+    "op0 -year-only": {
+      "all": [
+        0.8571428571428571,
+        0.9609544468546638,
+        0.9060848815408216
+      ],
+      "alone": [
+        0.9785276073619632,
+        0.6616052060737527,
+        0.7894469935778067
+      ],
+      "dev_f1": 0.9105094517170321,
+      "dev_fs": 4,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "op0 app": {
+      "all": [
+        0.8588007736943907,
+        0.9609544468546638,
+        0.907010363948676
+      ],
+      "alone": [
+        0.9815384615384616,
+        0.6616052060737527,
+        0.7904250479316284
+      ],
+      "dev_f1": 0.9115681141964452,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "op0 names>=4": {
+      "all": [
+        0.8621359223300971,
+        0.9609544468546638,
+        0.9088670121456742
+      ],
+      "alone": [
+        0.9876160990712074,
+        0.6616052060737527,
+        0.7923884450308257
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.8833333333333333
+    },
+    "op0 names>=4 -untyped": {
+      "all": [
+        0.8610567514677103,
+        0.9522776572668112,
+        0.9043727424040602
+      ],
+      "alone": [
+        0.9870967741935484,
+        0.6334056399132321,
+        0.771652863299163
+      ],
+      "dev_f1": 0.9088016903108964,
+      "dev_fs": 2,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.8666666666666667
+    },
+    "op0 names>=5": {
+      "all": [
+        0.8621359223300971,
+        0.9609544468546638,
+        0.9088670121456742
+      ],
+      "alone": [
+        0.9876160990712074,
+        0.6616052060737527,
+        0.7923884450308257
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.8833333333333333
+    },
+    "opf raw (labels mapped, nothing else)": {
+      "all": [
+        0.8302238805970149,
+        0.9631236442516269,
+        0.8917493551539167
+      ],
+      "alone": [
+        0.9312320916905444,
+        0.6724511930585684,
+        0.7809623471503595
+      ],
+      "dev_f1": 0.8938991732251237,
+      "dev_fs": 20,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 23,
+      "holdout_fs": 3,
+      "holdout_r": 0.9
+    },
+    "start-1 +address-digit": {
+      "all": [
+        0.858252427184466,
+        0.9566160520607375,
+        0.9047686462726021
+      ],
+      "alone": [
+        0.9808917197452229,
+        0.648590021691974,
+        0.7808575765027091
+      ],
+      "dev_f1": 0.9115681141964452,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.85
+    },
+    "start-1 +page-wide": {
+      "all": [
+        0.8571428571428571,
+        0.9587852494577006,
+        0.9051194539249146
+      ],
+      "alone": [
+        0.9785276073619632,
+        0.6594360086767896,
+        0.7879006999427209
+      ],
+      "dev_f1": 0.9119560520224712,
+      "dev_fs": 4,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.85
+    },
+    "start-1 -all-legal": {
+      "all": [
+        0.8374291115311909,
+        0.9587852494577006,
+        0.8940076385543818
+      ],
+      "alone": [
+        0.9432835820895522,
+        0.6550976138828634,
+        0.7732108278035699
+      ],
+      "dev_f1": 0.900290892686085,
+      "dev_fs": 15,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 18,
+      "holdout_fs": 3,
+      "holdout_r": 0.85
+    },
+    "start-1 -legal-context": {
+      "all": [
+        0.8454198473282443,
+        0.9587852494577006,
+        0.8985409482115774
+      ],
+      "alone": [
+        0.9575757575757575,
+        0.6550976138828634,
+        0.7779698046760362
+      ],
+      "dev_f1": 0.9054765945410833,
+      "dev_fs": 10,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 13,
+      "holdout_fs": 3,
+      "holdout_r": 0.85
+    },
+    "start-1 -legal-words": {
+      "all": [
+        0.8516377649325626,
+        0.9566160520607375,
+        0.9010796480222633
+      ],
+      "alone": [
+        0.9692307692307692,
+        0.6529284164859002,
+        0.7802419354838709
+      ],
+      "dev_f1": 0.9073481669644077,
+      "dev_fs": 7,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 9,
+      "holdout_fs": 2,
+      "holdout_r": 0.85
+    },
+    "start-1 -untyped": {
+      "all": [
+        0.8571428571428571,
+        0.9479392624728851,
+        0.9002575107296137
+      ],
+      "alone": [
+        0.9805194805194806,
+        0.6247288503253796,
+        0.7631950720847995
+      ],
+      "dev_f1": 0.9077413344508527,
+      "dev_fs": 3,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-1 -year-only": {
+      "all": [
+        0.8565891472868217,
+        0.9566160520607375,
+        0.9038435678548077
+      ],
+      "alone": [
+        0.9782608695652174,
+        0.6529284164859002,
+        0.7831516868549624
+      ],
+      "dev_f1": 0.9105094517170321,
+      "dev_fs": 4,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.85
+    },
+    "start-1 app": {
+      "all": [
+        0.858252427184466,
+        0.9566160520607375,
+        0.9047686462726021
+      ],
+      "alone": [
+        0.9813084112149533,
+        0.6529284164859002,
+        0.7841264327891629
+      ],
+      "dev_f1": 0.9115681141964452,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.85
+    },
+    "start-1 names>=4": {
+      "all": [
+        0.8615984405458089,
+        0.9566160520607375,
+        0.9066244956336701
+      ],
+      "alone": [
+        0.987460815047022,
+        0.6529284164859002,
+        0.786083222099704
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.85
+    },
+    "start-1 names>=4 -untyped": {
+      "all": [
+        0.8605108055009824,
+        0.9479392624728851,
+        0.9021116952711317
+      ],
+      "alone": [
+        0.9869281045751634,
+        0.6247288503253796,
+        0.7651286562568727
+      ],
+      "dev_f1": 0.9088016903108964,
+      "dev_fs": 2,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-1 names>=5": {
+      "all": [
+        0.8615984405458089,
+        0.9566160520607375,
+        0.9066244956336701
+      ],
+      "alone": [
+        0.987460815047022,
+        0.6529284164859002,
+        0.786083222099704
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.85
+    },
+    "start-2 +address-digit": {
+      "all": [
+        0.8596491228070176,
+        0.9544468546637744,
+        0.9045711049109485
+      ],
+      "alone": [
+        0.9871382636655949,
+        0.6464208242950108,
+        0.7812471979675926
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-2 +page-wide": {
+      "all": [
+        0.8585271317829457,
+        0.9566160520607375,
+        0.904921267592912
+      ],
+      "alone": [
+        0.9845201238390093,
+        0.6572668112798264,
+        0.7882781725140816
+      ],
+      "dev_f1": 0.9130126858351878,
+      "dev_fs": 3,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-2 -all-legal": {
+      "all": [
+        0.8403041825095057,
+        0.9566160520607375,
+        0.8946957735100797
+      ],
+      "alone": [
+        0.9516616314199395,
+        0.6529284164859002,
+        0.7744868202870375
+      ],
+      "dev_f1": 0.9023580293674632,
+      "dev_fs": 13,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 16,
+      "holdout_fs": 3,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-2 -legal-context": {
+      "all": [
+        0.8483685220729367,
+        0.9566160520607375,
+        0.899246406765039
+      ],
+      "alone": [
+        0.9662576687116564,
+        0.6529284164859002,
+        0.7792768173057562
+      ],
+      "dev_f1": 0.9075676409962613,
+      "dev_fs": 8,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 11,
+      "holdout_fs": 3,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-2 -legal-words": {
+      "all": [
+        0.8529980657640233,
+        0.9544468546637744,
+        0.9008753867974678
+      ],
+      "alone": [
+        0.9751552795031055,
+        0.6507592190889371,
+        0.7805961367949154
+      ],
+      "dev_f1": 0.9083994866188145,
+      "dev_fs": 6,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 8,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-2 -untyped": {
+      "all": [
+        0.8585461689587426,
+        0.9457700650759219,
+        0.9000498369081276
+      ],
+      "alone": [
+        0.9868852459016394,
+        0.6225596529284165,
+        0.7634867607027964
+      ],
+      "dev_f1": 0.9088016903108964,
+      "dev_fs": 2,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-2 -year-only": {
+      "all": [
+        0.857976653696498,
+        0.9544468546637744,
+        0.9036443355741267
+      ],
+      "alone": [
+        0.9843260188087775,
+        0.6507592190889371,
+        0.7835178454091012
+      ],
+      "dev_f1": 0.9115681141964452,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-2 app": {
+      "all": [
+        0.8596491228070176,
+        0.9544468546637744,
+        0.9045711049109485
+      ],
+      "alone": [
+        0.9874213836477987,
+        0.6507592190889371,
+        0.784496614672252
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-2 names>=4": {
+      "all": [
+        0.863013698630137,
+        0.9544468546637744,
+        0.9064303582231088
+      ],
+      "alone": [
+        0.9936708860759493,
+        0.6507592190889371,
+        0.7864615076350218
+      ],
+      "dev_f1": 0.9136928419026901,
+      "dev_fs": 1,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 2,
+      "holdout_fs": 1,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-2 names>=4 -untyped": {
+      "all": [
+        0.8619329388560157,
+        0.9457700650759219,
+        0.9019074149899766
+      ],
+      "alone": [
+        0.9933993399339934,
+        0.6225596529284165,
+        0.7654282701730447
+      ],
+      "dev_f1": 0.9098645263256504,
+      "dev_fs": 1,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 2,
+      "holdout_fs": 1,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-2 names>=5": {
+      "all": [
+        0.863013698630137,
+        0.9544468546637744,
+        0.9064303582231088
+      ],
+      "alone": [
+        0.9936708860759493,
+        0.6507592190889371,
+        0.7864615076350218
+      ],
+      "dev_f1": 0.9136928419026901,
+      "dev_fs": 1,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 2,
+      "holdout_fs": 1,
+      "holdout_r": 0.8333333333333334
+    },
+    "start-3 +address-digit": {
+      "all": [
+        0.859375,
+        0.9522776572668112,
+        0.9034442760659295
+      ],
+      "alone": [
+        0.9869706840390879,
+        0.6399132321041214,
+        0.7764236822903998
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-3 +page-wide": {
+      "all": [
+        0.858252427184466,
+        0.9544468546637744,
+        0.903797268346183
+      ],
+      "alone": [
+        0.984375,
+        0.6529284164859002,
+        0.7851036081727286
+      ],
+      "dev_f1": 0.9130126858351878,
+      "dev_fs": 3,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-3 -all-legal": {
+      "all": [
+        0.84,
+        0.9544468546637744,
+        0.8935738117112325
+      ],
+      "alone": [
+        0.9510703363914373,
+        0.6464208242950108,
+        0.769696491526761
+      ],
+      "dev_f1": 0.9023580293674632,
+      "dev_fs": 13,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 16,
+      "holdout_fs": 3,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-3 -legal-context": {
+      "all": [
+        0.8480769230769231,
+        0.9544468546637744,
+        0.8981233554192192
+      ],
+      "alone": [
+        0.9658385093167702,
+        0.6464208242950108,
+        0.7744884613938251
+      ],
+      "dev_f1": 0.9075676409962613,
+      "dev_fs": 8,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 11,
+      "holdout_fs": 3,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-3 -legal-words": {
+      "all": [
+        0.8527131782945736,
+        0.9522776572668112,
+        0.8997493967822173
+      ],
+      "alone": [
+        0.9748427672955975,
+        0.6442516268980477,
+        0.7757966935742091
+      ],
+      "dev_f1": 0.9083994866188145,
+      "dev_fs": 6,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 8,
+      "holdout_fs": 2,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-3 -untyped": {
+      "all": [
+        0.8582677165354331,
+        0.9436008676789588,
+        0.8989136822947278
+      ],
+      "alone": [
+        0.9867109634551495,
+        0.6160520607375272,
+        0.7585217692366492
+      ],
+      "dev_f1": 0.9088016903108964,
+      "dev_fs": 2,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8
+    },
+    "start-3 -year-only": {
+      "all": [
+        0.8576998050682261,
+        0.9522776572668112,
+        0.9025177141762469
+      ],
+      "alone": [
+        0.9841269841269841,
+        0.6442516268980477,
+        0.7787198951218997
+      ],
+      "dev_f1": 0.9115681141964452,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-3 app": {
+      "all": [
+        0.859375,
+        0.9522776572668112,
+        0.9034442760659295
+      ],
+      "alone": [
+        0.9872611464968153,
+        0.6442516268980477,
+        0.7796991971816672
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-3 names>=4": {
+      "all": [
+        0.8627450980392157,
+        0.9522776572668112,
+        0.9053031190682633
+      ],
+      "alone": [
+        0.9935897435897436,
+        0.6442516268980477,
+        0.7816652092336166
+      ],
+      "dev_f1": 0.9136928419026901,
+      "dev_fs": 1,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 2,
+      "holdout_fs": 1,
+      "holdout_r": 0.8166666666666667
+    },
+    "start-3 names>=4 -untyped": {
+      "all": [
+        0.8616600790513834,
+        0.9436008676789588,
+        0.90077082729764
+      ],
+      "alone": [
+        0.9933110367892977,
+        0.6160520607375272,
+        0.7604639526130017
+      ],
+      "dev_f1": 0.9098645263256504,
+      "dev_fs": 1,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 2,
+      "holdout_fs": 1,
+      "holdout_r": 0.8
+    },
+    "start-3 names>=5": {
+      "all": [
+        0.8627450980392157,
+        0.9522776572668112,
+        0.9053031190682633
+      ],
+      "alone": [
+        0.9935897435897436,
+        0.6442516268980477,
+        0.7816652092336166
+      ],
+      "dev_f1": 0.9136928419026901,
+      "dev_fs": 1,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 2,
+      "holdout_fs": 1,
+      "holdout_r": 0.8166666666666667
+    },
+    "stay+1 +address-digit": {
+      "all": [
+        0.8596491228070176,
+        0.9544468546637744,
+        0.9045711049109485
+      ],
+      "alone": [
+        0.9868852459016394,
+        0.6334056399132321,
+        0.7715882205766809
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+1 +page-wide": {
+      "all": [
+        0.8585271317829457,
+        0.9566160520607375,
+        0.904921267592912
+      ],
+      "alone": [
+        0.9842271293375394,
+        0.6442516268980477,
+        0.7787512448472776
+      ],
+      "dev_f1": 0.9130126858351878,
+      "dev_fs": 3,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+1 -all-legal": {
+      "all": [
+        0.8435114503816794,
+        0.9566160520607375,
+        0.8965104887707372
+      ],
+      "alone": [
+        0.9565217391304348,
+        0.6377440347071583,
+        0.7652626597255088
+      ],
+      "dev_f1": 0.9044346805022969,
+      "dev_fs": 11,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 14,
+      "holdout_fs": 3,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+1 -legal-context": {
+      "all": [
+        0.8483685220729367,
+        0.9566160520607375,
+        0.899246406765039
+      ],
+      "alone": [
+        0.9655172413793104,
+        0.6377440347071583,
+        0.7681254082299152
+      ],
+      "dev_f1": 0.9075676409962613,
+      "dev_fs": 8,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 11,
+      "holdout_fs": 3,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+1 -legal-words": {
+      "all": [
+        0.8563106796116505,
+        0.9544468546637744,
+        0.9027194633182989
+      ],
+      "alone": [
+        0.9808306709265175,
+        0.6355748373101953,
+        0.7713303263647121
+      ],
+      "dev_f1": 0.9105094517170321,
+      "dev_fs": 4,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+1 -untyped": {
+      "all": [
+        0.8585461689587426,
+        0.9457700650759219,
+        0.9000498369081276
+      ],
+      "alone": [
+        0.9865771812080537,
+        0.6073752711496746,
+        0.7518700850329262
+      ],
+      "dev_f1": 0.9088016903108964,
+      "dev_fs": 2,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8166666666666667
+    },
+    "stay+1 -year-only": {
+      "all": [
+        0.857976653696498,
+        0.9544468546637744,
+        0.9036443355741267
+      ],
+      "alone": [
+        0.9839743589743589,
+        0.6355748373101953,
+        0.7723005198696677
+      ],
+      "dev_f1": 0.9115681141964452,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+1 app": {
+      "all": [
+        0.8596491228070176,
+        0.9544468546637744,
+        0.9045711049109485
+      ],
+      "alone": [
+        0.9871382636655949,
+        0.6355748373101953,
+        0.7732731571029444
+      ],
+      "dev_f1": 0.9126292413858974,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+1 names>=4": {
+      "all": [
+        0.863013698630137,
+        0.9544468546637744,
+        0.9064303582231088
+      ],
+      "alone": [
+        0.9935275080906149,
+        0.6355748373101953,
+        0.7752257997793712
+      ],
+      "dev_f1": 0.9136928419026901,
+      "dev_fs": 1,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 2,
+      "holdout_fs": 1,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+1 names>=4 -untyped": {
+      "all": [
+        0.8619329388560157,
+        0.9457700650759219,
+        0.9019074149899766
+      ],
+      "alone": [
+        0.9932432432432432,
+        0.6073752711496746,
+        0.7537978334722133
+      ],
+      "dev_f1": 0.9098645263256504,
+      "dev_fs": 1,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 2,
+      "holdout_fs": 1,
+      "holdout_r": 0.8166666666666667
+    },
+    "stay+1 names>=5": {
+      "all": [
+        0.863013698630137,
+        0.9544468546637744,
+        0.9064303582231088
+      ],
+      "alone": [
+        0.9935275080906149,
+        0.6355748373101953,
+        0.7752257997793712
+      ],
+      "dev_f1": 0.9136928419026901,
+      "dev_fs": 1,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 2,
+      "holdout_fs": 1,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+2 +address-digit": {
+      "all": [
+        0.859375,
+        0.9544468546637744,
+        0.9044193216855088
+      ],
+      "alone": [
+        0.9866220735785953,
+        0.6203904555314533,
+        0.761774916594811
+      ],
+      "dev_f1": 0.9124553839893967,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 4,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+2 +page-wide": {
+      "all": [
+        0.8565891472868217,
+        0.9566160520607375,
+        0.9038435678548077
+      ],
+      "alone": [
+        0.9808917197452229,
+        0.6334056399132321,
+        0.7697495677776065
+      ],
+      "dev_f1": 0.9117788418747885,
+      "dev_fs": 4,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+2 -all-legal": {
+      "all": [
+        0.8480769230769231,
+        0.9566160520607375,
+        0.8990825688073395
+      ],
+      "alone": [
+        0.9648562300319489,
+        0.6225596529284165,
+        0.7568030106569222
+      ],
+      "dev_f1": 0.9063315840047305,
+      "dev_fs": 9,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 11,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+2 -legal-context": {
+      "all": [
+        0.8497109826589595,
+        0.9566160520607375,
+        0.9
+      ],
+      "alone": [
+        0.967948717948718,
+        0.6225596529284165,
+        0.7577524632156877
+      ],
+      "dev_f1": 0.9073805478430235,
+      "dev_fs": 8,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 10,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+2 -legal-words": {
+      "all": [
+        0.8576998050682261,
+        0.9544468546637744,
+        0.9034907597535935
+      ],
+      "alone": [
+        0.9836601307189542,
+        0.6203904555314533,
+        0.7608904130777763
+      ],
+      "dev_f1": 0.9113919511342343,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+2 -untyped": {
+      "all": [
+        0.8565815324165029,
+        0.9457700650759219,
+        0.8989690721649485
+      ],
+      "alone": [
+        0.9829931972789115,
+        0.5943600867678959,
+        0.7408003367869588
+      ],
+      "dev_f1": 0.9075639394498018,
+      "dev_fs": 3,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8166666666666667
+    },
+    "stay+2 -year-only": {
+      "all": [
+        0.8560311284046692,
+        0.9544468546637744,
+        0.9025641025641026
+      ],
+      "alone": [
+        0.9804560260586319,
+        0.6203904555314533,
+        0.7599299091202004
+      ],
+      "dev_f1": 0.9103309941764844,
+      "dev_fs": 4,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+2 app": {
+      "all": [
+        0.8576998050682261,
+        0.9544468546637744,
+        0.9034907597535935
+      ],
+      "alone": [
+        0.9836601307189542,
+        0.6203904555314533,
+        0.7608904130777763
+      ],
+      "dev_f1": 0.9113919511342343,
+      "dev_fs": 3,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+2 names>=4": {
+      "all": [
+        0.8610567514677103,
+        0.9544468546637744,
+        0.9053497942386832
+      ],
+      "alone": [
+        0.9901315789473685,
+        0.6203904555314533,
+        0.762818723555083
+      ],
+      "dev_f1": 0.9124553839893967,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay+2 names>=4 -untyped": {
+      "all": [
+        0.8599605522682445,
+        0.9457700650759219,
+        0.9008264462809916
+      ],
+      "alone": [
+        0.9897260273972602,
+        0.5943600867678959,
+        0.7427041273324985
+      ],
+      "dev_f1": 0.9086266156750737,
+      "dev_fs": 2,
+      "dev_r": 0.9650872817955112,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.8166666666666667
+    },
+    "stay+2 names>=5": {
+      "all": [
+        0.8610567514677103,
+        0.9544468546637744,
+        0.9053497942386832
+      ],
+      "alone": [
+        0.9901315789473685,
+        0.6203904555314533,
+        0.762818723555083
+      ],
+      "dev_f1": 0.9124553839893967,
+      "dev_fs": 2,
+      "dev_r": 0.972568578553616,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.8333333333333334
+    },
+    "stay1 +address-digit": {
+      "all": [
+        0.8579654510556622,
+        0.9631236442516269,
+        0.9075083849461923
+      ],
+      "alone": [
+        0.9789156626506024,
+        0.6811279826464208,
+        0.803312433828073
+      ],
+      "dev_f1": 0.9119560520224712,
+      "dev_fs": 4,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "stay1 +page-wide": {
+      "all": [
+        0.8571428571428571,
+        0.9674620390455532,
+        0.9089673913043478
+      ],
+      "alone": [
+        0.9768115942028985,
+        0.6919739696312365,
+        0.8100839449610416
+      ],
+      "dev_f1": 0.9136082963205866,
+      "dev_fs": 5,
+      "dev_r": 0.9800498753117207,
+      "false_suggestions": 7,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "stay1 -all-legal": {
+      "all": [
+        0.835820895522388,
+        0.96529284164859,
+        0.8959033632327299
+      ],
+      "alone": [
+        0.940677966101695,
+        0.6854663774403471,
+        0.7930453656496231
+      ],
+      "dev_f1": 0.8997016295616249,
+      "dev_fs": 17,
+      "dev_r": 0.9775561097256857,
+      "false_suggestions": 20,
+      "holdout_fs": 3,
+      "holdout_r": 0.8833333333333333
+    },
+    "stay1 -legal-context": {
+      "all": [
+        0.8436911487758946,
+        0.96529284164859,
+        0.9004049021843942
+      ],
+      "alone": [
+        0.9541547277936963,
+        0.6854663774403471,
+        0.7977952743966005
+      ],
+      "dev_f1": 0.9048541533354955,
+      "dev_fs": 12,
+      "dev_r": 0.9775561097256857,
+      "false_suggestions": 15,
+      "holdout_fs": 3,
+      "holdout_r": 0.8833333333333333
+    },
+    "stay1 -legal-words": {
+      "all": [
+        0.8514285714285714,
+        0.9631236442516269,
+        0.9038384031587072
+      ],
+      "alone": [
+        0.967930029154519,
+        0.6832971800433839,
+        0.8010815903667985
+      ],
+      "dev_f1": 0.9077538610209241,
+      "dev_fs": 8,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 10,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "stay1 -untyped": {
+      "all": [
+        0.8585271317829457,
+        0.9544468546637744,
+        0.903949562100157
+      ],
+      "alone": [
+        0.9814814814814815,
+        0.6529284164859002,
+        0.7841816796519774
+      ],
+      "dev_f1": 0.9091960601583966,
+      "dev_fs": 3,
+      "dev_r": 0.9675810473815462,
+      "false_suggestions": 5,
+      "holdout_fs": 2,
+      "holdout_r": 0.8666666666666667
+    },
+    "stay1 -year-only": {
+      "all": [
+        0.8563218390804598,
+        0.9631236442516269,
+        0.9065880982561924
+      ],
+      "alone": [
+        0.9764705882352941,
+        0.6832971800433839,
+        0.8039915126541407
+      ],
+      "dev_f1": 0.9109018610770301,
+      "dev_fs": 5,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 7,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "stay1 app": {
+      "all": [
+        0.8579654510556622,
+        0.9631236442516269,
+        0.9075083849461923
+      ],
+      "alone": [
+        0.9793510324483776,
+        0.6832971800433839,
+        0.804966190342407
+      ],
+      "dev_f1": 0.9119560520224712,
+      "dev_fs": 4,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.8833333333333333
+    },
+    "stay1 names>=4": {
+      "all": [
+        0.861271676300578,
+        0.9631236442516269,
+        0.9093545748826469
+      ],
+      "alone": [
+        0.9851190476190477,
+        0.6811279826464208,
+        0.8053933629090064
+      ],
+      "dev_f1": 0.9130126858351878,
+      "dev_fs": 3,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 4,
+      "holdout_fs": 1,
+      "holdout_r": 0.8833333333333333
+    },
+    "stay1 names>=4 -untyped": {
+      "all": [
+        0.8618677042801557,
+        0.9544468546637744,
+        0.9057978591161826
+      ],
+      "alone": [
+        0.9875389408099688,
+        0.6507592190889371,
+        0.7845337139133053
+      ],
+      "dev_f1": 0.9102543717806024,
+      "dev_fs": 2,
+      "dev_r": 0.9675810473815462,
+      "false_suggestions": 3,
+      "holdout_fs": 1,
+      "holdout_r": 0.8666666666666667
+    },
+    "stay1 names>=5": {
+      "all": [
+        0.861271676300578,
+        0.9631236442516269,
+        0.9093545748826469
+      ],
+      "alone": [
+        0.9851190476190477,
+        0.6811279826464208,
+        0.8053933629090064
+      ],
+      "dev_f1": 0.9130126858351878,
+      "dev_fs": 3,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 4,
+      "holdout_fs": 1,
+      "holdout_r": 0.8833333333333333
+    },
+    "stay2 +address-digit": {
+      "all": [
+        0.8568702290076335,
+        0.9674620390455532,
+        0.9088140723814537
+      ],
+      "alone": [
+        0.9768115942028985,
+        0.7049891540130152,
+        0.8189336104859393
+      ],
+      "dev_f1": 0.9109018610770301,
+      "dev_fs": 5,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 7,
+      "holdout_fs": 2,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay2 +page-wide": {
+      "all": [
+        0.8560606060606061,
+        0.9718004338394793,
+        0.9102662075537854
+      ],
+      "alone": [
+        0.9748603351955307,
+        0.7158351409978309,
+        0.8255055926086537
+      ],
+      "dev_f1": 0.9125582701159846,
+      "dev_fs": 6,
+      "dev_r": 0.9800498753117207,
+      "false_suggestions": 8,
+      "holdout_fs": 2,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay2 -all-legal": {
+      "all": [
+        0.8348794063079777,
+        0.9696312364425163,
+        0.8972240249964875
+      ],
+      "alone": [
+        0.9400544959128065,
+        0.7093275488069414,
+        0.8085531832548538
+      ],
+      "dev_f1": 0.8986781584178528,
+      "dev_fs": 18,
+      "dev_r": 0.9775561097256857,
+      "false_suggestions": 21,
+      "holdout_fs": 3,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay2 -legal-context": {
+      "all": [
+        0.8426966292134831,
+        0.9696312364425163,
+        0.9017187121762285
+      ],
+      "alone": [
+        0.9530386740331491,
+        0.7093275488069414,
+        0.813318482151547
+      ],
+      "dev_f1": 0.9038189326834678,
+      "dev_fs": 13,
+      "dev_r": 0.9775561097256857,
+      "false_suggestions": 16,
+      "holdout_fs": 3,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay2 -legal-words": {
+      "all": [
+        0.8503787878787878,
+        0.9674620390455532,
+        0.9051498721967469
+      ],
+      "alone": [
+        0.9662921348314607,
+        0.7071583514099783,
+        0.816661811826391
+      ],
+      "dev_f1": 0.9067093573154331,
+      "dev_fs": 9,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 11,
+      "holdout_fs": 2,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay2 -untyped": {
+      "all": [
+        0.8574181117533719,
+        0.9587852494577006,
+        0.9052728958929266
+      ],
+      "alone": [
+        0.9791666666666666,
+        0.6746203904555315,
+        0.7988523022270803
+      ],
+      "dev_f1": 0.9081402065805265,
+      "dev_fs": 4,
+      "dev_r": 0.9675810473815462,
+      "false_suggestions": 6,
+      "holdout_fs": 2,
+      "holdout_r": 0.9
+    },
+    "stay2 -year-only": {
+      "all": [
+        0.8552380952380952,
+        0.9674620390455532,
+        0.9078952439027155
+      ],
+      "alone": [
+        0.9745042492917847,
+        0.7071583514099783,
+        0.8195803582521505
+      ],
+      "dev_f1": 0.9098501045370251,
+      "dev_fs": 6,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 8,
+      "holdout_fs": 2,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay2 app": {
+      "all": [
+        0.8568702290076335,
+        0.9674620390455532,
+        0.9088140723814537
+      ],
+      "alone": [
+        0.9772727272727273,
+        0.7071583514099783,
+        0.8205578482161149
+      ],
+      "dev_f1": 0.9109018610770301,
+      "dev_fs": 5,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 7,
+      "holdout_fs": 2,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay2 names>=4": {
+      "all": [
+        0.8601532567049809,
+        0.9674620390455532,
+        0.9106573200151887
+      ],
+      "alone": [
+        0.9828080229226361,
+        0.7049891540130152,
+        0.821033482109977
+      ],
+      "dev_f1": 0.9119560520224712,
+      "dev_fs": 4,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 5,
+      "holdout_fs": 1,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay2 names>=4 -untyped": {
+      "all": [
+        0.8607350096711799,
+        0.9587852494577006,
+        0.9071182657341368
+      ],
+      "alone": [
+        0.984984984984985,
+        0.6724511930585684,
+        0.7992516841037896
+      ],
+      "dev_f1": 0.9091960601583966,
+      "dev_fs": 3,
+      "dev_r": 0.9675810473815462,
+      "false_suggestions": 4,
+      "holdout_fs": 1,
+      "holdout_r": 0.9
+    },
+    "stay2 names>=5": {
+      "all": [
+        0.8601532567049809,
+        0.9674620390455532,
+        0.9106573200151887
+      ],
+      "alone": [
+        0.9828080229226361,
+        0.7049891540130152,
+        0.821033482109977
+      ],
+      "dev_f1": 0.9119560520224712,
+      "dev_fs": 4,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 5,
+      "holdout_fs": 1,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay3 +address-digit": {
+      "all": [
+        0.849906191369606,
+        0.9696312364425163,
+        0.9058297769546663
+      ],
+      "alone": [
+        0.9621621621621622,
+        0.7418655097613883,
+        0.8377738632610371
+      ],
+      "dev_f1": 0.9060459237413102,
+      "dev_fs": 10,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 12,
+      "holdout_fs": 2,
+      "holdout_r": 0.9333333333333333
+    },
+    "stay3 +page-wide": {
+      "all": [
+        0.8428835489833642,
+        0.9739696312364425,
+        0.9036976551724138
+      ],
+      "alone": [
+        0.9440203562340967,
+        0.7592190889370932,
+        0.841594265363065
+      ],
+      "dev_f1": 0.9036122708295516,
+      "dev_fs": 15,
+      "dev_r": 0.9800498753117207,
+      "false_suggestions": 17,
+      "holdout_fs": 2,
+      "holdout_r": 0.9333333333333333
+    },
+    "stay3 -all-legal": {
+      "all": [
+        0.829981718464351,
+        0.9718004338394793,
+        0.895309783206779
+      ],
+      "alone": [
+        0.9309462915601023,
+        0.7462039045553145,
+        0.8284001746563108
+      ],
+      "dev_f1": 0.8950363624338243,
+      "dev_fs": 22,
+      "dev_r": 0.9775561097256857,
+      "false_suggestions": 25,
+      "holdout_fs": 3,
+      "holdout_r": 0.9333333333333333
+    },
+    "stay3 -legal-context": {
+      "all": [
+        0.8376383763837638,
+        0.9718004338394793,
+        0.8997456371237088
+      ],
+      "alone": [
+        0.9430051813471503,
+        0.7462039045553145,
+        0.8331403781920769
+      ],
+      "dev_f1": 0.9001096044119391,
+      "dev_fs": 17,
+      "dev_r": 0.9775561097256857,
+      "false_suggestions": 20,
+      "holdout_fs": 3,
+      "holdout_r": 0.9333333333333333
+    },
+    "stay3 -legal-words": {
+      "all": [
+        0.8435754189944135,
+        0.9696312364425163,
+        0.902221568732289
+      ],
+      "alone": [
+        0.952755905511811,
+        0.7440347071583514,
+        0.8355579714521552
+      ],
+      "dev_f1": 0.9019187529853094,
+      "dev_fs": 14,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 16,
+      "holdout_fs": 2,
+      "holdout_r": 0.9333333333333333
+    },
+    "stay3 -untyped": {
+      "all": [
+        0.8503787878787878,
+        0.9609544468546638,
+        0.9022914856892715
+      ],
+      "alone": [
+        0.9638888888888889,
+        0.7093275488069414,
+        0.8172438752984474
+      ],
+      "dev_f1": 0.9032743428359866,
+      "dev_fs": 9,
+      "dev_r": 0.9675810473815462,
+      "false_suggestions": 11,
+      "holdout_fs": 2,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay3 -year-only": {
+      "all": [
+        0.848314606741573,
+        0.9696312364425163,
+        0.9049250219537864
+      ],
+      "alone": [
+        0.9603174603174603,
+        0.7440347071583514,
+        0.8384529136657947
+      ],
+      "dev_f1": 0.9050105939943011,
+      "dev_fs": 11,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 13,
+      "holdout_fs": 2,
+      "holdout_r": 0.9333333333333333
+    },
+    "stay3 app": {
+      "all": [
+        0.849906191369606,
+        0.9696312364425163,
+        0.9058297769546663
+      ],
+      "alone": [
+        0.9628647214854111,
+        0.7440347071583514,
+        0.8394223573590781
+      ],
+      "dev_f1": 0.9060459237413102,
+      "dev_fs": 10,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 12,
+      "holdout_fs": 2,
+      "holdout_r": 0.9333333333333333
+    },
+    "stay3 names>=4": {
+      "all": [
+        0.8528301886792453,
+        0.9696312364425163,
+        0.9074878391670897
+      ],
+      "alone": [
+        0.967741935483871,
+        0.7396963123644251,
+        0.8384902258104175
+      ],
+      "dev_f1": 0.9068969263155421,
+      "dev_fs": 9,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 10,
+      "holdout_fs": 1,
+      "holdout_r": 0.9333333333333333
+    },
+    "stay3 names>=4 -untyped": {
+      "all": [
+        0.8533333333333334,
+        0.9609544468546638,
+        0.9039519201645173
+      ],
+      "alone": [
+        0.9690140845070423,
+        0.7049891540130152,
+        0.8161805233629851
+      ],
+      "dev_f1": 0.9041278295605859,
+      "dev_fs": 8,
+      "dev_r": 0.9675810473815462,
+      "false_suggestions": 9,
+      "holdout_fs": 1,
+      "holdout_r": 0.9166666666666666
+    },
+    "stay3 names>=5": {
+      "all": [
+        0.8528301886792453,
+        0.9696312364425163,
+        0.9074878391670897
+      ],
+      "alone": [
+        0.967741935483871,
+        0.7396963123644251,
+        0.8384902258104175
+      ],
+      "dev_f1": 0.9068969263155421,
+      "dev_fs": 9,
+      "dev_r": 0.9750623441396509,
+      "false_suggestions": 10,
+      "holdout_fs": 1,
+      "holdout_r": 0.9333333333333333
+    }
+  }
+}

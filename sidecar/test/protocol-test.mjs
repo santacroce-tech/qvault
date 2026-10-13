@@ -6,6 +6,8 @@
 // Optional env (model-dependent checks are skipped when unset):
 //   QVAC_OCR_DETECTOR, QVAC_OCR_RECOGNIZER  absolute .gguf paths
 //   QVAC_LLM                                absolute .gguf path
+//   QVAC_PF_ONNX                            absolute path of Privacy Filter's
+//                                           model_quantized.onnx (+ _data beside it)
 //   QVAC_SIDECAR_BIN                        bare binary (default: node_modules)
 //   QVAC_SIDECAR_WORKER                     worker.js (default: ../worker.js)
 import { spawn, execFileSync } from 'node:child_process'
@@ -31,9 +33,14 @@ const events = []
 let readyResolve
 const ready = new Promise((resolve) => { readyResolve = resolve })
 let nonJson = 0
+const nonJsonSamples = []
 createInterface({ input: child.stdout }).on('line', (line) => {
   let msg
-  try { msg = JSON.parse(line) } catch { nonJson++; return }
+  try { msg = JSON.parse(line) } catch {
+    nonJson++
+    if (nonJsonSamples.length < 5) nonJsonSamples.push(line.slice(0, 120))
+    return
+  }
   if (msg.ready) return readyResolve(msg)
   if (msg.event) return events.push(msg)
   const p = pending.get(msg.id)
@@ -61,7 +68,8 @@ assert.equal(readyMsg.protocol, 1)
 
 const hello = await rpc('hello')
 assert.equal(hello.result.inference, '0.21.0')
-console.log('hello ok', hello.result.platform)
+console.log('hello ok', hello.result.platform, 'onnx', hello.result.onnx, hello.result.onnxError || '')
+if (process.env.QVAC_EXPECT_ONNX !== '0') assert.equal(hello.result.onnx, '0.15.1', 'the ONNX addon loads on this platform')
 
 // Allow-list and path validation.
 assert.equal((await rpc('downloadAsset', { assetSrc: 'registry://x' })).error.code, 'METHOD_NOT_ALLOWED')
@@ -71,6 +79,11 @@ assert.equal((await rpc('loadModel', { path: 'https://huggingface.co/x.gguf', ty
 assert.equal((await rpc('loadModel', { path: 'relative/model.gguf', type: 'llm' })).error.code, 'BAD_PARAMS')
 assert.equal((await rpc('loadModel', { path: '/nope.gguf', type: 'llm', config: { 'rpc-servers': '1.2.3.4:50052' } })).error.code, 'BAD_PARAMS')
 assert.equal((await rpc('assessFit', { path: 'pear://abc/model.gguf', type: 'llm' })).error.code, 'BAD_PARAMS')
+// Token classifier (ONNX): same rules.
+assert.equal((await rpc('loadModel', { path: 'https://huggingface.co/openai/privacy-filter/resolve/main/onnx/model_quantized.onnx', type: 'token-classifier' })).error.code, 'BAD_PARAMS')
+assert.equal((await rpc('loadModel', { path: 'onnx/model_quantized.onnx', type: 'token-classifier' })).error.code, 'BAD_PARAMS')
+assert.equal((await rpc('loadModel', { path: worker, type: 'token-classifier' })).error.code, 'BAD_PARAMS', 'only .onnx files')
+assert.equal((await rpc('classify', { modelId: 'onnx-999', inputIds: [1, 2, 3] })).error.code, 'MODEL_NOT_LOADED')
 console.log('allow-list / path validation ok')
 
 const det = process.env.QVAC_OCR_DETECTOR
@@ -170,6 +183,38 @@ if (embedModel && existsSync(embedModel)) {
   console.log('skip embeddings (set QVAC_EMBED)')
 }
 
+const pf = process.env.QVAC_PF_ONNX
+if (pf && existsSync(pf)) {
+  assert.equal((await rpc('loadModel', { path: pf, type: 'token-classifier', config: { provider: 'coreml' } })).error.code, 'BAD_PARAMS', 'provider is not configurable')
+  let t = Date.now()
+  const load = await rpc('loadModel', { path: pf, type: 'token-classifier' })
+  assert.ok(load.result, JSON.stringify(load.error))
+  console.log(`token-classifier load ${Date.now() - t} ms`)
+  const modelId = load.result.modelId
+  assert.equal((await rpc('classify', { modelId, inputIds: [] })).error.code, 'BAD_PARAMS')
+  assert.equal((await rpc('classify', { modelId, inputIds: new Array(4097).fill(1) })).error.code, 'BAD_PARAMS')
+  assert.equal((await rpc('classify', { modelId, inputIds: [1, -2, 3] })).error.code, 'BAD_PARAMS')
+  assert.equal((await rpc('classify', { modelId, inputIds: [1, 2.5] })).error.code, 'BAD_PARAMS')
+  assert.equal((await rpc('classify', { modelId, inputIds: ['7'] })).error.code, 'BAD_PARAMS')
+  // o200k ids of "Contact Maria Gonzalez at maria.g@example.org." are not
+  // needed here: any ids exercise the session; the app's golden tests check
+  // the decoded spans.
+  t = Date.now()
+  const ids = [26193, 29103, 125006, 540, 51587, 1940, 31, 18582, 2154, 13]
+  const out = await rpc('classify', { modelId, inputIds: ids })
+  assert.ok(out.result, JSON.stringify(out.error))
+  assert.deepEqual(out.result.shape, [ids.length, 33])
+  const buf = Buffer.from(out.result.logits, 'base64')
+  assert.equal(buf.length, ids.length * 33 * 4)
+  const f = new Float32Array(buf.buffer, buf.byteOffset, buf.length / 4)
+  assert.ok(f.every(Number.isFinite), 'finite logits')
+  console.log(`classify ${Date.now() - t} ms, ${ids.length} tokens x ${out.result.shape[1]} labels`)
+  assert.ok((await rpc('unloadModel', { modelId })).result.ok)
+  assert.equal((await rpc('classify', { modelId, inputIds: ids })).error.code, 'MODEL_NOT_LOADED')
+} else {
+  console.log('skip token classifier (set QVAC_PF_ONNX)')
+}
+
 const sockets = inetSockets()
 assert.equal(sockets, '', `sidecar holds inet sockets:\n${sockets}`)
 console.log('no inet sockets')
@@ -178,5 +223,5 @@ const bye = await rpc('shutdown')
 assert.ok(bye.result && bye.result.bye)
 const code = await new Promise((resolve) => child.on('exit', resolve))
 assert.equal(code, 0)
-console.log(`shutdown ok; non-JSON stdout lines seen: ${nonJson}`)
+console.log(`shutdown ok; non-JSON stdout lines seen: ${nonJson}`, nonJsonSamples)
 console.log('PASS')

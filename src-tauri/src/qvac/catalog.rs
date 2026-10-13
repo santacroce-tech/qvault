@@ -14,6 +14,19 @@ pub enum ModelPurpose {
     Llm,
     /// Text embeddings for entity grouping (Phase 4).
     Embedding,
+    /// Token classifier for PII (OpenAI Privacy Filter, run through
+    /// `@qvac/onnx`; docs/qvac-integration.md §15).
+    PiiClassifier,
+}
+
+/// One file of a multi-file model.
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CatalogFile {
+    pub name: &'static str,
+    pub url: Option<&'static str>,
+    pub size: u64,
+    pub sha256: &'static str,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -44,6 +57,30 @@ pub struct CatalogModel {
     pub ram_needed: u64,
     /// Shown in the Model Manager before download.
     pub note: Option<&'static str>,
+    /// Multi-file models live in `models/<dir>/` (every file side by side,
+    /// as the runtime expects); `None` = one file at `models/<file_name>`.
+    pub dir: Option<&'static str>,
+    /// The other files of a multi-file model. `file_name`/`url`/`size`/
+    /// `sha256` above describe its primary file (the one that is loaded).
+    pub extra_files: &'static [CatalogFile],
+}
+
+impl CatalogModel {
+    /// Every file of the model, the primary one first.
+    pub fn files(&self) -> Vec<CatalogFile> {
+        let mut v = vec![CatalogFile { name: self.file_name, url: self.url, size: self.size, sha256: self.sha256 }];
+        v.extend_from_slice(self.extra_files);
+        v
+    }
+
+    /// Download / disk size of all files.
+    pub fn total_size(&self) -> u64 {
+        self.size + self.extra_files.iter().map(|f| f.size).sum::<u64>()
+    }
+
+    pub fn is_multi_file(&self) -> bool {
+        self.dir.is_some()
+    }
 }
 
 pub const CATALOG: &[CatalogModel] = &[
@@ -66,6 +103,8 @@ pub const CATALOG: &[CatalogModel] = &[
         default_llm: false,
         ram_needed: 0,
         note: None,
+        dir: None,
+        extra_files: &[],
     },
     CatalogModel {
         id: "easyocr-latin-g2",
@@ -82,6 +121,8 @@ pub const CATALOG: &[CatalogModel] = &[
         default_llm: false,
         ram_needed: 0,
         note: None,
+        dir: None,
+        extra_files: &[],
     },
     // Layer 3 LLMs. Chosen on the Phase 3 eval (docs/qvac-integration.md
     // §11.4): official Qwen GGUFs at pinned revisions, SHA-256 computed after
@@ -103,6 +144,8 @@ pub const CATALOG: &[CatalogModel] = &[
         default_llm: false,
         ram_needed: 1_610_612_736, // 1.5 GiB (measured 1.30 GB)
         note: Some("For computers with little memory: finds less than the default model."),
+        dir: None,
+        extra_files: &[],
     },
     CatalogModel {
         id: "qwen3-1.7b-q8_0",
@@ -119,6 +162,8 @@ pub const CATALOG: &[CatalogModel] = &[
         default_llm: true,
         ram_needed: 2_952_790_016, // 2.75 GiB (measured 2.43 GB)
         note: None,
+        dir: None,
+        extra_files: &[],
     },
     CatalogModel {
         id: "qwen3-4b-q4_k_m",
@@ -135,6 +180,8 @@ pub const CATALOG: &[CatalogModel] = &[
         default_llm: false,
         ram_needed: 3_758_096_384, // 3.5 GiB (measured 3.08 GB)
         note: Some("Finds more, about twice as slow as the default. Best with 16 GB of memory or a GPU."),
+        dir: None,
+        extra_files: &[],
     },
     CatalogModel {
         id: "qwen3-8b-q4_k_m",
@@ -151,6 +198,8 @@ pub const CATALOG: &[CatalogModel] = &[
         default_llm: false,
         ram_needed: 6_442_450_944, // 6 GiB (measured 5.52 GB)
         note: Some("Highest recall in the eval, about 3.5× slower than the default. Needs a GPU workstation."),
+        dir: None,
+        extra_files: &[],
     },
     CatalogModel {
         id: "qwen2.5-0.5b-instruct-q4_k_m",
@@ -167,6 +216,8 @@ pub const CATALOG: &[CatalogModel] = &[
         default_llm: false,
         ram_needed: 1_073_741_824, // 1 GiB (measured 0.94 GB)
         note: Some("Superseded by Qwen3 0.6B, which finds more and is faster."),
+        dir: None,
+        extra_files: &[],
     },
     CatalogModel {
         id: "qwen2.5-1.5b-instruct-q4_k_m",
@@ -183,6 +234,8 @@ pub const CATALOG: &[CatalogModel] = &[
         default_llm: false,
         ram_needed: 1_879_048_192, // 1.75 GiB (measured 1.56 GB)
         note: Some("Superseded by Qwen3 1.7B (more precise suggestions)."),
+        dir: None,
+        extra_files: &[],
     },
     // Entity grouping (Phase 4, docs/qvac-integration.md §12). Official GGUF
     // from Nomic AI at a pinned revision; SHA-256 computed after download
@@ -205,6 +258,50 @@ pub const CATALOG: &[CatalogModel] = &[
         default_llm: false,
         ram_needed: 1_879_048_192, // 1.75 GiB (measured 1.62 GB)
         note: Some("Optional. Adds similarity-based suggestions when grouping name variants; grouping works without it."),
+        dir: None,
+        extra_files: &[],
+    },
+    // Layer 3 PII detector (docs/qvac-integration.md §15): OpenAI Privacy
+    // Filter, int8 ONNX (`model_quantized`; the q4 files lost 6.7 points of
+    // held-out recall, §14). Four files from the original author at a pinned
+    // revision; sizes and SHA-256 equal the Hub's LFS metadata (the small
+    // calibration file is not in LFS: hash computed after download).
+    CatalogModel {
+        id: "openai-privacy-filter-int8",
+        name: "OpenAI Privacy Filter (int8)",
+        purpose: ModelPurpose::PiiClassifier,
+        file_name: "model_quantized.onnx",
+        url: Some("https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/onnx/model_quantized.onnx"),
+        manual_url: None,
+        size: 162_239,
+        sha256: "a325fb5341567a73c94e91ec5e49060d38d9b16111f518ad34773039a0c9c098",
+        licence: "Apache-2.0",
+        licence_url: "https://huggingface.co/openai/privacy-filter/blob/7ffa9a043d54d1be65afb281eddf0ffbe629385b/README.md",
+        source: "Hugging Face openai/privacy-filter @ 7ffa9a0",
+        default_llm: false,
+        ram_needed: 2_415_919_104, // 2.25 GiB (measured 1.9 GB in the sidecar)
+        note: Some("Fast on any computer (well under a second per page without a GPU). Finds names, addresses, dates, contact details and account-style numbers; company names, amounts and case numbers stay with the rules (and the language model, if you also run it)."),
+        dir: Some("openai-privacy-filter-int8"),
+        extra_files: &[
+            CatalogFile {
+                name: "model_quantized.onnx_data",
+                url: Some("https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/onnx/model_quantized.onnx_data"),
+                size: 1_618_042_064,
+                sha256: "50f4c8c7f3c27fbc1fe16d4f74f6f7c3b74ba8f18a262e8b6911854c64c33a6d",
+            },
+            CatalogFile {
+                name: "tokenizer.json",
+                url: Some("https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/tokenizer.json"),
+                size: 27_868_174,
+                sha256: "0614fe83cadab421296e664e1f48f4261fa8fef6e03e63bb75c20f38e37d07d3",
+            },
+            CatalogFile {
+                name: "viterbi_calibration.json",
+                url: Some("https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/viterbi_calibration.json"),
+                size: 372,
+                sha256: "bbc8611ef08a55ed72d64856cbbbb9a91db8dfa881f0a92e2afbad6e4bbc775a",
+            },
+        ],
     },
 ];
 
@@ -212,8 +309,28 @@ pub fn find(id: &str) -> Option<&'static CatalogModel> {
     CATALOG.iter().find(|m| m.id == id)
 }
 
+/// A single-file catalog model whose file has this SHA-256.
 pub fn find_by_sha256(sha: &str) -> Option<&'static CatalogModel> {
-    CATALOG.iter().find(|m| m.sha256.eq_ignore_ascii_case(sha))
+    CATALOG.iter().find(|m| !m.is_multi_file() && m.sha256.eq_ignore_ascii_case(sha))
+}
+
+/// A file of a multi-file catalog model with this SHA-256.
+pub fn find_part_by_sha256(sha: &str) -> Option<(&'static CatalogModel, CatalogFile)> {
+    CATALOG
+        .iter()
+        .filter(|m| m.is_multi_file())
+        .find_map(|m| m.files().into_iter().find(|f| f.sha256.eq_ignore_ascii_case(sha)).map(|f| (m, f)))
+}
+
+/// Whether some catalog file has exactly this size (cheap pre-filter before
+/// hashing the files of a folder import).
+pub fn has_file_of_size(size: u64) -> bool {
+    CATALOG.iter().any(|m| m.files().iter().any(|f| f.size == size))
+}
+
+/// The Privacy Filter catalog entry.
+pub fn privacy_filter() -> &'static CatalogModel {
+    CATALOG.iter().find(|m| m.purpose == ModelPurpose::PiiClassifier).expect("catalog has the Privacy Filter")
 }
 
 pub fn default_llm() -> &'static CatalogModel {
@@ -244,9 +361,23 @@ mod tests {
             assert_eq!(m.sha256.len(), 64, "{}", m.id);
             assert!(m.sha256.chars().all(|c| c.is_ascii_hexdigit() && !c.is_ascii_uppercase()));
             assert!(m.size > 0);
-            assert!(m.file_name.ends_with(".gguf"));
+            if m.is_multi_file() {
+                let dir = m.dir.unwrap();
+                assert!(!dir.is_empty() && !dir.contains('/') && !dir.contains('\\') && !dir.starts_with('.'));
+                let mut names = std::collections::HashSet::new();
+                for f in m.files() {
+                    assert!(names.insert(f.name), "{}: duplicate file {}", m.id, f.name);
+                    assert!(!f.name.contains('/') && !f.name.contains('\\') && !f.name.starts_with('.'));
+                    assert_eq!(f.sha256.len(), 64);
+                    assert!(f.size > 0);
+                    assert_eq!(f.url.is_some(), m.url.is_some(), "{}: all files downloadable or none", m.id);
+                }
+            } else {
+                assert!(m.file_name.ends_with(".gguf"));
+                assert!(m.extra_files.is_empty());
+            }
             assert!(!m.file_name.contains('/') && !m.file_name.contains('\\'));
-            if let Some(url) = m.url {
+            for url in m.files().iter().filter_map(|f| f.url) {
                 assert!(url.starts_with("https://huggingface.co/"), "{} must be HTTPS from Hugging Face", m.id);
                 assert!(url.contains("/resolve/") && !url.contains("/resolve/main/"), "{} must pin a revision", m.id);
                 assert!(!url.contains("registry://") && !url.contains("pear://"));
@@ -264,5 +395,18 @@ mod tests {
         let (d, r) = ocr_pair();
         assert_eq!(d.file_name, "craft_mlt_25k.gguf");
         assert_eq!(r.file_name, "latin_g2.gguf");
+        let pf = privacy_filter();
+        assert_eq!(pf.files().len(), 4);
+        assert_eq!(pf.total_size(), 162_239 + 1_618_042_064 + 27_868_174 + 372);
+        assert!(pf.files().iter().all(|f| f.url.unwrap().contains("/7ffa9a043d54d1be65afb281eddf0ffbe629385b/")));
+        assert_eq!(find_part_by_sha256(&pf.extra_files[1].sha256.to_uppercase()).map(|(m, f)| (m.id, f.name)), Some((pf.id, "tokenizer.json")));
+        assert!(find_by_sha256(pf.sha256).is_none(), "parts of a multi-file model are not single-file models");
+        // every hash is unique across the catalog (imports are matched by hash)
+        let mut hashes = std::collections::HashSet::new();
+        for m in CATALOG {
+            for f in m.files() {
+                assert!(hashes.insert(f.sha256), "duplicate hash {}", f.sha256);
+            }
+        }
     }
 }

@@ -49,7 +49,7 @@ export interface Redaction {
   original_text: string;
   replacement: string;
   category: PiiCategory;
-  detection_layer: "regex" | "ner" | "heuristic" | "llm" | "manual" | "known-entity";
+  detection_layer: "regex" | "ner" | "heuristic" | "llm" | "privacy-filter" | "manual" | "known-entity";
   confidence: number;
   status: RedactionStatus;
   reviewed_at: string | null;
