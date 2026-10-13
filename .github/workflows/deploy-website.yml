@@ -1,5 +1,9 @@
 name: Deploy Website
 
+# Mirrors the GitHub Pages site (site/, built by node site/build.mjs) to
+# qvault.tech. Files are added or replaced, never deleted, so the server's
+# releases/ and docs/ folders are kept.
+
 on:
   push:
     branches: [main]
@@ -11,11 +15,20 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy Landing Page
+    name: Deploy site to qvault.tech
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build site
+        run: |
+          node site/build.mjs
+          node site/check-links.mjs
 
       - name: Setup SSH key
         env:
@@ -27,8 +40,8 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy landing page
+      - name: Deploy site
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
-          scp -i ~/.ssh/deploy_key -r landing/* "root@${DEPLOY_HOST}:/var/www/qvault.tech/"
+          rsync -rlt --checksum -e "ssh -i ~/.ssh/deploy_key" site/dist/ "root@${DEPLOY_HOST}:/var/www/qvault.tech/"

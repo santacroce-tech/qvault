@@ -91,8 +91,11 @@ Ordered by expected value.
 
 ### Website and repository
 
-- Decide whether to retire qvault.tech (`landing/` + `deploy-website.yml`) or
-  point it at the GitHub Pages site.
+- qvault.tech now mirrors the GitHub Pages site (`deploy-website.yml` builds
+  `site/`). Remove the unused `landing/` folder, and the old pages left on the
+  server (`es.html`, `pt.html`, `license-agreement.html`, `success.html`,
+  `architecture.md`, `demo*.pdf`, `screenshots/`); a backup is in
+  `/root/qvault.tech-backup-20261013.tgz` on the server.
 - Set the repository's About homepage link.
 - User docs for entity groups and the “Not personal data” list on the website (the Model
   Manager, OCR and offline setup are already covered on the Models page).
