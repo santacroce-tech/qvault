@@ -22,6 +22,8 @@ personal data**: this repository is public.
 | `../src-tauri/tests/eval_harness.rs` | Scoring, the CI test, the report writer |
 | `../src-tauri/tests/eval_support/layer3.rs` | Opt-in Layer 3 runs with real models |
 | `../src-tauri/tests/eval_support/external.rs` | Opt-in scoring of predictions made outside Qvault (`QVAULT_EVAL_EXTERNAL`) |
+| `../src-tauri/tests/eval_support/privacy_filter.rs` | Opt-in Privacy Filter Layer 3 through the app's pipeline (`QVAULT_EVAL_PF`) |
+| `../src-tauri/tests/privacy_filter_it.rs` | Opt-in Privacy Filter golden tests (tokenizer, decoder vs opf, import, download) |
 
 ## Label format
 
@@ -169,6 +171,53 @@ fixture page text, and `category` is a Qvault category name. Every span is
 validated (range, char boundary, `text` equal to the slice, known category),
 and the test fails on any mismatch. Used for OpenAI Privacy Filter:
 [`reports/privacy-filter.md`](reports/privacy-filter.md).
+
+## Privacy Filter as Layer 3 (§15)
+
+Results and decisions: [docs/qvac-integration.md §15](../docs/qvac-integration.md#15-openai-privacy-filter-as-the-default-layer-3-hybrid-with-the-language-model).
+Report: [`reports/privacy-filter-layer3.md`](reports/privacy-filter-layer3.md) (and `.json`).
+
+OpenAI Privacy Filter runs through the same code the app uses:
+- the QVAC sidecar (`@qvac/onnx`) via `QvacService`;
+- Qvault's tokenizer, decoder and scanner.
+
+Every page is classified once; its logits are kept and timed, along with the sidecar's peak RSS. Every operating point (Viterbi transition biases) and post-processing filter is then replayed on the recorded logits, so the variants differ only in what they change.
+
+**Selection.** Variants are compared on the **dev** split with a rule fixed in the code:
+1. keep the variants within 0.5 points of the best dev recall;
+2. among those, take the fewest dev false suggestions;
+3. break ties by dev F1.
+
+Variants that drop short single-word names are listed but are not eligible. The holdout split is only reported. The report shows the rule's pick next to the app default (`PfConfig::default()`). See §15.6 for why they differ.
+
+**False suggestions** are detections a Layer 3 detector adds to Layers 1–2 that overlap no label: what the reviewer has to reject.
+
+With `QVAULT_EVAL_MODELS`, a catalog language model also runs once (answers recorded). That adds the rows "Layers 1+2 + LLM" and "Layers 1+2 + Privacy Filter + LLM", merged the way the app's thorough mode merges them (longer span wins).
+
+```sh
+# QVAULT_PF_MODEL_DIR: the four model files, flat or in the Hugging Face layout (onnx/ subfolder)
+QVAULT_EVAL_PF=1 QVAULT_PF_MODEL_DIR=/path/to/privacy-filter \
+QVAC_MODELS_DIR=/path/with/catalog/files QVAULT_EVAL_MODELS=qwen3-1.7b-q8_0 \
+QVAULT_EVAL_OUT=../eval/reports \
+cargo test --release --test eval_harness privacy_filter -- --nocapture --test-threads 1
+```
+
+Without the language model, a run takes about 6 s; with Qwen3-1.7B, about 2 minutes on Apple M4 Pro. It needs the sidecar (`npm run sidecar:build`). Nothing here runs in CI: it depends on the model files. The CI Layers 1–2 baseline is unchanged.
+
+Golden tests (opt-in, same model directory):
+
+```sh
+QVAULT_PF_MODEL_DIR=/path/to/privacy-filter \
+cargo test --release --test privacy_filter_it -- --nocapture --test-threads 1
+# + QVAULT_PF_DOWNLOAD_IT=1 to download the pinned files from Hugging Face (1.65 GB, with a cancel test)
+# + QVAULT_PF_DUMP=/dir to write each page's token ids and logits (for checking against OpenAI's opf)
+```
+
+- `tests/fixtures/privacy-filter/o200k_ids.json`: tiktoken `o200k_base` ids of every eval page and 34 edge cases.
+- `reference_spans_qvac_onnx.json`: opf's decoding of the logits of the engine Qvault ships (`@qvac/onnx` 0.15.1). This is the strict golden.
+- `reference_spans.json`: opf on Python onnxruntime 1.31 logits (the §14 eval). Agreement with it is reported and must stay at least 97 %.
+
+Regenerate the strict golden after an `@qvac/onnx` upgrade: dump the logits with `QVAULT_PF_DUMP`, then decode them with opf (§15.3).
 
 ## Entity resolution and known-entity suggestions (Phase 4)
 

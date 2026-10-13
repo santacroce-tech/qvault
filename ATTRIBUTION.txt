@@ -120,6 +120,14 @@ D. Nomic Embed Text v2 MoE, GGUF Q8_0 (nomic-embed-text-v2-moe.Q8_0.gguf),
    Source: https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF
            (rev ffbcf4c)
 
+E. OpenAI Privacy Filter, int8 ONNX (onnx/model_quantized.onnx and
+   model_quantized.onnx_data, tokenizer.json, viterbi_calibration.json),
+   recommended Layer 3 PII detector
+   Copyright: OpenAI
+   License: Apache-2.0
+   Source: https://huggingface.co/openai/privacy-filter
+           (rev 7ffa9a043d54d1be65afb281eddf0ffbe629385b)
+
 ────────────────────────────────────────────────────────────────────────
 
                            Apache License
