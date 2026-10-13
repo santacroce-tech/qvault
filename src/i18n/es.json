@@ -96,7 +96,9 @@
     "suppressedRestoreTitle": "Volver a poner este hallazgo en la lista de revisión de este documento",
     "neverFlag": "No volver a marcarlo",
     "neverFlagTitle": "Añadir «{{text}}» ({{category}}) a su lista «No son datos personales». Los próximos análisis no lo mostrarán para este tipo; cada análisis indica cuántos dejó fuera. Puede quitarlo en Ajustes.",
-    "neverFlagDone": "Añadido a su lista «No son datos personales»"
+    "neverFlagDone": "Añadido a su lista «No son datos personales»",
+    "layerPf": "IA · Privacy Filter",
+    "layerLlm": "IA · modelo de lenguaje"
   },
   "history": {
     "title": "Historial de Documentos",
@@ -309,7 +311,40 @@
     "embeddingOff": "Desactivado: la agrupación de entidades usa solo reglas de escritura.",
     "embeddingEngineUnavailable": "Motor de IA no disponible: la agrupación de entidades usa solo reglas de escritura.",
     "selfTestEmbedding": "Modelo de agrupación de entidades: {{ms}} ms ({{dims}} dimensiones)",
-    "selfTestEmbeddingSkipped": "Modelo de agrupación de entidades no probado: {{reason}}"
+    "selfTestEmbeddingSkipped": "Modelo de agrupación de entidades no probado: {{reason}}",
+    "layer3Detector": "Detector de IA",
+    "detectorPf": "Privacy Filter (recomendado): rápido, funciona bien sin GPU",
+    "detectorLlm": "Modelo de lenguaje (Qwen3): más lento, también encuentra nombres de empresas, importes y números de expediente",
+    "layer3Thorough": "Ejecutar también el modelo de lenguaje (exhaustivo, más lento)",
+    "layer3ThoroughHelp": "Ejecuta el modelo de lenguaje seleccionado después de Privacy Filter y conserva el más largo de dos hallazgos que se solapan. Encuentra más, a la velocidad del modelo de lenguaje.",
+    "layer3ThoroughNeedsLlm": "Instale un modelo de lenguaje abajo para usar la pasada exhaustiva.",
+    "layer3LlmModel": "Modelo de lenguaje",
+    "pfNotInstalled": "Privacy Filter no está instalado: los análisis usan el modelo de lenguaje si hay uno instalado.",
+    "pfEngineUnavailable": "Privacy Filter no puede ejecutarse en este equipo ({{reason}}). Los análisis usan el modelo de lenguaje si hay uno instalado; si no, las capas 1–2.",
+    "pfModels": "Privacy Filter (detector recomendado)",
+    "pfModelsDesc": "Detector de datos personales de OpenAI que funciona en el equipo. Cuatro archivos (modelo, pesos, tokenizador, calibración), verificados uno a uno antes de usarlos.",
+    "llmModels": "Modelos de lenguaje (pasada exhaustiva opcional)",
+    "llmModelsDesc": "Úselo en lugar de Privacy Filter o además de él para la pasada exhaustiva.",
+    "files_one": "{{count}} archivo",
+    "files_other": "{{count}} archivos",
+    "importFolder": "Importar carpeta…",
+    "importIncomplete_one": "{{name}}: archivos verificados y guardados; falta {{count}} archivo: {{files}}. Impórtelo para terminar.",
+    "importIncomplete_other": "{{name}}: archivos verificados y guardados; faltan {{count}} archivos: {{files}}. Impórtelos para terminar.",
+    "importIgnored_one": "{{count}} archivo seleccionado no pertenece a ningún modelo conocido y no se importó.",
+    "importIgnored_other": "{{count}} archivos seleccionados no pertenecen a ningún modelo conocido y no se importaron.",
+    "selfTestPf": "Privacy Filter: {{ms}} ms, {{count}} elemento(s) en la frase de prueba",
+    "selfTestPfSkipped": "Privacy Filter no probado: {{reason}}",
+    "layer3ReviewPf": "Los hallazgos de la IA se añaden con un 40–80 % de confianza (según el tipo; por debajo de las capas de reglas) y siempre esperan su revisión: nada se aplica automáticamente. La lista de revisión indica qué detector encontró cada uno.",
+    "modelNotes": {
+      "openai_privacy_filter_int8": "Rápido en cualquier equipo (muy por debajo de un segundo por página sin GPU). Encuentra nombres, direcciones, fechas, datos de contacto y números de tipo cuenta; los nombres de empresas, importes y números de expediente quedan para las reglas (y para el modelo de lenguaje, si también lo ejecuta).",
+      "qwen3_0_6b_q8_0": "Para equipos con poca memoria: encuentra menos que el modelo predeterminado.",
+      "qwen3_4b_q4_k_m": "Encuentra más, unas dos veces más lento que el predeterminado. Mejor con 16 GB de memoria o una GPU.",
+      "qwen3_8b_q4_k_m": "La mayor exhaustividad en la evaluación, unas 3,5 veces más lento que el predeterminado. Necesita una estación de trabajo con GPU.",
+      "qwen2_5_0_5b_instruct_q4_k_m": "Sustituido por Qwen3 0.6B, que encuentra más y es más rápido.",
+      "qwen2_5_1_5b_instruct_q4_k_m": "Sustituido por Qwen3 1.7B (sugerencias más precisas).",
+      "nomic_embed_text_v2_moe_q8_0": "Opcional. Añade sugerencias por similitud al agrupar variantes de nombres; la agrupación funciona sin él."
+    },
+    "modelFiles": "Archivos de modelo"
   },
   "learning": {
     "intro": "Qvault recuerda lo que usted aprueba y rechaza. El texto que rechazó antes se sigue mostrando cuando vuelve a aparecer, marcado y al final, para que pueda rechazarlo con un clic. Solo el texto que usted pone en la lista «No son datos personales» queda fuera de los próximos análisis, y cada análisis indica cuántos hallazgos dejó fuera.",

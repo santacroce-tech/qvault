@@ -6,13 +6,17 @@ import {
   downloadModel,
   cancelModelDownload,
   importModel,
+  importModelPaths,
   openManualDownload,
   deleteModel,
   setLayer3,
+  setLayer3Detector,
   runAiSelfTest,
   setOcrDpi,
   setEntityEmbeddings,
   type AiCapabilities,
+  type ImportOutcome,
+  type Layer3Detector,
   type ModelInfo,
   type SelfTestReport,
 } from "../lib/tauri-commands";
@@ -78,9 +82,16 @@ export default function ModelManager() {
   }, [refresh, t]);
 
   const llms = useMemo(() => caps?.models.filter((m) => m.purpose === "llm") ?? [], [caps]);
+  const pfModels = useMemo(() => caps?.models.filter((m) => m.purpose === "pii-classifier") ?? [], [caps]);
   const ocr = useMemo(() => caps?.models.filter((m) => m.purpose === "ocr-detector" || m.purpose === "ocr-recognizer") ?? [], [caps]);
   const embedding = useMemo(() => caps?.models.filter((m) => m.purpose === "embedding") ?? [], [caps]);
   const installedLlms = llms.filter((m) => m.installed);
+  const pfUsable = !!caps?.pfInstalled && caps?.pfEngine !== false;
+  const anyDetector = installedLlms.length > 0 || pfUsable;
+  // Catalog notes are English in the backend; show the translation when there is one.
+  const noteOf = (m: ModelInfo) =>
+    m.note ? t(`ai.modelNotes.${m.id.replace(/[^a-z0-9]/gi, "_")}`, { defaultValue: m.note }) : null;
+  const hasRam = (m: ModelInfo) => m.purpose === "llm" || m.purpose === "embedding" || m.purpose === "pii-classifier";
 
   const run = async (key: string, fn: () => Promise<void>) => {
     setBusy(key);
@@ -110,7 +121,7 @@ export default function ModelManager() {
       const lines = [t("ai.confirmDownload", { name: m.name, size: formatBytes(m.size), host: hostOf(m.source) })];
       if (m.ramNeeded) lines.push(t("ai.ramNeeded", { size: formatBytes(m.ramNeeded) }));
       if (est === "low") lines.push(t("ai.ramEstimateLow", { total: formatBytes(caps!.systemMemory!) }));
-      if (m.note) lines.push(m.note);
+      if (m.note) lines.push(noteOf(m)!);
       const ok = await ask(lines.join("\n\n"), { title: t("ai.downloadTitle"), kind: est === "low" ? "warning" : "info" });
       if (!ok) return;
       setProgress((p) => ({ ...p, [m.id]: { received: 0, total: m.size } }));
@@ -135,10 +146,16 @@ export default function ModelManager() {
   // verified against the catalog; unknown files still need explicit consent.
   const handleImport = () =>
     run("import", async () => {
-      const selected = await open({ multiple: true, filters: [{ name: "GGUF", extensions: ["gguf"] }] });
+      const selected = await open({
+        multiple: true,
+        filters: [{ name: t("ai.modelFiles"), extensions: ["gguf", "onnx", "onnx_data", "json"] }],
+      });
       if (!selected) return;
-      const paths = Array.isArray(selected) ? selected : [selected];
+      const all = Array.isArray(selected) ? selected : [selected];
+      const paths = all.filter((p) => p.toLowerCase().endsWith(".gguf"));
+      const parts = all.filter((p) => !p.toLowerCase().endsWith(".gguf"));
       let imported = 0;
+      if (parts.length > 0) imported += await importParts(parts);
       for (const path of paths) {
         let outcome = await importModel(path, false);
         if (outcome.status === "needsConsent") {
@@ -155,7 +172,33 @@ export default function ModelManager() {
         }
         if (outcome.status !== "needsConsent") imported += 1;
       }
-      if (imported > 0) setNotice(t("ai.importedCount", { count: imported }));
+      if (imported > 0) setNotice((n) => [t("ai.importedCount", { count: imported }), n].filter(Boolean).join(" "));
+    });
+
+  // Files of multi-file models (Privacy Filter): verified and kept until the
+  // set is complete. Returns how many models were completed.
+  const importParts = async (paths: string[]): Promise<number> => {
+    const summary = await importModelPaths(paths);
+    const lines: string[] = [];
+    let done = 0;
+    for (const o of summary.outcomes as ImportOutcome[]) {
+      if (o.status === "installed") done += 1;
+      if (o.status === "incomplete") {
+        const name = caps?.models.find((m) => m.id === o.id)?.name ?? o.id;
+        lines.push(t("ai.importIncomplete", { name, count: o.missing.length, files: o.missing.join(", ") }));
+      }
+    }
+    if (summary.ignored > 0) lines.push(t("ai.importIgnored", { count: summary.ignored }));
+    if (lines.length > 0) setNotice(lines.join(" "));
+    return done;
+  };
+
+  const handleImportFolder = () =>
+    run("import", async () => {
+      const dir = await open({ directory: true, multiple: false });
+      if (!dir || Array.isArray(dir)) return;
+      const done = await importParts([dir]);
+      if (done > 0) setNotice((n) => [t("ai.importedCount", { count: done }), n].filter(Boolean).join(" "));
     });
 
   const handleManualDownload = (m: ModelInfo) =>
@@ -165,6 +208,10 @@ export default function ModelManager() {
     run("toggle", async () => {
       await setLayer3(enabled, caps?.layer3Model ?? installedLlms[0]?.id);
     });
+
+  const handleDetector = (d: Layer3Detector) => run("detector", async () => { await setLayer3Detector(d); });
+
+  const handleThorough = (on: boolean) => run("thorough", async () => { await setLayer3Detector(undefined, on); });
 
   const handleSelectModel = (id: string) =>
     run("select", async () => {
@@ -203,25 +250,26 @@ export default function ModelManager() {
           <div className="min-w-0">
             <div className="text-sm font-medium text-gray-800 truncate">
               {m.name}
-              {m.defaultLlm && (
+              {(m.purpose === "pii-classifier" || (m.defaultLlm && !pfModels.length)) && (
                 <span className="ml-2 text-[10px] uppercase tracking-wide bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">
                   {t("ai.recommended")}
                 </span>
               )}
             </div>
             <div className="text-xs text-gray-500">
-              {formatBytes(m.size)} · {m.licence}
-              {(m.purpose === "llm" || m.purpose === "embedding") && m.ramNeeded > 0 && <> · {t("ai.ramNeeded", { size: formatBytes(m.ramNeeded) })}</>}
+              {formatBytes(m.size)}
+              {m.fileCount > 1 && <> ({t("ai.files", { count: m.fileCount })})</>} · {m.licence}
+              {hasRam(m) && m.ramNeeded > 0 && <> · {t("ai.ramNeeded", { size: formatBytes(m.ramNeeded) })}</>}
             </div>
-            {(m.purpose === "llm" || m.purpose === "embedding") && !m.installed && ramEstimate(m) && (
+            {hasRam(m) && !m.installed && ramEstimate(m) && (
               <div className={`text-xs mt-0.5 ${ramEstimate(m) === "ok" ? "text-gray-500" : "text-amber-600"}`}>
                 {ramEstimate(m) === "ok"
                   ? t("ai.ramEstimateOk", { total: formatBytes(caps.systemMemory!) })
                   : t("ai.ramEstimateLow", { total: formatBytes(caps.systemMemory!) })}
               </div>
             )}
-            {m.note && <div className="text-xs text-gray-500 mt-0.5">{m.note}</div>}
-            {m.purpose === "llm" && m.installed && (
+            {m.note && <div className="text-xs text-gray-500 mt-0.5">{noteOf(m)}</div>}
+            {(m.purpose === "llm" || m.purpose === "pii-classifier") && m.installed && (
               <div className="text-xs mt-0.5">
                 {m.fit ? (
                   <span
@@ -315,41 +363,93 @@ export default function ModelManager() {
         )}
       </div>
 
-      {/* Layer 3 toggle */}
+      {/* Layer 3: detector, thorough pass, language model */}
       <div className="rounded-lg bg-gray-50 p-3 space-y-2">
-        <label className={`flex items-center gap-3 ${installedLlms.length === 0 || !caps.sidecarBundled ? "opacity-50" : "cursor-pointer"}`}>
+        <label className={`flex items-center gap-3 ${!anyDetector || !caps.sidecarBundled ? "opacity-50" : "cursor-pointer"}`}>
           <input
             type="checkbox"
             checked={caps.layer3Enabled}
-            disabled={installedLlms.length === 0 || !caps.sidecarBundled || busy !== null}
+            disabled={!anyDetector || !caps.sidecarBundled || busy !== null}
             onChange={(e) => handleToggle(e.target.checked)}
             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
           />
           <span className="text-sm text-gray-700">{t("ai.layer3Toggle")}</span>
         </label>
-        {installedLlms.length === 0 ? (
+        {!anyDetector ? (
           <p className="text-xs text-gray-500">{t("ai.layer3NeedsModel")}</p>
         ) : (
-          <select
-            value={caps.layer3Model ?? ""}
-            onChange={(e) => handleSelectModel(e.target.value)}
-            disabled={busy !== null}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {installedLlms.map((m) => (
-              <option key={m.id} value={m.id} disabled={m.fit?.verdict === "likely-too-large" && m.id !== caps.layer3Model}>
-                {m.name} · {formatBytes(m.size)}
-                {m.fit ? ` · ${t(`ai.fit.${m.fit.verdict}`)}` : ""}
-              </option>
-            ))}
-          </select>
+          <fieldset className="space-y-1.5" disabled={busy !== null}>
+            <legend className="text-xs font-medium text-gray-600">{t("ai.layer3Detector")}</legend>
+            {(["privacy-filter", "llm"] as Layer3Detector[]).map((d) => {
+              const available = d === "privacy-filter" ? caps.pfInstalled : installedLlms.length > 0;
+              return (
+                <label key={d} className={`flex items-start gap-2 text-sm ${available ? "text-gray-700 cursor-pointer" : "text-gray-400"}`}>
+                  <input
+                    type="radio"
+                    name="layer3-detector"
+                    className="mt-0.5"
+                    checked={caps.layer3Detector === d}
+                    disabled={!available}
+                    onChange={() => handleDetector(d)}
+                  />
+                  <span>{d === "privacy-filter" ? t("ai.detectorPf") : t("ai.detectorLlm")}</span>
+                </label>
+              );
+            })}
+            {caps.layer3Detector === "privacy-filter" && !caps.pfInstalled && (
+              <p className="text-xs text-amber-700">{t("ai.pfNotInstalled")}</p>
+            )}
+            {caps.pfInstalled && caps.pfEngine === false && (
+              <p className="text-xs text-amber-700">{t("ai.pfEngineUnavailable", { reason: caps.pfEngineReason ?? "" })}</p>
+            )}
+            {caps.layer3Detector === "privacy-filter" && caps.pfInstalled && (
+              <div className="pl-5 space-y-1">
+                <label className={`flex items-center gap-2 text-sm ${installedLlms.length === 0 ? "text-gray-400" : "text-gray-700 cursor-pointer"}`}>
+                  <input
+                    type="checkbox"
+                    checked={caps.layer3Thorough}
+                    disabled={installedLlms.length === 0}
+                    onChange={(e) => handleThorough(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span>{t("ai.layer3Thorough")}</span>
+                </label>
+                <p className="text-xs text-gray-500">
+                  {installedLlms.length === 0 ? t("ai.layer3ThoroughNeedsLlm") : t("ai.layer3ThoroughHelp")}
+                </p>
+              </div>
+            )}
+            {installedLlms.length > 0 && (caps.layer3Detector === "llm" || caps.layer3Thorough || !caps.pfInstalled) && (
+              <label className="block text-xs text-gray-600 pt-1">
+                {t("ai.layer3LlmModel")}
+                <select
+                  value={caps.layer3Model ?? ""}
+                  onChange={(e) => handleSelectModel(e.target.value)}
+                  className="mt-1 w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {installedLlms.map((m) => (
+                    <option key={m.id} value={m.id} disabled={m.fit?.verdict === "likely-too-large" && m.id !== caps.layer3Model}>
+                      {m.name} · {formatBytes(m.size)}
+                      {m.fit ? ` · ${t(`ai.fit.${m.fit.verdict}`)}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </fieldset>
         )}
-        <p className="text-xs text-gray-500">{t("ai.layer3Review")}</p>
+        <p className="text-xs text-gray-500">{t("ai.layer3ReviewPf")}</p>
       </div>
 
       {/* Models */}
       <div>
-        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("ai.detectionModels")}</h4>
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("ai.pfModels")}</h4>
+        <p className="text-xs text-gray-500 mt-1">{t("ai.pfModelsDesc")}</p>
+        <ul>{pfModels.map(renderModel)}</ul>
+      </div>
+      <div>
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("ai.llmModels")}</h4>
+        <p className="text-xs text-gray-500 mt-1">{t("ai.llmModelsDesc")}</p>
         <ul>{llms.map(renderModel)}</ul>
       </div>
       <div>
@@ -440,6 +540,13 @@ export default function ModelManager() {
         >
           {busy === "import" ? t("ai.importing") : t("ai.importFromFile")}
         </button>
+        <button
+          onClick={handleImportFolder}
+          disabled={busy !== null}
+          className="px-4 py-2 bg-blue-50 text-blue-600 text-sm rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+        >
+          {t("ai.importFolder")}
+        </button>
         {caps.sidecarBundled && (
           <button
             onClick={handleSelfTest}
@@ -465,6 +572,13 @@ export default function ModelManager() {
                   ? t("ai.selfTestOcrSkipped", { reason: selfTest.ocrError })
                   : t("ai.selfTestOcr", { ms: selfTest.ocrMs ?? 0, text: selfTest.ocrText ?? "" })}
               </div>
+              {(selfTest.pfMs !== null || selfTest.pfError) && (
+                <div>
+                  {selfTest.pfError
+                    ? t("ai.selfTestPfSkipped", { reason: selfTest.pfError })
+                    : t("ai.selfTestPf", { ms: selfTest.pfMs ?? 0, count: selfTest.pfEntities.length })}
+                </div>
+              )}
               <div>
                 {selfTest.layer3Error
                   ? t("ai.selfTestLayer3Skipped", { reason: selfTest.layer3Error })
