@@ -182,7 +182,7 @@ fn embed_missing(db: &Database, embedder: &dyn Embedder) -> Result<usize, String
         .map_err(sql)?;
     let mut done = 0usize;
     for chunk in todo.chunks(EMBED_BATCH) {
-        let inputs: Vec<String> = chunk.iter().map(|(_, c, t)| embedding_input(c, t)).collect();
+        let inputs: Vec<String> = chunk.iter().map(|(_, c, t)| embedding_input(&model, c, t)).collect();
         let vecs = embedder.embed(&inputs)?;
         if vecs.len() != chunk.len() {
             return Err("embedding model returned the wrong number of vectors".into());

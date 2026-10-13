@@ -29,15 +29,20 @@ pub trait Embedder: Send + Sync {
     fn embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>, String>;
 }
 
-/// The text given to the embedding model for one variant. Qwen3-Embedding
-/// takes an instruction for queries; the same one is used on both sides of
-/// a comparison (symmetric similarity).
-pub fn embedding_input(category: &str, text: &str) -> String {
+/// The text given to the embedding model for one variant. Each model gets
+/// its documented query format, and the same format is used on both sides
+/// of a comparison (symmetric similarity): Qwen3-Embedding takes an
+/// instruction, nomic-embed-text-v2 a task prefix.
+pub fn embedding_input(model_id: &str, category: &str, text: &str) -> String {
+    let text = text.trim();
+    if model_id.contains("nomic") {
+        return format!("search_query: {}", text);
+    }
     let what = match forms::kind_of(category) {
         forms::Kind::Person => "a person's name",
         forms::Kind::Company => "a company name",
         forms::Kind::Address => "a postal address",
         _ => "an identifier",
     };
-    format!("Instruct: Identify the entity referred to by {}, ignoring titles, word order and abbreviations\nQuery: {}", what, text.trim())
+    format!("Instruct: Identify the entity referred to by {}, ignoring titles, word order and abbreviations\nQuery: {}", what, text)
 }

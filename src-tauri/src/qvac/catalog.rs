@@ -12,6 +12,8 @@ pub enum ModelPurpose {
     OcrDetector,
     OcrRecognizer,
     Llm,
+    /// Text embeddings for entity grouping (Phase 4).
+    Embedding,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -182,6 +184,25 @@ pub const CATALOG: &[CatalogModel] = &[
         ram_needed: 1_879_048_192, // 1.75 GiB (measured 1.56 GB)
         note: Some("Superseded by Qwen3 1.7B (more precise suggestions)."),
     },
+    // Entity grouping (Phase 4, docs/qvac-integration.md §12). Official GGUF
+    // from Qwen at a pinned revision; SHA-256 computed after download (equal
+    // to the HF LFS object id). Optional: grouping works without it.
+    CatalogModel {
+        id: "qwen3-embedding-0.6b-q8_0",
+        name: "Qwen3 Embedding 0.6B (Q8_0)",
+        purpose: ModelPurpose::Embedding,
+        file_name: "qwen3-embedding-0.6b-q8_0.gguf",
+        url: Some("https://huggingface.co/Qwen/Qwen3-Embedding-0.6B-GGUF/resolve/370f27d7550e0def9b39c1f16d3fbaa13aa67728/Qwen3-Embedding-0.6B-Q8_0.gguf"),
+        manual_url: None,
+        size: 639_150_592,
+        sha256: "06507c7b42688469c4e7298b0a1e16deff06caf291cf0a5b278c308249c3e439",
+        licence: "Apache-2.0",
+        licence_url: "https://huggingface.co/Qwen/Qwen3-Embedding-0.6B-GGUF/blob/370f27d7550e0def9b39c1f16d3fbaa13aa67728/README.md",
+        source: "Hugging Face Qwen/Qwen3-Embedding-0.6B-GGUF @ 370f27d",
+        default_llm: false,
+        ram_needed: 1_073_741_824, // 1 GiB (measured, see §12)
+        note: Some("Optional. Improves suggestions for grouping name variants; grouping works without it."),
+    },
 ];
 
 pub fn find(id: &str) -> Option<&'static CatalogModel> {
@@ -194,6 +215,11 @@ pub fn find_by_sha256(sha: &str) -> Option<&'static CatalogModel> {
 
 pub fn default_llm() -> &'static CatalogModel {
     CATALOG.iter().find(|m| m.default_llm).expect("catalog has a default LLM")
+}
+
+/// The catalog embedding model (entity grouping).
+pub fn embedding_model() -> &'static CatalogModel {
+    CATALOG.iter().find(|m| m.purpose == ModelPurpose::Embedding).expect("catalog has an embedding model")
 }
 
 pub fn ocr_pair() -> (&'static CatalogModel, &'static CatalogModel) {
@@ -231,6 +257,7 @@ mod tests {
         }
         assert_eq!(CATALOG.iter().filter(|m| m.default_llm).count(), 1);
         assert_eq!(default_llm().purpose, ModelPurpose::Llm);
+        assert_eq!(embedding_model().purpose, ModelPurpose::Embedding);
         let (d, r) = ocr_pair();
         assert_eq!(d.file_name, "craft_mlt_25k.gguf");
         assert_eq!(r.file_name, "latin_g2.gguf");

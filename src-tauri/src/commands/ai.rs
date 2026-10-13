@@ -138,6 +138,15 @@ pub async fn ai_set_layer3(enabled: bool, model_id: Option<String>, state: State
     Ok(())
 }
 
+/// Turn the embedding model's use for entity grouping on or off.
+#[tauri::command]
+pub async fn ai_set_entity_embeddings(enabled: bool, state: State<'_, AppState>) -> Result<(), String> {
+    let s = svc(&state);
+    blocking(move || s.set_entity_embeddings(enabled)).await??;
+    let _ = state.db.insert_audit_log(None, "ai_settings", Some(&format!("entity_embeddings={}", enabled)));
+    Ok(())
+}
+
 /// Run the engine self-test (synthetic inputs only).
 #[tauri::command]
 pub async fn ai_self_test(state: State<'_, AppState>, app: tauri::AppHandle) -> Result<SelfTestReport, String> {
@@ -153,12 +162,13 @@ pub async fn ai_self_test(state: State<'_, AppState>, app: tauri::AppHandle) -> 
         None,
         "ai_self_test",
         Some(&format!(
-            "ok={} ocr_ms={:?} layer3_model={:?} layer3_ms={:?} layer3_entities={}",
-            rep.error.is_none() && rep.ocr_error.is_none() && rep.layer3_error.is_none(),
+            "ok={} ocr_ms={:?} layer3_model={:?} layer3_ms={:?} layer3_entities={} embedding_ms={:?}",
+            rep.error.is_none() && rep.ocr_error.is_none() && rep.layer3_error.is_none() && rep.embedding_error.is_none(),
             rep.ocr_ms,
             rep.layer3_model,
             rep.layer3_ms,
-            rep.layer3_entities.len()
+            rep.layer3_entities.len(),
+            rep.embedding_ms
         )),
     );
     Ok(rep)

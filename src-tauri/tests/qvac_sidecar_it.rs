@@ -95,8 +95,65 @@ fn real_sidecar_ocr_and_layer3() {
     // Self-test path used by the app.
     let rep = svc.self_test(Some(&img));
     eprintln!("self-test: {:?}", rep);
-    assert!(rep.error.is_none() && rep.ocr_error.is_none() && rep.layer3_error.is_none());
+    assert!(rep.error.is_none() && rep.ocr_error.is_none() && rep.layer3_error.is_none() && rep.embedding_error.is_none());
 
+    svc.shutdown();
+    let _ = std::fs::remove_dir_all(&app_data);
+}
+
+/// Phase 4: the catalog embedding model through the real sidecar, and entity
+/// grouping with it. Needs `qwen3-embedding-0.6b-q8_0.gguf` in QVAC_MODELS_DIR.
+#[test]
+fn real_sidecar_embeddings_and_grouping() {
+    use app_lib::entities::resolve::ResolveConfig;
+    use app_lib::entities::service;
+    use app_lib::qvac::{catalog, QvacEmbedder};
+    use app_lib::storage::database::Database;
+
+    if !enabled() {
+        eprintln!("skipping: set QVAC_SIDECAR_IT=1 (and QVAC_MODELS_DIR) to run");
+        return;
+    }
+    let models = PathBuf::from(std::env::var("QVAC_MODELS_DIR").expect("QVAC_MODELS_DIR"));
+    let app_data = std::env::temp_dir().join(format!("qvault-it-embed-{}", std::process::id()));
+    std::fs::create_dir_all(&app_data).unwrap();
+    let svc = Arc::new(QvacService::new(&app_data, Some(&models), Some(sidecar())));
+    let model = svc.embedding_model().expect("embedding model missing from QVAC_MODELS_DIR");
+    assert_eq!(model, catalog::embedding_model().id);
+    let caps = svc.capabilities(false);
+    assert!(caps.embedding_installed && caps.entity_embeddings_enabled);
+
+    let t = Instant::now();
+    let names: Vec<String> = ["Maria Santos", "SANTOS, Maria", "Atlas Logistics Inc."].iter().map(|s| s.to_string()).collect();
+    let v = svc.embed_texts(&model, &names).expect("embed");
+    eprintln!("embed (incl. load) {} ms, dim {}", t.elapsed().as_millis(), v[0].len());
+    assert_eq!(v.len(), 3);
+    let cos = app_lib::entities::resolve::cosine;
+    assert!(cos(&v[0], &v[1]) > cos(&v[0], &v[2]));
+    assert!((cos(&v[0], &v[0]) - 1.0).abs() < 1e-3);
+
+    // Grouping with vectors stored in the database.
+    let db = Database::open(&app_data.join("qvault.db")).unwrap();
+    db.insert_document("d", "d.pdf", "pdf", "h", 1, "/x").unwrap();
+    let rows = [("PersonName", "Maria Santos"), ("PersonName", "SANTOS, Maria"), ("PersonName", "M. Santos"), ("CompanyName", "Atlas Logistics Inc.")];
+    for (k, (cat, text)) in rows.iter().enumerate() {
+        db.insert_entity(&format!("e{}", k), "d", text, text, cat, 0, k as i32 * 20, k as i32 * 20 + 10, 0.9, "regex").unwrap();
+    }
+    let emb = QvacEmbedder { service: Arc::clone(&svc), model: model.clone() };
+    let rep = service::regroup(&db, Some(&emb), Some(&model), &ResolveConfig::default()).unwrap();
+    eprintln!("regroup: {:?}", rep);
+    assert_eq!(rep.embedded, 4);
+    assert!(rep.embedding_error.is_none());
+    assert_eq!(rep.groups, 3);
+    assert!(service::list_groups(&db).unwrap().iter().all(|g| g.variants.iter().all(|v| v.has_embedding)));
+
+    let rep = svc.self_test(None);
+    eprintln!("self-test: {:?}", rep);
+    assert!(rep.embedding_error.is_none() && rep.embedding_dims.unwrap_or(0) > 0);
+
+    // Turned off: no model is used (grouping falls back to rules).
+    svc.set_entity_embeddings(false).unwrap();
+    assert!(svc.embedding_model().is_none());
     svc.shutdown();
     let _ = std::fs::remove_dir_all(&app_data);
 }
