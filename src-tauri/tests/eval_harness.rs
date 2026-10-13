@@ -737,3 +737,9 @@ mod learning;
 
 #[path = "eval_support/external.rs"]
 mod external;
+
+// ── opt-in: OpenAI Privacy Filter as Layer 3 (in-app pipeline, §15) ─────
+
+#[cfg(not(any(target_os = "android", target_os = "ios", target_os = "windows")))]
+#[path = "eval_support/privacy_filter.rs"]
+mod privacy_filter;

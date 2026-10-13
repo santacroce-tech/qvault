@@ -93,6 +93,18 @@ pub struct PfConfig {
     /// other layers do not. Single-letter titles ("D.") are kept, since they
     /// may be an initial.
     pub trim_honorifics: bool,
+    /// Legal-citation context (see [`legal_context`]): parties of a case-law
+    /// citation ("Gantler v. Stephens"), numbers and dates of a statute
+    /// ("Ley 29/1994, de 24 de noviembre", "artículo 394 LEC") and dates
+    /// right after a number marker ("presupuesto n.º 2024/0031").
+    pub legal_context: bool,
+    /// Drop names and addresses that contain a word no personal name or
+    /// address contains ("Juzgado", "Tribunales", "Cartão de Cidadão").
+    pub legal_words: bool,
+    /// Drop untyped account numbers whose only digits are a year ("IMI de 2024").
+    pub year_only_accounts: bool,
+    /// Drop addresses without any digit.
+    pub address_needs_digit: bool,
 }
 
 impl Default for PfConfig {
@@ -108,6 +120,10 @@ impl Default for PfConfig {
             drop_untyped_accounts: false,
             page_wide_names: false,
             trim_honorifics: true,
+            legal_context: true,
+            legal_words: true,
+            year_only_accounts: true,
+            address_needs_digit: false,
         }
     }
 }
@@ -126,8 +142,99 @@ impl PfConfig {
             drop_untyped_accounts: false,
             page_wide_names: false,
             trim_honorifics: false,
+            legal_context: false,
+            legal_words: false,
+            year_only_accounts: false,
+            address_needs_digit: false,
         }
     }
+}
+
+fn ctx_re(p: &str) -> regex::Regex {
+    regex::Regex::new(p).unwrap()
+}
+
+struct LegalRes {
+    citation_after: regex::Regex,
+    citation_before: regex::Regex,
+    statute_before: regex::Regex,
+    statute_after: regex::Regex,
+    statute_date: regex::Regex,
+    number_marker: regex::Regex,
+}
+
+fn legal_res() -> &'static LegalRes {
+    static R: std::sync::OnceLock<LegalRes> = std::sync::OnceLock::new();
+    R.get_or_init(|| LegalRes {
+        // "Gantler v. Stephens", "Smith vs. Jones"
+        citation_after: ctx_re(r"^,?\s+(?:v|vs)\.?\s+\p{Lu}"),
+        citation_before: ctx_re(r"\p{L}[.,]?\s+(?:v|vs)\.?\s+$"),
+        // "Ley 29/1994", "Lei n.º 8.245/1991", "Real Decreto 1/2021", "art. 394", "Section 5"
+        statute_before: ctx_re(r"(?i)\b(?:ley|lei|leis|decreto(?:-lei)?|real\s+decreto|reglamento|regulamento|directiva|diretiva|directive|regulation|law|act|statute|c[oó]digo|art\.|art[ií]culo|artigo|section|sec\.|§)\s*(?:org[aá]nica\s+|complementar\s+|federal\s+)?(?:n\.?\s?[ºo°]\.?\s*|no\.?\s*|n[uú]m\.?\s*)?$"),
+        // "394 LEC", "5 CC", "12 U.S.C."
+        statute_after: ctx_re(r"^\s*(?:LEC|LECrim|LAU|LOPD(?:GDD)?|RGPD|GDPR|CPC|CPP|CC|CP|CLT|CDC|BGB|ZPO|StGB|U\.S\.C\.|C\.F\.R\.|LGPD|ET)\b"),
+        // the date of a statute: "Ley 29/1994, de 24 de noviembre"
+        statute_date: ctx_re(r"(?i)\b(?:ley|lei|decreto(?:-lei)?|real\s+decreto|reglamento|regulamento)\s+(?:n\.?\s?[ºo°]\.?\s*)?[\d./-]+,?\s+(?:de\s+)?$"),
+        // "n.º 2024/0031", "no. 118", "núm. 5"
+        number_marker: ctx_re(r"(?i)(?:\bn\.?\s?[ºo°]\.?|\bno\.|\bn[uú]m\.?|\bnumber|\bn[uú]mero|#)\s*$"),
+    })
+}
+
+/// Whether a span sits in a legal citation rather than being personal data
+/// (labelling guide: case-law citations and statutes are not redacted).
+pub fn legal_context(text: &str, start: usize, end: usize, category: &PiiCategory) -> bool {
+    let r = legal_res();
+    let before = &text[floor_boundary(text, start.saturating_sub(60))..start];
+    let after = &text[end..ceil_boundary(text, (end + 30).min(text.len()))];
+    match category {
+        PiiCategory::PersonName | PiiCategory::CompanyName => {
+            r.citation_after.is_match(after) || r.citation_before.is_match(before)
+        }
+        PiiCategory::Address | PiiCategory::Email | PiiCategory::PhoneNumber | PiiCategory::Url => false,
+        PiiCategory::Date | PiiCategory::DateOfBirth => {
+            r.statute_before.is_match(before) || r.statute_date.is_match(before) || r.number_marker.is_match(before)
+                || r.statute_after.is_match(after)
+        }
+        // identifiers: statute numbers
+        _ => r.statute_before.is_match(before) || r.statute_after.is_match(after),
+    }
+}
+
+fn floor_boundary(text: &str, mut i: usize) -> usize {
+    while i > 0 && !text.is_char_boundary(i) {
+        i -= 1;
+    }
+    i
+}
+
+fn ceil_boundary(text: &str, mut i: usize) -> usize {
+    while i < text.len() && !text.is_char_boundary(i) {
+        i += 1;
+    }
+    i
+}
+
+/// Words that are never part of a person's name or a postal address in a
+/// legal document (courts, documents, procedural verbs). Compared per word,
+/// lower-case, accents kept.
+const NOT_IN_NAMES: &[&str] = &[
+    "court", "tribunal", "tribunales", "tribunais", "juzgado", "juzgados", "juízo", "juiz", "jueza", "juez", "fiscalía",
+    "procurador", "procuradora", "abogado", "abogada", "advogado", "advogada", "notario", "notaria", "notário", "cartório",
+    "registro", "registo", "ministerio", "ministério", "suplico", "otrosí", "cartão", "cidadão", "documento", "contrato",
+    "agreement", "venda", "compraventa", "arrendamiento", "arrendamento", "assunto", "asunto", "re:", "subject",
+];
+
+pub fn has_legal_word(span: &str) -> bool {
+    span.split(|c: char| c.is_whitespace() || c == ',' || c == '–' || c == '-')
+        .map(|w| w.trim_matches(|c: char| !c.is_alphanumeric() && c != ':').to_lowercase())
+        .any(|w| NOT_IN_NAMES.contains(&w.as_str()))
+}
+
+/// An "account number" whose only digits are a year (e.g. a tax named
+/// with its year).
+fn year_only(span: &str) -> bool {
+    let digits: String = span.chars().filter(|c| c.is_ascii_digit()).collect();
+    digits.len() == 4 && (digits.starts_with("19") || digits.starts_with("20")) && span.chars().any(|c| c.is_alphabetic())
 }
 
 /// Byte offset where a person name starts after any leading titles ("Dr.",
@@ -154,6 +261,9 @@ pub struct PfStats {
     pub implausible: usize,
     pub stoplisted: usize,
     pub short_names: usize,
+    pub legal_context: usize,
+    pub legal_words: usize,
+    pub year_only: usize,
     pub accounts_by_validator: usize,
     pub accounts_by_context: usize,
     pub accounts_untyped: usize,
@@ -170,6 +280,9 @@ impl PfStats {
         self.implausible += o.implausible;
         self.stoplisted += o.stoplisted;
         self.short_names += o.short_names;
+        self.legal_context += o.legal_context;
+        self.legal_words += o.legal_words;
+        self.year_only += o.year_only;
         self.accounts_by_validator += o.accounts_by_validator;
         self.accounts_by_context += o.accounts_by_context;
         self.accounts_untyped += o.accounts_untyped;
@@ -274,6 +387,22 @@ pub fn detections(
         }
         if cfg.stoplist && llm_scanner::stoplisted(span_text, &category) {
             rep.stats.stoplisted += 1;
+            continue;
+        }
+        if cfg.legal_context && legal_context(text, start, s.end, &category) {
+            rep.stats.legal_context += 1;
+            continue;
+        }
+        if cfg.legal_words && matches!(category, PiiCategory::PersonName | PiiCategory::Address) && has_legal_word(span_text) {
+            rep.stats.legal_words += 1;
+            continue;
+        }
+        if cfg.year_only_accounts && typed == Some(TypedBy::Untyped) && year_only(span_text) {
+            rep.stats.year_only += 1;
+            continue;
+        }
+        if cfg.address_needs_digit && category == PiiCategory::Address && !span_text.chars().any(|c| c.is_ascii_digit()) {
+            rep.stats.implausible += 1;
             continue;
         }
         if category == PiiCategory::PersonName && cfg.min_single_name_letters > 0 && span_text.split_whitespace().count() == 1 {
@@ -464,6 +593,33 @@ mod tests {
         // the model's span, then the other occurrence found by page-wide mapping
         assert_eq!(got, vec!["Ann Lee", "ANN LEE"]);
         assert_eq!((r.stats.short_names, r.stats.untyped_dropped, r.stats.page_wide_hits), (1, 1, 1));
+    }
+
+    #[test]
+    fn legal_citations_and_words_are_not_personal_data() {
+        let t = "Consistent with Gantler v. Stephens, 965 A.2d 695, and Ley 29/1994, de 24 de noviembre; artículo 394 LEC; \
+                 presupuesto n.º 2024/0031; Lei n.º 13.709/2018. Dana Holloway signed on 5 May 2024 at 12 Oak Lane.";
+        let at = |s: &str| {
+            let a = t.find(s).unwrap();
+            (a, a + s.len())
+        };
+        use PiiCategory::*;
+        for (s, c) in [("Gantler", PersonName), ("Stephens", PersonName), ("29/1994", Date), ("24 de noviembre", Date), ("394", BankAccount), ("2024/0031", Date), ("13.709/2018", BankAccount)] {
+            let (a, b) = at(s);
+            assert!(legal_context(t, a, b, &c), "{} is legal context", s);
+        }
+        for (s, c) in [("Dana Holloway", PersonName), ("5 May 2024", Date), ("12 Oak Lane", Address)] {
+            let (a, b) = at(s);
+            assert!(!legal_context(t, a, b, &c), "{} is personal data", s);
+        }
+        assert!(has_legal_word("SUPLICO AL JUZGADO"));
+        assert!(has_legal_word("Cartão de Cidadão"));
+        assert!(has_legal_word("Procurador de los Tribunales"));
+        assert!(!has_legal_word("María Inmaculada Ferrándiz Olmedo"));
+        assert!(!has_legal_word("Rua de Santa Catarina, 120, Porto"));
+        assert!(year_only("IMI de 2024"));
+        assert!(!year_only("2024"));
+        assert!(!year_only("AC-2024-118"));
     }
 
     #[test]
