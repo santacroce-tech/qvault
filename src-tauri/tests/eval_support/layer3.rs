@@ -62,6 +62,9 @@ impl Layer3Engine for Recorder<'_> {
     fn complete(&self, chunk: &str) -> Result<String, Layer3Error> {
         let t = Instant::now();
         let r = self.inner.complete(chunk);
+        if std::env::var("QVAULT_EVAL_VERBOSE").is_ok() {
+            eprintln!("  chunk {} words: {:.1}s {}", chunk.split_whitespace().count(), t.elapsed().as_secs_f64(), match &r { Ok(a) => format!("{} chars", a.len()), Err(e) => format!("{:?}", e) });
+        }
         *self.seconds.borrow_mut() += t.elapsed().as_secs_f64();
         *self.calls.borrow_mut() += 1;
         match &r {
@@ -265,7 +268,11 @@ fn layer3_models() {
         eprintln!("skipping: set QVAULT_EVAL_L3=1 (and QVAC_MODELS_DIR, QVAULT_EVAL_MODELS) to run");
         return;
     }
-    let fixtures = load_fixtures();
+    let mut fixtures = load_fixtures();
+    if let Ok(only) = std::env::var("QVAULT_EVAL_FIXTURES") {
+        let ids: Vec<&str> = only.split(',').map(|s| s.trim()).collect();
+        fixtures.retain(|f| ids.contains(&f.id.as_str()));
+    }
     let pages: usize = fixtures.iter().map(|f| f.pages.len()).sum();
     let models_dir = PathBuf::from(std::env::var("QVAC_MODELS_DIR").expect("QVAC_MODELS_DIR"));
     let runs: usize = std::env::var("QVAULT_EVAL_RUNS").ok().and_then(|v| v.parse().ok()).unwrap_or(3);
@@ -433,7 +440,7 @@ fn layer3_models() {
             "| Layers 1+2 | {} | {} | {} | {} | {} | {} | {} |\n",
             pct(l12.overall.overlap.precision()), pct(l12.overall.overlap.recall()), pct(l12.overall.overlap.f1()),
             pct(l12.overall.covered_recall()),
-            pct(l12.by_lang["en"].overlap.f1()), pct(l12.by_lang["es"].overlap.f1()), pct(l12.by_lang["pt"].overlap.f1())
+            pct(l12.by_lang.get("en").map(|b| b.overlap.f1()).unwrap_or(0.0)), pct(l12.by_lang.get("es").map(|b| b.overlap.f1()).unwrap_or(0.0)), pct(l12.by_lang.get("pt").map(|b| b.overlap.f1()).unwrap_or(0.0))
         ));
         md.push_str(&format!(
             "| Layers 1+2+3 | {} | {} | {} | {} | {} | {} | {} |\n\n",

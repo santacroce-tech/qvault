@@ -1,6 +1,6 @@
 # QVAC integration — Phase 0 design
 
-Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1B (sidecar, Model Manager, Layer 3 on QVAC) built — see [§4.3](#43-as-built-phase-1b) and [§6](#6-installer-size). Phase 2 (OCR for scanned PDFs and images) built — see [§10](#10-phase-2-as-built-ocr-for-scanned-pdfs-and-images).**
+Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1B (sidecar, Model Manager, Layer 3 on QVAC) built — see [§4.3](#43-as-built-phase-1b) and [§6](#6-installer-size). Phase 2 (OCR for scanned PDFs and images) built — see [§10](#10-phase-2-as-built-ocr-for-scanned-pdfs-and-images). Phase 3 (eval harness, Layer 1 gaps, Layer 3 quality, model choice) built — see [§11](#11-phase-3-layer-3-quality-model-choice-and-the-eval-harness).**
 Date: 2026-10-12. Branch: `feature/qvac-integration`.
 
 This document covers what Qvault looks like today, the export redaction audit, what QVAC actually provides at the version we would pin, the proposed sidecar architecture, measured size impact, and open questions. Where the original task prompt turned out to be wrong, that is called out in [§8](#8-corrections-to-the-task-prompt).
@@ -180,7 +180,7 @@ Failures are handled per chunk or for the rest of the scan:
 
 **Removed:** GLiNER (`llm/model_manager.rs`, `LlmState`, `llm_*` commands); the `ort`, `ort-tract`, `ndarray`, `tokenizers` and `hf-hub` crates; the `llm`/`cuda`/`metal` features. New commands: `ai_capabilities`, `ai_list_models`, `ai_download_model`, `ai_cancel_download`, `ai_import_model`, `ai_delete_model`, `ai_assess_fit`, `ai_set_layer3`, `ai_self_test`. The log plugin now runs in release builds too (Warn; Info for `qvac`), so sidecar diagnostics reach the app log.
 
-**Pinned model catalog:**
+**Pinned model catalog** (Phase 1B; the LLM entries were extended and the default changed in Phase 3, see §11.4):
 
 | id | File | Size (bytes) | SHA-256 | Licence | Source |
 |---|---|---|---|---|---|
@@ -266,7 +266,7 @@ Linux and Windows will be larger (see §4.3 CI notes); their real numbers come w
 8. **No encryption at rest** (§1.3): document files and PII in SQLite are plaintext. Separate from QVAC; users must rely on full-disk encryption. Recommend a follow-up (SQLCipher or field-level encryption).
 9. **API churn:** contained by the sidecar allow-list; upgrading QVAC means editing one JS file and re-running the protocol tests.
 10. **Licensing contradiction in the repo:** `README.md` says "Proprietary. All rights reserved."; the website, Layer 3 post and release notes say MIT. Phase 7 should settle this. (The license server and `LICENSE_SYSTEM.md` were removed in `ab3c8ce`.)
-11. **Layer 3 quality is unmeasured.** Qwen2.5-0.5B with the few-shot prompt finds names, addresses, dates and IDs in quick checks. It also produces false positives (e.g. "Riverside clinic" as an Address) and is not deterministic across runs. The 1.5B model was not better in a 4-sentence spot check. The Phase 3 eval harness has to set the bar; until then, every Layer 3 finding stays in review at 0.70.
+11. **Layer 3 quality was unmeasured** (*measured in Phase 3, §11: deterministic now, default model changed*). Qwen2.5-0.5B with the few-shot prompt finds names, addresses, dates and IDs in quick checks. It also produces false positives (e.g. "Riverside clinic" as an Address) and is not deterministic across runs. The 1.5B model was not better in a 4-sentence spot check. The Phase 3 eval harness has to set the bar; until then, every Layer 3 finding stays in review at 0.70.
 
 ---
 
@@ -519,3 +519,130 @@ PDF.js was already bundled, and no models are bundled. The bundled build's `--qv
 - Images are converted to PDFs at upload rather than kept as images. Stored uploads are not encrypted in this build (§8).
 - For untouched scanned pages, export "OCR of the exported file" uses the stored OCR text of those (byte-identical) pages instead of OCR-ing them again. Burned pages are always OCR'd again.
 - The recall measure uses word-bounded matching, so `$50,000.00` does not count as found inside `$150,000.00`. The bar is asserted at the default DPI only; other resolutions are reported.
+
+---
+
+## 11. Phase 3: Layer 3 quality, model choice and the eval harness
+
+Measured on Apple M4 Pro (48 GB, Metal), pinned QVAC 0.21.0 / `@qvac/llm-llamacpp@0.55.0`. All reports behind these tables are in [`eval/reports/`](../eval/reports/); how to rerun everything is in [`eval/README.md`](../eval/README.md).
+
+### 11.1 Method
+
+- **Fixtures** (`eval/fixtures/`): 16 synthetic legal documents, 18 pages, **461 required labels** (+37 optional) covering all 23 `PiiCategory` values. EN 8 / ES 4 / PT 4 documents: contracts, court filings, letters, minutes, a notice; US, EU/DE, UK, ES, PT, BR and MX formats; the `landing/demo.pdf` text layer with its 25 website entities plus routing, SWIFT and every other date/amount; hard cases (`LAST, First`, initials, surnames alone, names and e-mails split across line breaks, values in tables); false-positive traps (defined terms, clause headings, company-like phrases, case-law citations, statutes, courts, percentages). All values are fictitious (555-01xx phones, documentation IBANs, test card numbers, `example.*` domains). Labels are inline `[[Category|text]]` markup compiled to JSON with UTF-8 byte offsets; the builder and the Rust harness both validate every span.
+- **Held-out split.** Three fixtures (60 labels) were written *after* the Layer 1 work and never used to tune a rule or prompt. Numbers are reported for `dev` and `holdout` separately; the gap is the honest measure of overfitting.
+- **Matching.** Category-agnostic (a redaction is a redaction); category agreement is reported as type accuracy. **Overlap** (≥ 1 shared byte) is the headline; **exact** (same boundaries, ignoring surrounding whitespace and `.,;:`) and **covered** (every letter/digit of the label inside some detection, the redaction view) are reported too. Optional labels never count as misses, and detections that only touch them are ignored.
+- **Runner.** `src-tauri/tests/eval_harness.rs` (a Rust integration test, like the existing opt-in ITs): Layers 1, 2, 1+2 always (CI); Layer 3 alone and Layers 1+2+3 per model with `QVAULT_EVAL_L3=1` through the real sidecar, 3 runs per model, raw answers recorded so every post-processing heuristic can be ablated offline. Markdown + JSON reports.
+- **CI** (`.github/workflows/ci.yml`, ubuntu-22.04, read-only token): `npm ci`, `tsc --noEmit`, `build-fixtures.mjs --check`, `cargo test --locked` (installs the same WebKitGTK packages as `build.yml`; the sidecar is not built, `build.rs` writes its placeholder), then the Layers 1–2 eval against `eval/baseline.json` (fails on a recall drop > 0.5 pt overall / per category / per language, or a precision drop > 2 pt).
+
+### 11.2 Layer 1 gaps (before → after)
+
+Fixed: US phones with parentheses/dots/`1-` prefix, BR and ES/PT national phones; cards with separators (4-4-4-4, Amex 4-6-5), Luhn required for undelimited numbers (grouped numbers that fail Luhn are kept at 0.80 confidence: the `demo.pdf` card `4532-8901-2345-6789` fails Luhn); ABA routing numbers (3-7-1 checksum + Fed prefix ranges, or after a routing/ABA label); SWIFT/BIC (ISO country + label, digit or branch); IBANs with spaces, validated with mod-97 (a German VAT number is no longer reported as an IBAN); street addresses (EN, ES, PT/BR, DE); "D Month YYYY" and es/pt dates; dates after a birth label become `DateOfBirth`; €/£/MXN/euro amounts; labelled passport, driver licence, account, MRN, case/court-file, client/claim/policy numbers and plates; ES DNI/NIE (mod-23), ES CIF, PT NIF and Cartão de Cidadão, UK NINO, MX CURP, BR RG, CNJ case numbers. Validators live in `pipeline/patterns/checks.rs` with unit tests. `pipeline_test` (24) is unchanged and green.
+
+Overlap matching, all 461 labels:
+
+| | P | R | F1 | exact R | covered R |
+|---|---:|---:|---:|---:|---:|
+| Layer 1 before | 99.4 | 33.8 | 50.5 | 31.5 | 31.7 |
+| **Layer 1 after** | **100.0** | **63.3** | **77.6** | 61.8 | 62.3 |
+| Layer 2 (unchanged) | 59.0 | 21.7 | 31.7 | 11.9 | 13.2 |
+| Layers 1+2 before | 78.4 | 54.2 | 64.1 | 43.4 | 44.9 |
+| **Layers 1+2 after** | **84.9** | **83.1** | **84.0** | 73.8 | 75.5 |
+| Layer 1, holdout only: before → after | 100.0 → 100.0 | 26.7 → 41.7 | | | |
+| Layers 1+2, holdout only: before → after | 83.8 → 86.7 | 51.7 → 66.7 | | | |
+
+The holdout gain is real but much smaller than the dev gain: the new rules fit formats the dev fixtures contain. Holdout misses (dotted dates `2025.03.18`, `Feb. 3, 2021`, `10 jan. 2025`, unpunctuated CPF, Canadian SIN and address, `C/ Gran Vía…`) were deliberately left unfixed so the split stays held out. Per-category tables: `eval/reports/layers12.md`. Layers 1+2 after, per language (overlap F1): EN 80.0, ES 88.2, PT 90.2. Layer 2's person-name heuristic is now the main precision problem (PersonName P 51.8 — "Judgment Debtor", "Effective Date", "Código Civil"); it was out of scope here and is the obvious next fix.
+
+### 11.3 Layer 3 changes
+
+- **Strict validation** (`parse_strict`): only `{"entities":[…]}`; an element must be exactly `{text: string, category: string}`; unknown category, empty text, implausible for the category, stop-listed, or text not found in the chunk → dropped and counted (`DropStats`). The grammar (from the `json_schema` response format) already guarantees shape and the category enum, so on the 7 models `invalid_items` and `unknown_category` were 0; `not_in_chunk` (hallucinated or rewritten text, e.g. the 0.5B copying "Rua das Flores" from the prompt's example) was 107 of 863 items for Qwen2.5-0.5B and 6 of 349 for Qwen3-1.7B.
+- **Truncation salvage.** Small models loop ("Alameda, CA 94501" ×20) until `predict` (512) cuts them off, leaving invalid JSON. Before: the chunk was lost (18 of 53 chunks for Qwen2.5-0.5B). Now complete items are recovered (key order independent: llama.cpp emits `category` first). 0 failed chunks on every model after the fix.
+- **Offset mapping.** Case- and whitespace-insensitive, word-bounded; a hyphen may be followed by a line break (`j.richardson@atlas-⏎digital.com`); each accepted string is mapped to every occurrence in the **page** (not only the chunk); for names also `Last, First` ⇄ `First Last` and the surname after an honorific (`Mr. Feeney`, `Sra. Ferrándiz Olmedo`). Mapping every occurrence is deliberate: the same string on a page is the same entity, and the reviewer sees each one. Across overlapping chunks a containing span replaces a shorter one; repeats count as agreement.
+- **Post-filters**: per-category plausibility (digits for numeric categories, word limits — from Phase 1B) and a stop-list of legal roles/defined terms in EN/ES/PT for names/companies/addresses.
+- **Prompt `p3`**: inclusion and exclusion rules, a category glossary, and three short EN/ES/PT examples that each contain things *not* to extract (a citation, clause heading, court, statute). Few-shot texts share no values with the fixtures. `p1b` (Phase 1B) is kept for comparison; reports record the prompt id.
+- **Determinism**: `temp 0`, `seed 42`, and `reasoning_budget: 0`, which turns off the Qwen3 / Gemma 4 thinking channel per request (QVAC 0.21 exposes it as a generation param; the sidecar allow-list now accepts it; the JSON grammar would forbid `<think>` anyway). **Variance: 3 runs per model, span-set Jaccard 100 % and 100 % byte-identical answers on every model**. Phase 1B noted run-to-run differences; with temp 0, a fixed seed, the grammar and no reasoning channel none were observed (which of these matters was not isolated). Other hardware/backends may still differ.
+- **Chunking**: 150 words, 20 overlap (kept). 80-word chunks were measured on Qwen2.5-0.5B: Layer 3 recall 37.7 → 52.3 but precision 89.7 → 76.7, Layers 1+2+3 F1 84.6 → 80.4, and 1.7× slower. Rejected.
+- **Streaming**: each page's Layer 1–2 detections are stored and announced (`scan-page-results`) before Layer 3 runs on that page, then Layer 3's; the viewer reloads the review list as they arrive. Not per chunk: a later chunk can widen an earlier span, so results are final per page. Timeouts, cancel and fatal-error behaviour unchanged.
+
+**Every heuristic, measured** (ablation replayed on run 1's recorded answers; Δ of Layers 1+2+3 when the switch is turned off):
+
+| switch | Qwen2.5-0.5B | Qwen3-0.6B | Qwen3-1.7B | Qwen3-4B | Gemma 4 E4B | verdict |
+|---|---|---|---|---|---|---|
+| stop-list | P −2.3, F1 −1.3 | P −3.2, F1 −1.8 | P −4.5, F1 −2.5 | 0 | 0 | **keep** (biggest gain for small models; large ones do not return legal terms) |
+| page-wide mapping | R −0.7, F1 −0.3 | R −1.3, F1 −0.7 | R −1.3, F1 −0.6 | R −1.8, F1 −1.0 | R −0.4, F1 −0.3 | **keep** (but at 80-word chunks it cost 1.9 F1) |
+| `Last, First` variants | R −0.2, F1 −0.2 | R −1.1, F1 −0.6 | R −0.5, F1 −0.2 | R −0.9, F1 −0.5 | R −0.8, F1 −0.5 | keep (no precision cost) |
+| honorific + surname | R −0.2, F1 −0.2 | R −0.7, F1 −0.4 | R −1.6, F1 −0.8 | R −1.8, F1 −1.0 | R −1.3, F1 −0.7 | keep |
+| hyphen line-wrap | 0 | 0 | R −0.3 | R −0.3 | R −0.2 | keep (the demo.pdf e-mail) |
+| accent folding | 0 | 0 | 0 | 0 | 0 | **removed from the default** (no measured effect on any model; still available) |
+| all of the above vs Phase 1B post-processing | F1 −1.1 | F1 −2.1 | F1 −2.8 | F1 −2.1 | F1 −1.7 | |
+
+Prompt, end to end (Layers 1+2+3 overlap P / R / F1, run 1): Qwen2.5-0.5B Phase 1B (p1b prompt + p1b post) 80.6 / 83.9 / 82.2 → p3 + new post **82.3 / 87.0 / 84.6**; Qwen2.5-1.5B 83.5 / 89.2 / 86.2 → **83.4 / 95.2 / 88.9**; Qwen3-4B 84.9 / 89.2 / 87.0 → **85.4 / 94.4 / 89.7**. Layer 3 alone with Qwen2.5-0.5B: 83.6 / 28.2 / 42.2 → 89.7 / 37.7 / 53.1.
+
+**Confidence.** The flat 0.70 is replaced by a per-category value, because the data shows Layer 3's *additions* to Layers 1–2 (what the user actually sees from it) differ sharply in precision by category — pooled over the 7 models: PersonName 96 % (n=224), BankAccount 100 % (21), NationalId 92 % (12), DateOfBirth 100 % (9), CompanyName 89 % (37), Date 61 % (23), Address 42 % (36), CaseNumber 13 % (23). Values: 0.80 for PersonName/BankAccount/NationalId/DateOfBirth, 0.70 CompanyName, 0.60 Date, 0.50 Address/CaseNumber, 0.65 for categories with too few additions to measure; +0.05 when two overlapping chunks agree (agreeing detections were 100 % / 96 % correct vs 97 % / 92 % single-chunk for Qwen3-1.7B / 0.6B). Always below Layer 1's 0.95; nothing is auto-applied. Small samples: treat these as an ordering, not probabilities.
+
+### 11.4 Model choice
+
+All files from the original authors on Hugging Face at pinned revisions (never the QVAC registry), SHA-256 computed after download; Qwen3-4B and both Gemma 4 files match QVAC's own catalog hashes (`QWEN3_4B_INST_Q4_K_M`, `GEMMA4_*_MULTIMODAL_Q4_K_M`). Qwen3 0.6B/1.7B: Qwen publishes only Q8_0 GGUFs (QVAC's catalog uses unsloth Q4_0 conversions), so the official Q8_0 was used. Gemma 4 and Qwen2.5-7B: no GGUF from the original author; the exact bartowski conversions were used (Gemma at QVAC's pinned revisions). Every model loaded on the pinned addon; none needed a QVAC upgrade.
+
+3 runs each (identical; Qwen2.5-7B and Qwen3-8B: 1 run, for time), 461 labels, overlap matching; s/page = Layer 3 model time only (18 pages, 53 chunks); RSS = peak of the sidecar process tree; assessFit on this 48 GB machine.
+
+| model | quant / file | licence | assessFit | s/page | peak RSS | L3 alone P / R / F1 | L1+2+3 P / R / F1 | L1+2+3 F1 EN / ES / PT | holdout L1+2+3 R / F1 |
+|---|---|---|---|---:|---:|---|---|---|---|
+| Layers 1+2 only | — | — | — | — | — | — | 84.9 / 83.1 / 84.0 | 80.0 / 88.2 / 90.2 | 66.7 / 75.4 |
+| Qwen2.5-0.5B Instruct | Q4_K_M, 491 MB | Apache-2.0 | likely-fits | 4.4 | 0.94 GB | 89.7 / 37.7 / 53.1 | 82.3 / 87.0 / 84.6 | 80.7 / 89.0 / 90.2 | 76.7 / 82.0 |
+| Qwen3-0.6B | Q8_0, 639 MB | Apache-2.0 | likely-fits | 3.7 | 1.30 GB | 92.0 / 49.9 / 64.7 | 82.7 / 90.5 / 86.4 | 84.7 / 86.8 / 90.3 | 80.0 / 81.2 |
+| Qwen2.5-1.5B Instruct | Q4_K_M, 1.12 GB | Apache-2.0 | likely-fits | 8.1 | 1.56 GB | 90.3 / 52.7 / 66.6 | 83.4 / 95.2 / 88.9 | 88.0 / 88.9 / 91.5 | 78.3 / 82.3 |
+| **Qwen3-1.7B** (new default) | Q8_0, 1.83 GB | Apache-2.0 | likely-fits | 6.2 | 2.43 GB | **97.2 / 67.0 / 79.3** | **84.9 / 93.1 / 88.8** | 87.1 / 89.7 / 92.5 | **85.0 / 87.1** |
+| Qwen3-4B | Q4_K_M, 2.50 GB | Apache-2.0 | likely-fits | 12.1 | 3.08 GB | 98.3 / 76.8 / 86.2 | 85.4 / 94.4 / 89.7 | 88.1 / 90.6 / 93.0 | 83.3 / 85.4 |
+| Gemma 4 E2B it ¹ | Q4_K_M, 3.46 GB | Apache-2.0 ¹ | likely-fits | 8.5 | 3.85 GB | 98.9 / 79.8 / 88.4 | 85.9 / 95.7 / 90.5 | 89.9 / 92.3 / 90.5 | 83.3 / 86.1 |
+| Gemma 4 E4B it ¹ | Q4_K_M, 5.41 GB | Apache-2.0 ¹ | likely-fits | 15.5 | 5.75 GB | 99.5 / 89.2 / 94.1 | 86.4 / 96.7 / 91.3 | 89.0 / 93.8 / 94.8 | 88.3 / 89.0 |
+| Qwen2.5-7B Instruct ² | Q4_K_M, 4.68 GB | Apache-2.0 | likely-fits | 19.0 | 5.00 GB | 98.7 / 81.8 / 89.4 | 85.9 / 96.7 / 91.0 | 89.2 / 92.8 / 94.0 | 88.3 / 89.0 |
+| Qwen3-8B ³ | Q4_K_M, 5.03 GB | Apache-2.0 | likely-fits | 21.8 | 5.52 GB | 97.5 / 86.1 / 91.5 | 85.1 / 97.2 / 90.7 | 89.7 / 91.3 / 93.0 | **91.7** / 89.3 |
+
+¹ **Gemma licence.** The task assumed Gemma models are under the Gemma Terms of Use (not an OSI licence). For **Gemma 4** that is no longer true: Google's model cards (`google/gemma-4-E2B-it`, `-E4B-it`) declare `license: apache-2.0` and link to <https://ai.google.dev/gemma/docs/gemma_4_license>, which is the Apache License 2.0 text (checked 2026-10-12). Earlier Gemma generations (and QVAC's NOTICE for some catalog models) still reference the Gemma terms. As instructed, Gemma 4 is reported for comparison only and is **not** in the catalog or the default; users can import it as a custom model.
+
+² Qwen2.5-7B: Qwen's own GGUF is split into two shards, which the model store (one pinned file per model) does not support; measured with bartowski's single-file conversion for comparison only, not added to the catalog. 1 run.
+
+³ Qwen3-8B: 1 run (the 3-run results of every other model were byte-identical).
+
+Observations:
+- **Every model** improves recall over Layers 1–2; the differences are in how many reviewer-visible false positives come with it and in what the model finds on its own. From 1.7B up, Layer 3 alone is ≥ 97 % precise.
+- **Layers 1+2+3 precision is capped at ~85–86 % by Layer 2's name heuristic**, not by Layer 3. For Gemma 4 E4B, Layer 3 *alone* (F1 94.1) beats the combination (91.3). Improving or gating Layer 2 when a strong model runs is the next big win.
+- Holdout recall rises with model size much more than dev recall does (Layers 1+2 alone: 66.7): 0.5B 76.7, 1.7B 85.0, Gemma E4B 88.3 — the model, not the regexes, is what generalises.
+- Speeds are on a GPU (Metal). CPU-only machines will be several times slower; not measured here.
+
+**Default: Qwen3-1.7B (Q8_0).** Against Qwen2.5-0.5B it raises Layers 1+2+3 F1 84.6 → 88.8 (recall 87.0 → 93.1, covered recall 79.2 → 85.0), holdout F1 82.0 → 87.1, and Layer 3's own precision 89.7 → 97.2 (fewer bad suggestions to reject), at 6.2 s/page instead of 4.4 here, needing ~2.4 GB of memory and a 1.83 GB download. That is "clearly better and still light enough" for an 8 GB laptop. Trade-off: 3.7× the download and 2.6× the memory of the 0.5B; on 4 GB machines it is unlikely to fit (assessFit decides after download). The catalog therefore offers four tiers, and the Model Manager shows size, memory need, the machine's memory and a pre-download estimate, then the real assessFit verdict after download (models that do not fit cannot be selected):
+
+| tier | model | download | needs ≈ | when |
+|---|---|---:|---:|---|
+| light | Qwen3-0.6B Q8_0 | 639 MB | 1.5 GB | 4–8 GB machines; beats the old 0.5B default on dev (+1.8 F1) and holdout (+3.3 R) and is faster |
+| **default** | **Qwen3-1.7B Q8_0** | 1.83 GB | 2.75 GB | most laptops |
+| workstation | Qwen3-4B Q4_K_M | 2.50 GB | 3.5 GB | 16 GB+ or a GPU |
+| large workstation | Qwen3-8B Q4_K_M | 5.03 GB | 6 GB | GPU workstations; best holdout recall (91.7), 3.5× slower than the default |
+
+Qwen2.5-0.5B and 1.5B stay in the catalog (marked superseded) so existing installs keep working. Catalog entries pin the HF revision URL, exact size, SHA-256 and licence URL (`src-tauri/src/qvac/catalog.rs`).
+
+### 11.5 Tests
+
+- `cargo test`: lib 80, `eval_harness` 3 (Layers 1–2 vs baseline, scoring rules, opt-in Layer 3 skips), `ocr_export_test` 7, `pipeline_test` 24, `redaction_export_test` 7, `qvac_sidecar_it` 1, `ocr_pipeline_it` 3 (opt-in ITs skip without models). `npx tsc --noEmit` clean.
+- Opt-in, real sidecar and models: `qvac_sidecar_it` 1 passed (OCR + Layer 3 through the real sidecar; Layer 3 confidences now 0.50–0.85). `ocr_pipeline_it` 3 passed: on `demo.pdf` the text layer now finds 32/34 of the 25 known entities per page (was 27/34 = 79.4 %, thanks to the Layer 1 fixes) and the 200 DPI scan 30/34 = 88.2 % (bar 84.7 %); the scan finds 48/52 = 92.3 % of text-layer detections (was 43/44 = 97.7 %: the new address/phone matches are more sensitive to OCR line breaks; bar 90 %); export of the scanned file still leaves nothing readable.
+
+### 11.6 Known limits
+
+- **Small, self-written eval set.** 461 labels, one author, synthetic documents. Many categories have < 10 labels; per-category numbers move a lot with one item. The dev set shaped the Layer 1 rules and the prompt; only the 60-label holdout is untouched (and it is now spent for Layer 1: new rules should come with new held-out fixtures).
+- **Layer 2 precision** (names ~52 %) dominates the combined precision; not addressed in this phase.
+- **Layer 3 false positives that remain:** addresses and case numbers suggested by the model are mostly wrong (hence 0.50 confidence); small models still copy values from the prompt's examples (dropped by the in-chunk check).
+- **Determinism** was measured on one machine/backend (Metal). llama.cpp results can differ across CPU/GPU backends and thread counts.
+- **Speed** numbers are GPU numbers; CPU-only and Windows/Vulkan were not measured. Larger models take 12–15 s per page here.
+- **Eval runs need the machine awake** (`caffeinate`): a first Qwen2.5-7B run stalled for hours because the Mac slept between chunks; s/page uses a monotonic clock and was not affected, only wall time.
+- **Reports** for the 3-run models were generated before the confidence calibration commit; precision/recall do not depend on confidence, and accent folding (on at the time) never changed a result, so the numbers stand.
+- **Memory** is the peak RSS of the sidecar sampled every 300 ms; with Metal, GPU-private allocations may not be counted.
+- **Pre-download fit** is an estimate from catalog memory needs vs. physical memory (macOS/Linux only); the authoritative check is assessFit after download, as before.
+- **Accent folding** was removed from the default because it never changed a result; models in these runs always copied accents faithfully.
+
+### 11.7 Differences from the plan
+
+- Layer 3 became deterministic with temp 0 + seed; the variance report is therefore "zero across 3 runs" rather than a spread.
+- Default model changed from Qwen2.5-0.5B to Qwen3-1.7B (Q8_0, the only official Qwen3 small quant), with Qwen3-0.6B as the light option; Qwen2.5-3B was excluded (licence), Gemma 4 kept out of the catalog as instructed even though its licence turned out to be Apache-2.0.
+- Streaming is per page (Layers 1–2 first, then Layer 3), not per chunk.
+- The eval runner is a Rust integration test (env-driven), not a separate binary, to reuse the app's pipeline and sidecar client unchanged.
+- The CI workflow was written and its steps run locally on macOS; it was not run on Linux (no container runtime on this machine).
