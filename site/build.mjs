@@ -34,6 +34,7 @@ const UI = {
     architecture: "Architecture",
     privacy: "Privacy",
     terms: "Terms",
+    article: "Article",
     source: "Source code",
     download: "Download",
     language: "Language",
@@ -52,6 +53,7 @@ const UI = {
     architecture: "Arquitectura",
     privacy: "Privacidad",
     terms: "Condiciones",
+    article: "Artículo",
     source: "Código fuente",
     download: "Descargar",
     language: "Idioma",
@@ -70,6 +72,7 @@ const UI = {
     architecture: "Arquitetura",
     privacy: "Privacidade",
     terms: "Termos",
+    article: "Artigo",
     source: "Código-fonte",
     download: "Baixar",
     language: "Idioma",
@@ -149,6 +152,7 @@ function render({ rel, lang, key }) {
     link("architecture.html", t.architecture),
     link("privacy.html", t.privacy),
     link("terms.html", t.terms),
+    link("blog/qvault-local-redaction.html", t.article),
     `<a href="${REPO}">${t.source}</a>`,
   ].join("\n");
 

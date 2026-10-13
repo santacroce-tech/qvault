@@ -1,0 +1,85 @@
+<!-- title: Redacting legal documents with AI that never leaves your computer
+     description: Why I built Qvault, a free and open-source desktop app that finds personal data in legal documents, keeps a person in charge of every redaction, and runs its AI locally. -->
+<article class="wrap doc">
+  <h1>Qvault: redacting legal documents with AI that never leaves your computer</h1>
+  <p class="byline">Roberto Santacroce · 13 October 2026</p>
+
+  <p class="lead">Every week, law firms send out documents that must not carry personal data: court filings, discovery productions, documents shared with the other side, data subject requests. Somebody has to find every name, ID number, bank account and address, black it out, and make sure it is really gone.</p>
+  <p>The usual options are not great. Doing it by hand is slow and error-prone. Cloud redaction tools mean uploading the very documents you are trying to protect to someone else's servers. And a black box drawn over text in a PDF often leaves the text underneath, ready to be copied out.</p>
+  <p>So I built <strong>Qvault</strong>: a free, open-source desktop app that finds personal data in PDFs, Word files and scanned pages, lets a person review every finding, and exports redacted copies in which the redacted text is really gone. Everything, including the AI, runs on your own computer.</p>
+
+  <h2 id="what">What Qvault does</h2>
+  <p>Qvault takes a document in, suggests what to redact, and gives you back a clean copy you can send. Along the way:</p>
+  <ul>
+    <li><strong>Reads PDFs, Word files and scans.</strong> Text PDFs and DOCX are read directly. Scanned PDFs and PNG, JPG or TIFF images go through on-device OCR.</li>
+    <li><strong>Finds personal data in three layers.</strong> Patterns for emails, phone numbers, cards, IBANs and national IDs (US, EU, Brazil, Germany and more); rules for names, companies and addresses; and an optional local AI model that catches what rules miss.</li>
+    <li><strong>Keeps a person in charge.</strong> Every finding goes to review with its confidence and which layer found it. Nothing is redacted automatically, and you can add redactions by hand.</li>
+    <li><strong>Groups people and companies across documents.</strong> “Maria Silva”, “M. Silva” and “Ms. Silva” become one entity. If a new document mentions someone you redacted before and the detectors missed them, Qvault suggests it.</li>
+    <li><strong>Learns from your decisions.</strong> Things you rejected before are marked and sorted last. A “Not personal data” list, filled only when you choose, stops recurring false alarms, and it can be shared within a firm.</li>
+    <li><strong>Exports copies that are checked.</strong> Redacted PDF pages are turned into images with the boxes burned in, and metadata is stripped. Word files are redacted everywhere text hides: headers, footers, footnotes, comments and tracked changes. Then every export is read back, and if any approved text survives, the file is deleted and the export refused.</li>
+  </ul>
+  <p>It runs on macOS, Windows and Linux, in English, Spanish and Portuguese. It is free and MIT-licensed, with no account, no licence key and no telemetry.</p>
+
+  <h2 id="how">How it works</h2>
+  <figure>
+    <svg class="flow" viewBox="0 0 760 420" role="img" aria-label="How Qvault works: your document, read the text, find personal data in three layers, you review every finding, verified export, clean copy. All of it runs on your computer.">
+      <defs><marker id="flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrowhead" d="M0 0L10 5L0 10z"/></marker></defs>
+      <rect class="bg" x="16" y="4" width="728" height="392" rx="12"/>
+      <text class="note" x="32" y="28">All of this runs on your computer, with no network</text>
+      <g class="edge"><path d="M220 80H258" marker-end="url(#flow-arrow)"/><path d="M440 80H470" marker-end="url(#flow-arrow)"/><path d="M600 276V302" marker-end="url(#flow-arrow)"/><path d="M488 340H442" marker-end="url(#flow-arrow)"/><path d="M260 340H222" marker-end="url(#flow-arrow)"/></g>
+      <rect class="box" x="40" y="52" width="180" height="56" rx="8"/><text class="name" x="130" y="76">Your document</text><text class="body" x="130" y="94">PDF, Word or scan</text>
+      <rect class="box" x="260" y="52" width="180" height="56" rx="8"/><text class="name" x="350" y="76">Read the text</text><text class="body" x="350" y="94">OCR for scanned pages</text>
+      <rect class="box group" x="472" y="36" width="256" height="240" rx="8"/><text class="name" x="600" y="60">Find personal data</text>
+      <rect class="box" x="488" y="76" width="224" height="56" rx="8"/><text class="name" x="600" y="100">1 · Patterns</text><text class="body" x="600" y="118">Emails, IBANs, ID numbers</text>
+      <rect class="box" x="488" y="140" width="224" height="56" rx="8"/><text class="name" x="600" y="164">2 · Rules</text><text class="body" x="600" y="182">Names, companies, addresses</text>
+      <rect class="box opt" x="488" y="204" width="224" height="56" rx="8"/><text class="name" x="600" y="228">3 · Local AI (optional)</text><text class="body" x="600" y="246">Privacy Filter, through QVAC</text>
+      <rect class="box main" x="488" y="304" width="224" height="72" rx="8"/><text class="name" x="600" y="328">You review every finding</text><text class="body strong" x="600" y="346">Nothing redacted automatically</text><text class="body strong" x="600" y="362">Approve, reject or add by hand</text>
+      <rect class="box" x="260" y="304" width="180" height="72" rx="8"/><text class="name" x="350" y="328">Verified export</text><text class="body" x="350" y="346">Read back and checked;</text><text class="body" x="350" y="362">refused if text survives</text>
+      <rect class="box" x="40" y="304" width="180" height="72" rx="8"/><text class="name" x="130" y="336">Clean copy</text><text class="body" x="130" y="354">Ready to send</text>
+    </svg>
+    <figcaption>Every finding passes a person before a checked copy leaves.</figcaption>
+  </figure>
+  <p>The three detection layers each catch different things: patterns are exact, rules know legal phrasing like “represented by”, and the AI catches names and details that follow no pattern. If no AI model is installed, the first two layers still run. Whatever they find, a person decides.</p>
+
+  <h2 id="local">Why everything stays on your computer</h2>
+  <p>A redaction tool that uploads your documents defeats its own purpose. So in Qvault no document, extracted text or finding ever leaves the machine. There is no cloud service behind it.</p>
+  <p>The AI runs through <a href="https://github.com/tetherto/qvac">QVAC</a>, Tether's open-source SDK for local AI. Qvault bundles it as a small helper process that talks to the app only through standard input and output. It opens no network sockets, which I check with tests on every build. It only loads model files from disk, and it refuses URLs and peer-to-peer model registries.</p>
+  <p>The only time Qvault touches the network is when you click <strong>Download</strong> on a model. It shows the size and the source first, downloads from a pinned Hugging Face revision over HTTPS, and checks the SHA-256 before using the file. Every model can also be imported from a file, so a machine that never goes online gets every feature. And if no model is installed at all, Qvault still works with its pattern and rule layers.</p>
+
+  <h2 id="measured">Measured, not guessed</h2>
+  <p>It is easy to add AI to a product and assume it helps. I wanted numbers instead. So Qvault has a test set of 16 legal documents in English, Spanish and Portuguese, with 461 hand-labelled pieces of personal data, and some documents kept aside that are never used for tuning. Every change to detection is scored against it, and the rule-based layers are re-checked on every commit.</p>
+  <p>Those numbers decided the AI model. I first used Qwen3-1.7B, a small general language model. Then OpenAI released <a href="https://huggingface.co/openai/privacy-filter">Privacy Filter</a>, an open model built just for finding personal data. Measured on the same set, together with Qvault's rule layers:</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>AI detector</th><th>Found</th><th>Held-out documents</th><th>False suggestions</th><th>Time per page</th></tr></thead>
+      <tbody>
+        <tr><td>None (rules only)</td><td>83%</td><td>67%</td><td>0</td><td>instant</td></tr>
+        <tr><td>Qwen3-1.7B</td><td>93%</td><td>85%</td><td>8</td><td>6.4 s (with GPU)</td></tr>
+        <tr><td><strong>Privacy Filter (now the default)</strong></td><td><strong>96%</strong></td><td><strong>88%</strong></td><td><strong>5</strong></td><td><strong>0.2 s (CPU only)</strong></td></tr>
+        <tr><td>Privacy Filter + Qwen3 (“thorough” option)</td><td>98.5%</td><td>100%</td><td>13</td><td>6.6 s</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Privacy Filter found more, raised fewer false alarms, and runs about 30 times faster without needing a graphics card. So it became the default, and Qwen3 stays as an optional thorough pass.</p>
+  <p>The numbers also stopped things. I built local fine-tuning so the model could learn from each user's reviews. Measured, it made results worse: one person's review history is far too small to train on. I dropped it and shipped something simpler that does work, the rejected-before marks and the “Not personal data” list. Checking instead of assuming also caught a serious bug early: the original PDF and Word export left redacted text recoverable. That is why every export is now read back and checked.</p>
+
+  <h2 id="limits">What it does not do</h2>
+  <p>Redaction is high-stakes, so the limits matter as much as the features:</p>
+  <ul>
+    <li><strong>It does not find everything.</strong> No detector does. The test set is small and synthetic, and real documents will score differently. That is why review is mandatory and not a setting.</li>
+    <li><strong>It does not decide for you.</strong> Qvault suggests; a person approves. Its learning only reorders and marks findings, and nothing is hidden or skipped without your explicit choice.</li>
+    <li><strong>It does not encrypt its own storage.</strong> Documents and review history sit in the app's data folder. Use your operating system's disk encryption (FileVault, BitLocker or LUKS).</li>
+    <li><strong>Redacted PDF pages become images.</strong> That is the price of making sure nothing hides under the black boxes.</li>
+    <li><strong>AI and OCR are desktop only.</strong> The models need a laptop or desktop; mobile keeps the pattern and rule layers.</li>
+  </ul>
+
+  <h2 id="try">Try it</h2>
+  <p>Qvault is free and open source. Download it, read how it works, or look at the code:</p>
+  <ul>
+    <li><a href="{{releases}}">Download the latest release</a> for macOS, Windows or Linux</li>
+    <li><a href="{{root}}architecture.html">How Qvault works</a> and <a href="{{root}}models.html">setting up the AI models</a></li>
+    <li><a href="{{repo}}">Source code and test set on GitHub</a></li>
+  </ul>
+  <p>If you work with legal documents, I would love to hear where it helps and where it falls short. Real-world feedback is the next thing Qvault needs most.</p>
+  <p>Qvault stands on open work by others: <a href="https://github.com/tetherto/qvac">QVAC</a> by Tether, <a href="https://huggingface.co/openai/privacy-filter">OpenAI Privacy Filter</a>, <a href="https://huggingface.co/Qwen/Qwen3-1.7B-GGUF">Qwen3</a>, <a href="https://github.com/JaidedAI/EasyOCR">EasyOCR</a> and <a href="https://github.com/clovaai/CRAFT-pytorch">CRAFT</a> for OCR, and <a href="https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF">Nomic Embed</a>. Thank you to all of them.</p>
+</article>
