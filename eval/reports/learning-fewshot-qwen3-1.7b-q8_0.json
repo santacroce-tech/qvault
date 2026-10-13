@@ -1,0 +1,234 @@
+{
+  "memory_layers123": [
+    {
+      "after": [
+        0.8489065606361829,
+        0.93058568329718,
+        0.8878715762637107
+      ],
+      "before": [
+        0.8489065606361829,
+        0.93058568329718,
+        0.8878715762637107
+      ],
+      "false_positives": 76,
+      "fp_marked": 9,
+      "fp_suppressed": 0,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 0.0,
+      "preds": 521,
+      "scenario": "leave one document out: memory only",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 427
+    },
+    {
+      "after": [
+        0.8489065606361829,
+        0.93058568329718,
+        0.8878715762637107
+      ],
+      "before": [
+        0.8489065606361829,
+        0.93058568329718,
+        0.8878715762637107
+      ],
+      "false_positives": 76,
+      "fp_marked": 9,
+      "fp_suppressed": 0,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 1.8125,
+      "preds": 521,
+      "scenario": "leave one document out: list = suggested candidates (rejected ≥ 3×)",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 427
+    },
+    {
+      "after": [
+        0.8643724696356275,
+        0.93058568329718,
+        0.8962578252477537
+      ],
+      "before": [
+        0.8489065606361829,
+        0.93058568329718,
+        0.8878715762637107
+      ],
+      "false_positives": 76,
+      "fp_marked": 0,
+      "fp_suppressed": 9,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 64.0,
+      "preds": 521,
+      "scenario": "leave one document out: list = every rejected string",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 427
+    },
+    {
+      "after": [
+        0.9976635514018691,
+        0.93058568329718,
+        0.9629579008513401
+      ],
+      "before": [
+        0.8489065606361829,
+        0.93058568329718,
+        0.8878715762637107
+      ],
+      "false_positives": 76,
+      "fp_marked": 0,
+      "fp_suppressed": 75,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 68.0,
+      "preds": 521,
+      "scenario": "stress: list = every string rejected in any document, this one included",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 427
+    },
+    {
+      "after": [
+        0.8928571428571429,
+        0.85,
+        0.8709016393442622
+      ],
+      "before": [
+        0.8928571428571429,
+        0.85,
+        0.8709016393442622
+      ],
+      "false_positives": 6,
+      "fp_marked": 0,
+      "fp_suppressed": 0,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 0.0,
+      "preds": 56,
+      "scenario": "dev history → holdout documents: memory only",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 50
+    },
+    {
+      "after": [
+        0.8928571428571429,
+        0.85,
+        0.8709016393442622
+      ],
+      "before": [
+        0.8928571428571429,
+        0.85,
+        0.8709016393442622
+      ],
+      "false_positives": 6,
+      "fp_marked": 0,
+      "fp_suppressed": 0,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 62.0,
+      "preds": 56,
+      "scenario": "dev history → holdout documents: list = every rejected string",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 50
+    }
+  ],
+  "rows": [
+    {
+      "covered": 0.8503253796095445,
+      "examples_mean": 0.0,
+      "f1": 0.8878715762637107,
+      "failed_chunks": 0,
+      "holdout_f1": 0.8709016393442622,
+      "holdout_r": 0.85,
+      "l3_p": 0.8518518518518519,
+      "l3_r": 0.09978308026030369,
+      "p": 0.8489065606361829,
+      "prompt_chars_added_mean": 0.0,
+      "r": 0.93058568329718,
+      "seconds_per_page": 6.207858923666668,
+      "variant": "no examples (app default)"
+    },
+    {
+      "covered": 0.8568329718004338,
+      "examples_mean": 2.0,
+      "f1": 0.8894719957096958,
+      "failed_chunks": 0,
+      "holdout_f1": 0.8559919436052367,
+      "holdout_r": 0.85,
+      "l3_p": 0.8305084745762712,
+      "l3_r": 0.10629067245119306,
+      "p": 0.8464566929133859,
+      "prompt_chars_added_mean": 206.3125,
+      "r": 0.9370932754880694,
+      "seconds_per_page": 6.237369335555555,
+      "variant": "mixed2"
+    },
+    {
+      "covered": 0.8481561822125814,
+      "examples_mean": 6.0,
+      "f1": 0.88671876899733,
+      "failed_chunks": 0,
+      "holdout_f1": 0.8437668161434977,
+      "holdout_r": 0.8166666666666667,
+      "l3_p": 0.8490566037735849,
+      "l3_r": 0.09761388286334056,
+      "p": 0.848605577689243,
+      "prompt_chars_added_mean": 338.0625,
+      "r": 0.928416485900217,
+      "seconds_per_page": 6.089749743166666,
+      "variant": "mixed6"
+    },
+    {
+      "covered": 0.8633405639913232,
+      "examples_mean": 3.0,
+      "f1": 0.8928935429890638,
+      "failed_chunks": 0,
+      "holdout_f1": 0.8633824276282377,
+      "holdout_r": 0.85,
+      "l3_p": 0.8387096774193549,
+      "l3_r": 0.11279826464208242,
+      "p": 0.8473581213307241,
+      "prompt_chars_added_mean": 224.125,
+      "r": 0.9436008676789588,
+      "seconds_per_page": 6.254868509222224,
+      "variant": "rejected3"
+    },
+    {
+      "covered": 0.8546637744034707,
+      "examples_mean": 6.0,
+      "f1": 0.8892474540404708,
+      "failed_chunks": 0,
+      "holdout_f1": 0.8559919436052367,
+      "holdout_r": 0.85,
+      "l3_p": 0.8421052631578947,
+      "l3_r": 0.10412147505422993,
+      "p": 0.8478260869565217,
+      "prompt_chars_added_mean": 343.6875,
+      "r": 0.9349240780911063,
+      "seconds_per_page": 6.281742435388889,
+      "variant": "rejected6"
+    },
+    {
+      "covered": 0.8633405639913232,
+      "examples_mean": 3.0,
+      "f1": 0.8910560874995269,
+      "failed_chunks": 0,
+      "holdout_f1": 0.8559919436052367,
+      "holdout_r": 0.85,
+      "l3_p": 0.8125,
+      "l3_r": 0.11279826464208242,
+      "p": 0.8440545808966862,
+      "prompt_chars_added_mean": 216.0,
+      "r": 0.9436008676789588,
+      "seconds_per_page": 6.2277132685000005,
+      "variant": "placebo3"
+    }
+  ]
+}

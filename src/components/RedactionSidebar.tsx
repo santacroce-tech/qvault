@@ -1,10 +1,19 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { exportRedactedDocx, exportRedactedPdf, openFile, getRedactionNotes } from "../lib/tauri-commands";
+import {
+  exportRedactedDocx,
+  exportRedactedPdf,
+  openFile,
+  getRedactionNotes,
+  getDocumentLearning,
+  rejectPreviouslyRejected,
+  restoreSuppressedFinding,
+  addNotPersonalData,
+} from "../lib/tauri-commands";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
 import type { RenderRedactedPages } from "../App";
 import { PII_COLORS, piiCategoryLabel } from "../lib/types";
-import type { PiiCategory, RedactionNote } from "../lib/types";
+import type { PiiCategory, RedactionNote, DocumentLearning, RedactionMark } from "../lib/types";
 
 interface Props {
   documentId: string;
@@ -36,6 +45,7 @@ export default function RedactionSidebar({
     setSelectedId,
     updateRedaction,
     bulkApprove,
+    reload,
   } = redactionsHook;
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -77,6 +87,74 @@ export default function RedactionSidebar({
       .catch((e) => console.warn("[Qvault] redaction notes unavailable:", e));
     return () => { cancelled = true; };
   }, [documentId, knownCount]);
+  // Review memory (§13): findings rejected before (marked, still pending)
+  // and findings the "Not personal data" list set aside in this document.
+  const [learning, setLearning] = useState<DocumentLearning>({ marks: [], suppressed: [] });
+  const [showSuppressed, setShowSuppressed] = useState(false);
+  const [listedNow, setListedNow] = useState<Record<string, boolean>>({});
+  const [learningError, setLearningError] = useState<string | null>(null);
+  const reviewedKey = redactions.map((r) => r.status[0]).join("");
+  const loadLearning = useCallback(() => {
+    getDocumentLearning(documentId)
+      .then((l) => setLearning(l ?? { marks: [], suppressed: [] }))
+      .catch((e) => console.warn("[Qvault] review memory unavailable:", e));
+  }, [documentId]);
+  useEffect(() => {
+    setShowSuppressed(false);
+    setListedNow({});
+    setLearningError(null);
+  }, [documentId]);
+  useEffect(() => {
+    loadLearning();
+  }, [loadLearning, redactions.length, reviewedKey]);
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { listen } = await import("@tauri-apps/api/event");
+        const u = await listen<{ documentId: string }>("review-memory", (e) => {
+          if (e.payload.documentId === documentId) loadLearning();
+        });
+        if (cancelled) u(); else unlisten = u;
+      } catch {
+        // Not running inside Tauri (browser preview).
+      }
+    })();
+    return () => { cancelled = true; unlisten?.(); };
+  }, [documentId, loadLearning]);
+  const marks: Record<string, RedactionMark> = Object.fromEntries(learning.marks.map((m) => [m.redactionId, m]));
+  const markedPending = redactions.filter((r) => r.status === "pending" && marks[r.id]).length;
+
+  const handleRejectPreviouslyRejected = async () => {
+    setLearningError(null);
+    try {
+      await rejectPreviouslyRejected(documentId);
+      await reload();
+    } catch (e) {
+      setLearningError(e instanceof Error ? e.message : String(e));
+    }
+  };
+  const handleRestore = async (id: string) => {
+    setLearningError(null);
+    try {
+      await restoreSuppressedFinding(id, documentId);
+      await reload();
+      loadLearning();
+    } catch (e) {
+      setLearningError(e instanceof Error ? e.message : String(e));
+    }
+  };
+  const handleNeverFlag = async (redactionId: string, category: string, text: string) => {
+    setLearningError(null);
+    try {
+      await addNotPersonalData(category, text, "review");
+      setListedNow((m) => ({ ...m, [redactionId]: true }));
+    } catch (e) {
+      setLearningError(e instanceof Error ? e.message : String(e));
+    }
+  };
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
 
@@ -221,6 +299,55 @@ export default function RedactionSidebar({
           </div>
         )}
 
+        {markedPending > 0 && (
+          <div className="mt-2 p-2 bg-slate-50 border border-slate-200 rounded text-slate-700 text-xs space-y-1.5">
+            <p>{t('sidebar.rejectedBeforeSummary', { count: markedPending })}</p>
+            <button
+              onClick={handleRejectPreviouslyRejected}
+              className="px-2 py-1 bg-white border border-slate-300 rounded hover:bg-slate-100"
+            >
+              {t('sidebar.rejectPreviouslyRejected', { count: markedPending })}
+            </button>
+          </div>
+        )}
+
+        {learning.suppressed.length > 0 && (
+          <div className="mt-2 p-2 bg-indigo-50 border border-indigo-200 rounded text-indigo-900 text-xs space-y-1.5">
+            <p>{t('sidebar.suppressedSummary', { count: learning.suppressed.length })}</p>
+            <button
+              onClick={() => setShowSuppressed((v) => !v)}
+              className="underline hover:no-underline"
+            >
+              {showSuppressed ? t('sidebar.suppressedHide') : t('sidebar.suppressedShow')}
+            </button>
+            {showSuppressed && (
+              <ul className="space-y-1">
+                {learning.suppressed.map((s) => (
+                  <li key={s.id} className="flex items-center justify-between gap-2">
+                    <span className="truncate">
+                      <span className="font-mono">{s.originalText}</span>
+                      <span className="text-indigo-500"> · {piiCategoryLabel(s.category, t)} · {t('sidebar.suppressedPage', { page: s.page + 1 })}</span>
+                    </span>
+                    <button
+                      onClick={() => handleRestore(s.id)}
+                      className="shrink-0 px-1.5 py-0.5 bg-white border border-indigo-300 rounded hover:bg-indigo-100"
+                      title={t('sidebar.suppressedRestoreTitle')}
+                    >
+                      {t('sidebar.suppressedRestore')}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {learningError && (
+          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
+            {learningError}
+          </div>
+        )}
+
         {exportError && (
           <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
             {exportError}
@@ -263,7 +390,7 @@ export default function RedactionSidebar({
                 </button>
               </div>
 
-              {items.map((r) => (
+              {[...items].sort((a, b) => Number(!!marks[a.id]) - Number(!!marks[b.id])).map((r) => (
                 <div
                   key={r.id}
                   onClick={() => setSelectedId(r.id)}
@@ -351,7 +478,33 @@ export default function RedactionSidebar({
                         {t('sidebar.knownEntity')}
                       </span>
                     )}
+                    {marks[r.id] && (
+                      <span
+                        className="text-[10px] uppercase tracking-wide bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded"
+                        title={t('sidebar.rejectedBeforeTitle', { count: marks[r.id].rejectedDocuments, confidence: Math.round(marks[r.id].originalConfidence * 100) })}
+                      >
+                        {t('sidebar.rejectedBefore', { count: marks[r.id].rejected })}
+                      </span>
+                    )}
                   </div>
+                  {r.status === "rejected" && r.detection_layer !== "manual" && (
+                    <div className="mt-1 text-xs">
+                      {listedNow[r.id] ? (
+                        <span className="text-indigo-700">{t('sidebar.neverFlagDone')}</span>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNeverFlag(r.id, r.category, r.original_text);
+                          }}
+                          className="text-indigo-600 hover:text-indigo-800 hover:underline"
+                          title={t('sidebar.neverFlagTitle', { text: r.original_text, category: piiCategoryLabel(r.category, t) })}
+                        >
+                          {t('sidebar.neverFlag')}
+                        </button>
+                      )}
+                    </div>
+                  )}
                   {r.detection_layer === "known-entity" && notes[r.id] && (
                     <div className="mt-1 text-xs text-gray-500 leading-snug">
                       {t(`sidebar.knownRule.${notes[r.id].rule}`, { source: notes[r.id].sourceText })}

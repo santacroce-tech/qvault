@@ -201,10 +201,36 @@ pub fn user_prompt(chunk_text: &str) -> String {
 
 /// Chat messages (role, content) for one chunk.
 pub fn messages(v: PromptVersion, chunk_text: &str) -> Vec<(&'static str, String)> {
-    let system = match v {
+    messages_with_examples(v, chunk_text, &[])
+}
+
+/// The paragraph added to the system prompt for few-shot examples taken
+/// from the user's own review decisions (§13). Empty without examples.
+pub fn examples_paragraph(examples: &[crate::learning::Example]) -> String {
+    if examples.is_empty() {
+        return String::new();
+    }
+    let quote = |e: &crate::learning::Example| format!("\"{}\"", e.text.replace('"', "'"));
+    let not: Vec<String> = examples.iter().filter(|e| !e.personal).map(|e| format!("{} (not a {})", quote(e), e.category.to_string())).collect();
+    let yes: Vec<String> = examples.iter().filter(|e| e.personal).map(|e| format!("{} ({})", quote(e), e.category.to_string())).collect();
+    let mut p = String::from("\n\nThis user's earlier review decisions (apply the same judgement to similar text):");
+    if !not.is_empty() {
+        p.push_str(&format!("\n- rejected, do NOT extract: {}.", not.join("; ")));
+    }
+    if !yes.is_empty() {
+        p.push_str(&format!("\n- confirmed as personal data: {}.", yes.join("; ")));
+    }
+    p
+}
+
+/// [`messages`] with few-shot examples from earlier reviews appended to the
+/// system prompt.
+pub fn messages_with_examples(v: PromptVersion, chunk_text: &str, examples: &[crate::learning::Example]) -> Vec<(&'static str, String)> {
+    let mut system = match v {
         PromptVersion::P1b => system_prompt_p1b(),
         PromptVersion::P3 => SYSTEM_P3.to_string(),
     };
+    system.push_str(&examples_paragraph(examples));
     let mut out = vec![("system", system)];
     for (u, a) in few_shots(v) {
         out.push(("user", user_prompt(&u)));
@@ -1188,6 +1214,20 @@ mod tests {
         assert!(stoplisted("socio", &PersonName), "no capital letter");
         assert!(!stoplisted("Dana Holloway", &PersonName));
         assert!(!stoplisted("Client", &ClientId), "numeric categories are not stop-listed");
+    }
+
+    #[test]
+    fn examples_go_into_the_system_prompt_only_when_given() {
+        use crate::learning::Example;
+        assert_eq!(messages(PromptVersion::P3, "x"), messages_with_examples(PromptVersion::P3, "x", &[]));
+        let ex = vec![
+            Example { text: "Effective Date".into(), category: PiiCategory::PersonName, personal: false },
+            Example { text: "Dana \"D\" Holloway".into(), category: PiiCategory::PersonName, personal: true },
+        ];
+        let m = messages_with_examples(PromptVersion::P3, "x", &ex);
+        assert!(m[0].1.ends_with("- rejected, do NOT extract: \"Effective Date\" (not a PersonName).\n- confirmed as personal data: \"Dana 'D' Holloway\" (PersonName)."), "{}", m[0].1);
+        assert_eq!(m.len(), messages(PromptVersion::P3, "x").len());
+        assert_eq!(m.last().unwrap().1, "Document:\nx");
     }
 
     #[test]

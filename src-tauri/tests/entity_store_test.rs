@@ -75,7 +75,7 @@ fn existing_database_upgrades_cleanly() {
         assert_eq!(v, 0);
     }
     let db = Database::open(&path).unwrap();
-    assert_eq!(db.schema_version().unwrap(), 1);
+    assert_eq!(db.schema_version().unwrap(), app_lib::storage::database::SCHEMA_VERSION);
     // Old data intact.
     assert_eq!(db.get_redactions("d1").unwrap().len(), 2);
     assert_eq!(db.get_entities_by_document("d1").unwrap().len(), 2);
@@ -93,7 +93,7 @@ fn existing_database_upgrades_cleanly() {
     drop(db);
     // Re-opening is a no-op.
     let db = Database::open(&path).unwrap();
-    assert_eq!(db.schema_version().unwrap(), 1);
+    assert_eq!(db.schema_version().unwrap(), app_lib::storage::database::SCHEMA_VERSION);
     let groups = service::list_groups(&db).unwrap();
     assert_eq!(groups.len(), 1);
     assert_eq!(groups[0].label, "Maria Santos");
@@ -104,7 +104,7 @@ fn existing_database_upgrades_cleanly() {
 #[test]
 fn fresh_database_is_current() {
     let db = Database::open(&tmp_db("fresh")).unwrap();
-    assert_eq!(db.schema_version().unwrap(), 1);
+    assert_eq!(db.schema_version().unwrap(), app_lib::storage::database::SCHEMA_VERSION);
 }
 
 #[test]

@@ -71,6 +71,8 @@ export async function invoke(cmd: string, args?: any): Promise<any> {
         { id: "r4", document_id: args?.documentId, page: 2, start_offset: 45, end_offset: 56, original_text: "***-**-4589", replacement: "[SSN]", category: "ssn", detection_layer: "regex", confidence: 0.95, status: "approved", reviewed_at: "2026-03-18T14:31:00Z" },
         { id: "r5", document_id: args?.documentId, page: 2, start_offset: 150, end_offset: 170, original_text: "Acme Holdings LLC", replacement: "[COMPANY]", category: "company_name", detection_layer: "heuristic", confidence: 0.90, status: "pending", reviewed_at: null },
         { id: "r6", document_id: args?.documentId, page: 2, start_offset: 210, end_offset: 216, original_text: "Santos", replacement: "[REDACTED NAME]", category: "PersonName", detection_layer: "known-entity", confidence: 0.45, status: "pending", reviewed_at: null },
+        { id: "r7", document_id: args?.documentId, page: 1, start_offset: 20, end_offset: 36, original_text: "Managing Partner", replacement: "[REDACTED NAME]", category: "PersonName", detection_layer: "heuristic", confidence: 0.3, status: "pending", reviewed_at: null },
+        { id: "r8", document_id: args?.documentId, page: 1, start_offset: 60, end_offset: 68, original_text: "New York", replacement: "[REDACTED NAME]", category: "PersonName", detection_layer: "heuristic", confidence: 0.6, status: "rejected", reviewed_at: "2026-03-18T14:31:00Z" },
       ];
     case "get_document":
       return {
@@ -182,6 +184,41 @@ export async function invoke(cmd: string, args?: any): Promise<any> {
       return [
         { redactionId: "r6", kind: "known-entity", rule: "honorific-surname", sourceText: "Maria Santos", sourceApproved: true, documents: 3, groupId: "g1", groupLabel: "Maria Fernanda Santos" },
       ];
+    case "get_document_learning":
+      return {
+        marks: [{ redactionId: "r7", rejected: 4, rejectedDocuments: 3, originalConfidence: 0.6 }],
+        suppressed: [
+          { id: "s1", page: 0, startOffset: 300, endOffset: 314, originalText: "Effective Date", category: "PersonName", detectionLayer: "heuristic", listItemId: "l1", listed: true },
+          { id: "s2", page: 1, startOffset: 80, endOffset: 102, originalText: "Confidential Information", category: "CompanyName", detectionLayer: "llm", listItemId: "l2", listed: true },
+        ],
+      };
+    case "reject_previously_rejected":
+      return 1;
+    case "restore_suppressed_finding":
+      return "restored";
+    case "get_not_personal_data":
+      return [
+        { id: "l1", category: "PersonName", text: "Effective Date", note: null, source: "review", createdAt: "2026-03-18T14:31:00Z", suppressed: 5 },
+        { id: "l2", category: "CompanyName", text: "Confidential Information", note: "defined term", source: "import", createdAt: "2026-03-17T10:00:00Z", suppressed: 2 },
+        { id: "l3", category: "PersonName", text: "Judgment Debtor", note: null, source: "suggestion", createdAt: "2026-03-16T09:00:00Z", suppressed: 0 },
+      ];
+    case "get_not_personal_data_candidates":
+      return [
+        { category: "PersonName", text: "Managing Partner", rejected: 4, rejectedDocuments: 3 },
+        { category: "CompanyName", text: "New York", rejected: 3, rejectedDocuments: 2 },
+      ];
+    case "get_learning_summary":
+      return { decisions: 42, rejectedStrings: 9, listItems: 3 };
+    case "add_not_personal_data":
+      return "new-item";
+    case "remove_not_personal_data":
+      return true;
+    case "preview_not_personal_data_import":
+      return { newItems: [{ text: "Board of Managers", category: "CompanyName", note: null }], alreadyListed: 1, duplicatesInFile: 0, invalid: [{ index: 3, text: "", reason: "empty text" }] };
+    case "apply_not_personal_data_import":
+      return (args?.items ?? []).length;
+    case "clear_review_memory":
+      return 42;
     default:
       console.log(`[tauri-mock] Unhandled invoke: ${cmd}`, args);
       return null;

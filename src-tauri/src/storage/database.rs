@@ -2,6 +2,9 @@ use rusqlite::{Connection, Result, params};
 use std::path::Path;
 use std::sync::Mutex;
 
+/// Current schema version (`PRAGMA user_version`) after [`Database::open`].
+pub const SCHEMA_VERSION: i64 = 2;
+
 pub struct Database {
     conn: Mutex<Connection>,
 }
@@ -174,6 +177,69 @@ impl Database {
                 PRAGMA user_version = 1;
                 COMMIT;
             ")?;
+        }
+        if version < 2 {
+            // Learning from review decisions (docs/qvac-integration.md §13):
+            // remembered decisions, the user's "Not personal data" list,
+            // marks on findings rejected before, and findings the list
+            // suppressed (kept so the reviewer can see and restore them).
+            conn.execute_batch("
+                BEGIN;
+                -- One row per reviewed occurrence (latest decision wins).
+                CREATE TABLE IF NOT EXISTS review_decisions (
+                    redaction_id TEXT PRIMARY KEY,
+                    document_id TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    norm_text TEXT NOT NULL,
+                    display_text TEXT NOT NULL,
+                    layer TEXT NOT NULL,
+                    decision TEXT NOT NULL,
+                    decided_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_review_decisions_key ON review_decisions(category, norm_text);
+                -- Added only by explicit user action.
+                CREATE TABLE IF NOT EXISTS not_personal_data (
+                    id TEXT PRIMARY KEY,
+                    category TEXT NOT NULL,
+                    text TEXT NOT NULL,
+                    norm_text TEXT NOT NULL,
+                    note TEXT,
+                    source TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    UNIQUE(category, norm_text)
+                );
+                -- Findings that were rejected before (counts at scan time).
+                CREATE TABLE IF NOT EXISTS redaction_memory (
+                    redaction_id TEXT PRIMARY KEY,
+                    document_id TEXT NOT NULL,
+                    rejected INTEGER NOT NULL,
+                    rejected_documents INTEGER NOT NULL,
+                    approved INTEGER NOT NULL DEFAULT 0,
+                    original_confidence REAL NOT NULL,
+                    created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_redaction_memory_document ON redaction_memory(document_id);
+                CREATE TABLE IF NOT EXISTS suppressed_detections (
+                    id TEXT PRIMARY KEY,
+                    document_id TEXT NOT NULL,
+                    page INTEGER NOT NULL,
+                    start_offset INTEGER NOT NULL,
+                    end_offset INTEGER NOT NULL,
+                    original_text TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    detection_layer TEXT NOT NULL,
+                    confidence REAL NOT NULL,
+                    list_item_id TEXT,
+                    created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_suppressed_document ON suppressed_detections(document_id);
+                COMMIT;
+            ")?;
+            // Decisions made before this version become the initial memory.
+            let tx = conn.unchecked_transaction()?;
+            crate::learning::service::backfill_decisions(&tx)?;
+            tx.execute_batch("PRAGMA user_version = 2;")?;
+            tx.commit()?;
         }
 
         Ok(())
@@ -614,6 +680,12 @@ impl Database {
         let conn = self.conn.lock().unwrap();
         conn.execute("DELETE FROM entities WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM redaction_notes WHERE document_id = ?1", params![id])?;
+        conn.execute("DELETE FROM redaction_memory WHERE document_id = ?1", params![id])?;
+        conn.execute("DELETE FROM suppressed_detections WHERE document_id = ?1", params![id])?;
+        // Approvals are personal data of this document and go with it;
+        // rejections (strings the user said are not personal data) stay in
+        // the decision memory.
+        conn.execute("DELETE FROM review_decisions WHERE document_id = ?1 AND decision = 'approved'", params![id])?;
         conn.execute("DELETE FROM document_pages WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM ocr_pages WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM redactions WHERE document_id = ?1", params![id])?;

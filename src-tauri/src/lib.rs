@@ -3,6 +3,7 @@ use tauri::Manager;
 pub mod commands;
 pub mod document;
 pub mod entities;
+pub mod learning;
 pub mod pipeline;
 pub mod storage;
 pub mod llm;
@@ -160,6 +161,18 @@ pub fn run() {
             commands::entities::split_entity_variant,
             commands::entities::dismiss_entity_proposal,
             commands::entities::get_redaction_notes,
+            commands::learning::get_document_learning,
+            commands::learning::reject_previously_rejected,
+            commands::learning::restore_suppressed_finding,
+            commands::learning::get_not_personal_data,
+            commands::learning::add_not_personal_data,
+            commands::learning::remove_not_personal_data,
+            commands::learning::export_not_personal_data,
+            commands::learning::preview_not_personal_data_import,
+            commands::learning::apply_not_personal_data_import,
+            commands::learning::get_not_personal_data_candidates,
+            commands::learning::get_learning_summary,
+            commands::learning::clear_review_memory,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

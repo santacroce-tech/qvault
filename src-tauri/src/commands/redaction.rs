@@ -23,7 +23,12 @@ pub async fn update_redaction(
     state
         .db
         .update_redaction_status(&id, &status, replacement.as_deref())
-        .map_err(|e| format!("Database error: {}", e))
+        .map_err(|e| format!("Database error: {}", e))?;
+    // Decision memory (§13): metadata only, never logged.
+    if let Err(e) = crate::learning::service::record_decision(&state.db, &id, &status) {
+        log::warn!("review decision not remembered: {}", e);
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -35,5 +40,9 @@ pub async fn bulk_approve(
     state
         .db
         .bulk_approve_redactions(&document_id, category.as_deref())
-        .map_err(|e| format!("Database error: {}", e))
+        .map_err(|e| format!("Database error: {}", e))?;
+    if let Err(e) = crate::learning::service::record_document_decisions(&state.db, &document_id) {
+        log::warn!("review decisions not remembered: {}", e);
+    }
+    Ok(())
 }
