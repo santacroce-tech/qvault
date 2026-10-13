@@ -565,6 +565,7 @@ impl QvacService {
             loaded_in: load_time,
             on_tokens: Mutex::new(None),
             prompt: llm_scanner::DEFAULT_PROMPT,
+            examples: Vec::new(),
         })
     }
 
@@ -572,6 +573,7 @@ impl QvacService {
         &self,
         model: &str,
         prompt: PromptVersion,
+        examples: &[crate::learning::Example],
         chunk: &str,
         on_event: Option<client::EventFn>,
     ) -> Result<String, Layer3Error> {
@@ -580,7 +582,7 @@ impl QvacService {
             Err(QvacError::Unavailable(r)) => return Err(Layer3Error::Fatal(r)),
             Err(e) => return Err(Layer3Error::Chunk(e.to_string())),
         };
-        let messages: Vec<Value> = llm_scanner::messages(prompt, chunk)
+        let messages: Vec<Value> = llm_scanner::messages_with_examples(prompt, chunk, examples)
             .into_iter()
             .map(|(role, content)| json!({"role": role, "content": content}))
             .collect();
@@ -1007,6 +1009,7 @@ impl QvacService {
                     loaded_in: None,
                     on_tokens: Mutex::new(None),
                     prompt: llm_scanner::DEFAULT_PROMPT,
+                    examples: Vec::new(),
                 };
                 let report = llm_scanner::scan(&session, sample, 0, &[], None);
                 rep.layer3_model = Some(id);
@@ -1071,6 +1074,9 @@ pub struct Layer3Session {
     on_tokens: Mutex<Option<client::EventFn>>,
     /// Prompt version (the eval harness compares versions).
     pub prompt: PromptVersion,
+    /// Few-shot examples from earlier review decisions (§13; empty in the
+    /// app unless measured to help).
+    pub examples: Vec<crate::learning::Example>,
 }
 
 impl Layer3Session {
@@ -1083,7 +1089,7 @@ impl Layer3Session {
 impl Layer3Engine for Layer3Session {
     fn complete(&self, chunk_text: &str) -> Result<String, Layer3Error> {
         let cb = self.on_tokens.lock().unwrap().clone();
-        self.service.complete_layer3(&self.model, self.prompt, chunk_text, cb)
+        self.service.complete_layer3(&self.model, self.prompt, &self.examples, chunk_text, cb)
     }
 }
 
