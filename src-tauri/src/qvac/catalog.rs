@@ -135,6 +135,22 @@ pub const CATALOG: &[CatalogModel] = &[
         note: Some("Finds more, about twice as slow as the default. Best with 16 GB of memory or a GPU."),
     },
     CatalogModel {
+        id: "qwen3-8b-q4_k_m",
+        name: "Qwen3 8B (Q4_K_M) — large workstation",
+        purpose: ModelPurpose::Llm,
+        file_name: "qwen3-8b-q4_k_m.gguf",
+        url: Some("https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/7c41481f57cb95916b40956ab2f0b139b296d974/Qwen3-8B-Q4_K_M.gguf"),
+        manual_url: None,
+        size: 5_027_783_488,
+        sha256: "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+        licence: "Apache-2.0",
+        licence_url: "https://huggingface.co/Qwen/Qwen3-8B-GGUF/blob/7c41481f57cb95916b40956ab2f0b139b296d974/LICENSE",
+        source: "Hugging Face Qwen/Qwen3-8B-GGUF @ 7c41481",
+        default_llm: false,
+        ram_needed: 6_442_450_944, // 6 GiB (measured 5.52 GB)
+        note: Some("Highest recall in the eval, about 3.5× slower than the default. Needs a GPU workstation."),
+    },
+    CatalogModel {
         id: "qwen2.5-0.5b-instruct-q4_k_m",
         name: "Qwen2.5 0.5B Instruct (Q4_K_M)",
         purpose: ModelPurpose::Llm,
