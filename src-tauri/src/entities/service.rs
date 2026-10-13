@@ -82,6 +82,8 @@ pub struct ProposalSummary {
     pub rule: String,
     pub score: f64,
     pub cosine: Option<f64>,
+    /// The short form also matches another, different person.
+    pub ambiguous: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -344,8 +346,8 @@ pub fn regroup(db: &Database, embedder: Option<&dyn Embedder>, vector_model: Opt
             let (ga, gb) = (&gid[&res.cluster[p.a]], &gid[&res.cluster[p.b]]);
             let (ga, gb, va, vb) = if ga <= gb { (ga, gb, &rows[p.a].id, &rows[p.b].id) } else { (gb, ga, &rows[p.b].id, &rows[p.a].id) };
             tx.execute(
-                "INSERT OR REPLACE INTO entity_proposals (group_a, group_b, variant_a, variant_b, rule, score, cosine) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-                params![ga, gb, va, vb, p.rule.as_str(), p.score as f64, p.cosine.map(|c| c as f64)],
+                "INSERT OR REPLACE INTO entity_proposals (group_a, group_b, variant_a, variant_b, rule, score, cosine, ambiguous) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                params![ga, gb, va, vb, p.rule.as_str(), p.score as f64, p.cosine.map(|c| c as f64), p.ambiguous as i64],
             )?;
         }
         tx.commit()?;
@@ -541,7 +543,7 @@ pub fn list_groups(db: &Database) -> Result<Vec<GroupSummary>, String> {
 pub fn list_proposals(db: &Database) -> Result<Vec<ProposalSummary>, String> {
     db.with_conn(|conn| {
         let mut s = conn.prepare(
-            "SELECT p.group_a, p.group_b, ga.label, gb.label, va.text, vb.text, ga.category, p.rule, p.score, p.cosine
+            "SELECT p.group_a, p.group_b, ga.label, gb.label, va.text, vb.text, ga.category, p.rule, p.score, p.cosine, p.ambiguous
              FROM entity_proposals p
              JOIN entity_groups ga ON ga.id = p.group_a JOIN entity_groups gb ON gb.id = p.group_b
              JOIN entity_variants va ON va.id = p.variant_a JOIN entity_variants vb ON vb.id = p.variant_b
@@ -561,11 +563,12 @@ pub fn list_proposals(db: &Database) -> Result<Vec<ProposalSummary>, String> {
                     rule: r.get(7)?,
                     score: r.get(8)?,
                     cosine: r.get(9)?,
+                    ambiguous: r.get::<_, i64>(10)? != 0,
                 })
             })?
             .collect::<Result<Vec<_>, _>>();
         let mut rows = rows?;
-        rows.sort_by_key(|p| forms::Rule::parse(&p.rule).strength());
+        rows.sort_by_key(|p| (p.ambiguous, forms::Rule::parse(&p.rule).strength()));
         Ok(rows)
     })
     .map_err(sql)
@@ -601,6 +604,8 @@ pub fn known_entities(db: &Database, document_id: &str) -> Result<Vec<Known>, St
                     SUM(CASE WHEN r.status = 'approved' THEN 1 ELSE 0 END) AS approved,
                     SUM(CASE WHEN r.status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
                     SUM(CASE WHEN r.status = 'pending' AND e.document_id = ?1 AND e.detection_layer != '{}' THEN 1 ELSE 0 END) AS here,
+                    SUM(CASE WHEN r.status = 'pending' AND e.document_id = ?1 AND e.detection_layer != '{}'
+                             AND NOT (e.detection_layer = 'heuristic' AND e.confidence < 0.85) THEN 1 ELSE 0 END) AS here_strong,
                     COUNT(DISTINCT CASE WHEN r.status = 'approved' THEN e.document_id END) AS docs,
                     MAX(g.id), MAX(g.label)
              {}
@@ -608,6 +613,7 @@ pub fn known_entities(db: &Database, document_id: &str) -> Result<Vec<Known>, St
              LEFT JOIN entity_groups g ON g.id = v.group_id
              GROUP BY e.category, e.normalized_text
              HAVING (approved > 0 OR here > 0) AND NOT (rejected > 0 AND approved = 0)",
+            known::LAYER,
             known::LAYER,
             OCC_JOIN
         );
@@ -617,16 +623,17 @@ pub fn known_entities(db: &Database, document_id: &str) -> Result<Vec<Known>, St
                 r.get::<_, String>(0)?,
                 r.get::<_, String>(1)?,
                 r.get::<_, i64>(2)?,
-                r.get::<_, i64>(5)?,
-                r.get::<_, Option<String>>(6)?,
+                r.get::<_, i64>(6)?,
                 r.get::<_, Option<String>>(7)?,
+                r.get::<_, Option<String>>(8)?,
+                r.get::<_, i64>(5)?,
             ))
         })?;
         let mut out = Vec::new();
         for row in rows {
-            let (cat, text, approved, docs, gid, glabel) = row?;
+            let (cat, text, approved, docs, gid, glabel, strong) = row?;
             let Some(category) = crate::llm::llm_scanner::parse_category(&cat) else { continue };
-            out.push(Known { category, text, approved: approved > 0, documents: docs as usize, group_label: glabel, group_id: gid });
+            out.push(Known { category, text, approved: approved > 0, weak: approved == 0 && strong == 0, documents: docs as usize, group_label: glabel, group_id: gid });
         }
         Ok(out)
     })

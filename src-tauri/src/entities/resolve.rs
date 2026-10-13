@@ -49,18 +49,25 @@ pub struct ResolveConfig {
     /// Withdraw a rule-based proposal whose cosine is below this. `None`:
     /// never withdraw.
     pub embed_veto: Option<f32>,
+    /// Turn a rule conflict into a proposal when the cosine is at least this
+    /// (nicknames: "Bob Feeney" / "Robert Feeney"). `None`: conflicts stand.
+    pub embed_override_conflict: Option<f32>,
+    /// Drop (instead of flagging) ambiguous weak proposals: an initial or a
+    /// surname alone that matches two or more groups that are different
+    /// people ("Ms. Santos" with both "Maria Santos" and "João Santos").
+    pub suppress_ambiguous: bool,
 }
 
 impl Default for ResolveConfig {
     fn default() -> Self {
         // Chosen on the entity-resolution eval (docs/qvac-integration.md §12).
-        ResolveConfig { embed_propose: Some(0.90), embed_min_string: 0.80, embed_veto: None }
+        ResolveConfig { embed_propose: Some(0.90), embed_min_string: 0.80, ..ResolveConfig::rules_only() }
     }
 }
 
 impl ResolveConfig {
     pub fn rules_only() -> Self {
-        ResolveConfig { embed_propose: None, embed_min_string: 1.0, embed_veto: None }
+        ResolveConfig { embed_propose: None, embed_min_string: 1.0, embed_veto: None, embed_override_conflict: None, suppress_ambiguous: false }
     }
 }
 
@@ -72,6 +79,10 @@ pub struct ProposalIdx {
     pub rule: Rule,
     pub score: f32,
     pub cosine: Option<f32>,
+    /// A weak link (initial / surname only) whose short form also matches
+    /// another group that is a different person: the reviewer must decide
+    /// which one, if any, it refers to.
+    pub ambiguous: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -176,14 +187,21 @@ fn block_keys(f: &Form) -> Vec<String> {
 pub fn resolve(items: &[Item], cannot: &HashSet<(usize, usize)>, cfg: &ResolveConfig) -> Resolution {
     let n = items.len();
     let mut verdicts: HashMap<(usize, usize), Verdict> = HashMap::new();
+    let override_conflict = cfg.embed_override_conflict;
     let mut verdict = |i: usize, j: usize| -> Verdict {
         let k = (i.min(j), i.max(j));
         *verdicts.entry(k).or_insert_with(|| {
             if items[i].category != items[j].category {
-                Verdict { level: Level::Conflict, rule: Rule::None, score: 0.0 }
-            } else {
-                forms::compare(&items[i].form, &items[j].form)
+                return Verdict { level: Level::Conflict, rule: Rule::None, score: 0.0 };
             }
+            let v = forms::compare(&items[i].form, &items[j].form);
+            if let (Level::Conflict, Some(t), Some(a), Some(b)) = (v.level, override_conflict, &items[i].embedding, &items[j].embedding) {
+                let c = cosine(a, b);
+                if c >= t {
+                    return Verdict { level: Level::Likely, rule: Rule::Embedding, score: c };
+                }
+            }
+            v
         })
     };
     let banned = |i: usize, j: usize| cannot.contains(&(i.min(j), i.max(j)));
@@ -298,7 +316,7 @@ pub fn resolve(items: &[Item], cannot: &HashSet<(usize, usize)>, cfg: &ResolveCo
             }
         }
         let key = (ra.min(rb), ra.max(rb));
-        let cand = ProposalIdx { a, b, rule, score, cosine: c };
+        let cand = ProposalIdx { a, b, rule, score, cosine: c, ambiguous: false };
         match best.get(&key) {
             Some(p) if (p.rule.strength(), -(p.score * 1000.0) as i32) <= (rule.strength(), -(score * 1000.0) as i32) => {}
             _ => {
@@ -307,6 +325,7 @@ pub fn resolve(items: &[Item], cannot: &HashSet<(usize, usize)>, cfg: &ResolveCo
         }
     }
     let mut proposals: Vec<ProposalIdx> = Vec::new();
+    let mut kept: Vec<(usize, usize)> = Vec::new();
     let mut keys: Vec<(usize, usize)> = best.keys().copied().collect();
     keys.sort();
     for key in keys {
@@ -317,6 +336,59 @@ pub fn resolve(items: &[Item], cannot: &HashSet<(usize, usize)>, cfg: &ResolveCo
             continue;
         }
         proposals.push(p);
+        kept.push(key);
+    }
+    {
+        // For each group, the groups it is weakly linked to.
+        let weak = |r: Rule| matches!(r, Rule::Initial | Rule::SurnameOnly);
+        let mut links: HashMap<usize, Vec<usize>> = HashMap::new();
+        for (p, &(ra, rb)) in proposals.iter().zip(kept.iter()) {
+            if weak(p.rule) {
+                links.entry(ra).or_default().push(rb);
+                links.entry(rb).or_default().push(ra);
+            }
+        }
+        let mut ambiguous: HashSet<usize> = HashSet::new();
+        for (&g, others) in &links {
+            'outer: for x in 0..others.len() {
+                for y in x + 1..others.len() {
+                    let (mx, my) = (dsu.members[others[x]].clone(), dsu.members[others[y]].clone());
+                    let differ = mx.iter().any(|&a| my.iter().any(|&b| verdict(a, b).level == Level::Conflict));
+                    if differ {
+                        ambiguous.insert(g);
+                        break 'outer;
+                    }
+                }
+            }
+        }
+        // Flag (or drop) a weak proposal when its shorter side is ambiguous.
+        let mut out = Vec::new();
+        for (mut p, (ra, rb)) in proposals.into_iter().zip(kept.into_iter()) {
+            if weak(p.rule) {
+                let short = if dsu.members[ra].len() <= dsu.members[rb].len() && ambiguous.contains(&ra) {
+                    Some(ra)
+                } else if ambiguous.contains(&rb) {
+                    Some(rb)
+                } else if ambiguous.contains(&ra) {
+                    Some(ra)
+                } else {
+                    None
+                };
+                // Only the side that is itself the weak form (fewest full names) counts.
+                if let Some(s) = short {
+                    let other = if s == ra { rb } else { ra };
+                    let fulls = |r: usize| dsu.members[r].iter().map(|&i| items[i].form.full_tokens().count()).max().unwrap_or(0);
+                    if fulls(s) <= fulls(other) {
+                        if cfg.suppress_ambiguous {
+                            continue;
+                        }
+                        p.ambiguous = true;
+                    }
+                }
+            }
+            out.push(p);
+        }
+        proposals = out;
     }
     proposals.sort_by(|x, y| x.rule.strength().cmp(&y.rule.strength()).then(y.score.partial_cmp(&x.score).unwrap_or(std::cmp::Ordering::Equal)));
 
@@ -408,7 +480,8 @@ mod tests {
         ]);
         let r = resolve(&it, &HashSet::new(), &ResolveConfig::rules_only());
         let g = groups(&r, &it);
-        assert!(g.contains(&vec!["Maria Santos".to_string(), "SANTOS, Maria".into(), "Maria Fernanda Santos".into()]), "{:?}", g);
+        assert!(g.contains(&vec!["Maria Santos".to_string(), "SANTOS, Maria".into()]), "{:?}", g);
+        assert!(g.contains(&vec!["Maria Fernanda Santos".to_string()]), "a two-name extension is proposed: {:?}", g);
         // Initial / surname-only variants stay separate (proposed), and the
         // company named Santos is never mixed with people.
         assert!(g.contains(&vec!["M. Santos".to_string()]));
@@ -429,15 +502,17 @@ mod tests {
 
     #[test]
     fn short_names_do_not_chain_different_people() {
-        // "Maria Santos" extends to both, but the two long names conflict.
+        // "Ana Paula Ribeiro" extends to both, but the two long names conflict:
+        // it joins one of them automatically and is never chained to the other.
         let it = items(&[
-            ("PersonName", "Maria Fernanda Santos"),
-            ("PersonName", "Maria Santos"),
-            ("PersonName", "Maria Clara Santos"),
+            ("PersonName", "Ana Paula da Conceição Ribeiro"),
+            ("PersonName", "Ana Paula Ribeiro"),
+            ("PersonName", "Ana Paula Lima Ribeiro"),
         ]);
         let r = resolve(&it, &HashSet::new(), &ResolveConfig::rules_only());
         assert_ne!(r.cluster[0], r.cluster[2]);
         assert_eq!(r.clusters, 2);
+        assert!(r.proposals.is_empty(), "the other long name conflicts with the merged group");
     }
 
     #[test]
@@ -464,7 +539,7 @@ mod tests {
         // A rule conflict (same first word, different rest) is never overridden.
         it[2].embedding = Some(vec![0.0, 1.0]);
         it[3].embedding = Some(vec![0.0, 1.0]);
-        let cfg = ResolveConfig { embed_propose: Some(0.9), embed_min_string: 0.5, embed_veto: None };
+        let cfg = ResolveConfig { embed_propose: Some(0.9), embed_min_string: 0.5, ..ResolveConfig::rules_only() };
         let r = resolve(&it, &HashSet::new(), &cfg);
         assert_eq!(r.clusters, 4, "never merged by embeddings");
         assert_eq!(r.proposals.len(), 1);

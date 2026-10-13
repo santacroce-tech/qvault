@@ -217,7 +217,7 @@ impl Embedder for BrokenEmbedder {
 fn embeddings_are_stored_and_optional() {
     let db = Database::open(&tmp_db("embed")).unwrap();
     add_doc(&db, "d1", &[("CompanyName", "Grupo Albar", "approved"), ("CompanyName", "Albar Group", "pending"), ("Email", "a@example.com", "pending")]);
-    let rep = service::regroup(&db, Some(&FakeEmbedder), Some("fake"), &ResolveConfig { embed_propose: Some(0.9), embed_min_string: 0.0, embed_veto: None }).unwrap();
+    let rep = service::regroup(&db, Some(&FakeEmbedder), Some("fake"), &ResolveConfig { embed_propose: Some(0.9), embed_min_string: 0.0, ..ResolveConfig::rules_only() }).unwrap();
     assert_eq!(rep.embedded, 2, "names/companies/addresses only");
     let props = service::list_proposals(&db).unwrap();
     assert_eq!(props.len(), 1);

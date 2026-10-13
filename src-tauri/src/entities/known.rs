@@ -23,7 +23,7 @@ pub const LAYER: &str = "known-entity";
 /// Layer 1's 0.95). The source decides the first number: a value the user
 /// approved in some document, or one only detected (unreviewed) in this
 /// document.
-pub fn confidence(rule: FlagRule, approved: bool) -> f64 {
+pub fn confidence(rule: FlagRule, approved: bool, weak: bool) -> f64 {
     let base: f64 = match rule {
         FlagRule::SameText | FlagRule::Reordered => 0.60,
         FlagRule::CompanyWithoutLegalForm => 0.50,
@@ -31,6 +31,8 @@ pub fn confidence(rule: FlagRule, approved: bool) -> f64 {
     };
     if approved {
         base
+    } else if weak {
+        base - 0.20
     } else {
         base - 0.10
     }
@@ -71,6 +73,8 @@ pub struct Known {
     /// Approved by the user in at least one document (else: detected, not
     /// yet reviewed, in the document being scanned).
     pub approved: bool,
+    /// Not approved, and only detected by a low-confidence guess ([`weak_source`]).
+    pub weak: bool,
     /// Documents in which this entity was approved.
     pub documents: usize,
     /// Display name of its group (canonical variant), if grouped.
@@ -109,6 +113,15 @@ impl Flag {
             replacement: self.category.replacement_label().to_string(),
         }
     }
+}
+
+/// Is an unreviewed detection a *weak* source? Layer 2's general
+/// capitalised-sequence guesses (confidence below 0.85) are often wrong
+/// ("New York", "Managing Partner"); suggestions derived from them get a
+/// lower confidence. (Excluding them was measured: it removed 10 of 13
+/// recovered labels, see docs §12.)
+pub fn weak_source(layer: &str, confidence: f64) -> bool {
+    layer == "heuristic" && confidence < 0.85
 }
 
 /// Categories suggested from the knowledge base. Dates and amounts are not
@@ -340,7 +353,7 @@ pub fn flag_page(page_text: &str, known: &[Known], existing: &[(usize, usize)]) 
                     text: span.to_string(),
                     category: k.category.clone(),
                     rule: p.rule,
-                    confidence: confidence(p.rule, k.approved),
+                    confidence: confidence(p.rule, k.approved, k.weak),
                     source_text: k.text.clone(),
                     source_approved: k.approved,
                     documents: k.documents,
@@ -369,7 +382,7 @@ mod tests {
     use super::*;
 
     fn known(cat: PiiCategory, text: &str, approved: bool) -> Known {
-        Known { category: cat, text: text.into(), approved, documents: 1, group_label: None, group_id: None }
+        Known { category: cat, text: text.into(), approved, weak: false, documents: 1, group_label: None, group_id: None }
     }
 
     fn texts(f: &[Flag]) -> Vec<(&str, FlagRule)> {

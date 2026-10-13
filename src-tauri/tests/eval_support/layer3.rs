@@ -34,7 +34,7 @@ fn enabled() -> bool {
     std::env::var("QVAULT_EVAL_L3").map(|v| v == "1").unwrap_or(false)
 }
 
-fn sidecar() -> SidecarPaths {
+pub(crate) fn sidecar() -> SidecarPaths {
     let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let program = std::env::var_os("QVAC_SIDECAR_BIN").map(PathBuf::from).unwrap_or_else(|| {
         manifest
@@ -87,7 +87,7 @@ impl Layer3Engine for Replay<'_> {
 
 // ── memory: peak RSS of our child process tree (the sidecar) ────────────
 
-struct MemSampler {
+pub(crate) struct MemSampler {
     stop: Arc<AtomicBool>,
     peak_kb: Arc<AtomicU64>,
     handle: Option<std::thread::JoinHandle<()>>,
@@ -122,7 +122,7 @@ fn descendants_rss_kb(root: u32) -> u64 {
 }
 
 impl MemSampler {
-    fn start() -> Self {
+    pub(crate) fn start() -> Self {
         let stop = Arc::new(AtomicBool::new(false));
         let peak_kb = Arc::new(AtomicU64::new(0));
         let (s, p) = (stop.clone(), peak_kb.clone());
@@ -136,7 +136,7 @@ impl MemSampler {
         });
         MemSampler { stop, peak_kb, handle: Some(handle) }
     }
-    fn finish(mut self) -> u64 {
+    pub(crate) fn finish(mut self) -> u64 {
         self.stop.store(true, Ordering::Relaxed);
         if let Some(h) = self.handle.take() {
             let _ = h.join();
@@ -147,10 +147,10 @@ impl MemSampler {
 
 // ── model setup ──────────────────────────────────────────────────────────
 
-struct ModelSpec {
-    id: String,
-    path: PathBuf,
-    custom: bool,
+pub(crate) struct ModelSpec {
+    pub(crate) id: String,
+    pub(crate) path: PathBuf,
+    pub(crate) custom: bool,
 }
 
 fn model_specs(models_dir: &Path) -> Vec<ModelSpec> {
@@ -170,7 +170,7 @@ fn model_specs(models_dir: &Path) -> Vec<ModelSpec> {
 
 /// A throw-away models dir holding just this model (symlinked), so the
 /// service loads it exactly as the app would.
-fn install(spec: &ModelSpec, root: &Path) -> (PathBuf, String) {
+pub(crate) fn install(spec: &ModelSpec, root: &Path) -> (PathBuf, String) {
     let dir = root.join(format!("models-{}", spec.id));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
@@ -197,7 +197,7 @@ fn install(spec: &ModelSpec, root: &Path) -> (PathBuf, String) {
 
 // ── scoring helpers ──────────────────────────────────────────────────────
 
-fn l3_preds(fixtures: &[Fixture], engine: &dyn Layer3Engine, cfg: &PostConfig, with_l12: bool) -> (Predictions, llm_scanner::DropStats, usize, usize) {
+pub(crate) fn l3_preds(fixtures: &[Fixture], engine: &dyn Layer3Engine, cfg: &PostConfig, with_l12: bool) -> (Predictions, llm_scanner::DropStats, usize, usize) {
     let mut stats = llm_scanner::DropStats::default();
     let (mut chunks, mut failed) = (0, 0);
     let preds = fixtures

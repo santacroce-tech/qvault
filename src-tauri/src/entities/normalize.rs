@@ -120,7 +120,7 @@ pub const LEGAL_FORMS: &[(&str, &str)] = &[
     ("sa", "sa"), ("sau", "sa"), ("saa", "sa"), ("sl", "sl"), ("slu", "sl"), ("srl", "srl"), ("sas", "sas"),
     ("sarl", "sarl"), ("spa", "spa"), ("sc", "sc"), ("scp", "scp"), ("ss", "ss"), ("sapi", "sapi"),
     ("cv", "cv"), ("rl", "rl"), ("sde", "sde"), ("sderl", "sderl"),
-    ("ltda", "ltda"), ("lda", "ltda"), ("eireli", "eireli"), ("me", "me"), ("epp", "epp"), ("mei", "mei"),
+    ("ltda", "ltda"), ("lda", "ltda"), ("limitada", "ltda"), ("eireli", "eireli"), ("me", "me"), ("epp", "epp"), ("mei", "mei"),
     ("unipessoal", "unipessoal"), ("bv", "bv"), ("nv", "nv"), ("ab", "ab"), ("oy", "oy"), ("as", "as"), ("aps", "aps"),
     ("pty", "pty"), ("pte", "pte"), ("se", "se"),
 ];

@@ -365,6 +365,8 @@ fn address(text: &str) -> Form {
             let canon = normalize::ADDRESS_ABBREV.iter().find(|(a, _)| *a == t).map(|(_, c)| c.to_string()).unwrap_or(t);
             Tok { s: canon, initial: false }
         })
+        // "nº 123", "n.º 15": the number marker carries no identity.
+        .filter(|t| !matches!(t.s.as_str(), "n" | "o"))
         .collect();
     let key = toks.iter().map(|t| t.s.as_str()).collect::<Vec<_>>().join(" ");
     let surface = words(&fold(text));
@@ -618,12 +620,16 @@ fn compare_people(a: &Form, b: &Form) -> Verdict {
             return Verdict::unrelated();
         }
         if n_init == 0 && fuzzy.is_empty() && first_ok {
-            // Same full names; the longer adds full names.
+            // Same full names; the longer adds names.
             if lt.iter().any(|t| t.initial) {
                 // "Maria Santos" vs "Maria J. Santos": the extra is an initial.
                 return cap(Verdict::new(Level::Likely, Rule::Initial, 0.8));
             }
-            return cap(Verdict::new(Level::Same, Rule::NameExtension, 0.9));
+            // Only a specific name (three or more full names, "Ana Paula
+            // Ribeiro" / "Ana Paula da Conceição Ribeiro") is merged on its own;
+            // "João Santos" may or may not be "João Pedro Silva Santos".
+            let level = if st.len() >= 3 { Level::Same } else { Level::Likely };
+            return cap(Verdict::new(level, Rule::NameExtension, 0.9));
         }
         if n_init > 0 && n_exact >= 1 && fuzzy.is_empty() {
             return cap(Verdict::new(Level::Likely, Rule::Initial, 0.7));
@@ -636,11 +642,22 @@ fn compare_people(a: &Form, b: &Form) -> Verdict {
         }
         return Verdict::unrelated();
     }
-    // No alignment. Sharing a full name token while disagreeing elsewhere is
-    // a positive difference when both carry a given name: "Maria Santos" vs
-    // "João Santos", "J. Santos" vs "M. Santos".
-    if shared_exact >= 1 && st.len() >= 2 && lt.len() >= 2 {
-        return Verdict::conflict();
+    // No alignment. With two or more names on both sides, these are positive
+    // differences: same surname, other given name ("Maria Santos" / "João
+    // Santos", "J. Santos" / "M. Santos"); same first and last name, other
+    // middle names ("Maria Fernanda Santos" / "Maria Clara Santos"); same
+    // given name, other surname ("Maria Santos" / "Maria Silva"). Anything
+    // else (e.g. "Sra. Ferrándiz Olmedo" / "María Ferrándiz", where the first
+    // form may be surnames only) is merely unrelated.
+    let _ = shared_exact;
+    if st.len() >= 2 && lt.len() >= 2 {
+        let same = |x: &Tok, y: &Tok| matches!(tok_match(x, y), Some(TokMatch::Exact) | Some(TokMatch::Fuzzy(_)));
+        let share_last = same(st.last().unwrap(), lt.last().unwrap());
+        let first_ok = tok_match(&st[0], &lt[0]).is_some();
+        let last_full = !st.last().unwrap().initial && !lt.last().unwrap().initial;
+        if share_last || (first_ok && last_full && !st[0].initial && !lt[0].initial) {
+            return Verdict::conflict();
+        }
     }
     Verdict::unrelated()
 }
@@ -840,8 +857,8 @@ mod tests {
         assert_eq!(lvl("PersonName", "Maria Santos", "Santos, Maria"), (Level::Same, Rule::Reordered));
         assert_eq!(lvl("PersonName", "Maria Santos", "MARIA SANTOS"), (Level::Same, Rule::SameName));
         assert_eq!(lvl("PersonName", "María Santos", "Ms. Maria Santos"), (Level::Same, Rule::SameName));
-        assert_eq!(lvl("PersonName", "Ana Ferrándiz", "Ana Ferrándiz Olmedo"), (Level::Same, Rule::NameExtension));
-        assert_eq!(lvl("PersonName", "Maria Santos", "Maria Fernanda Santos"), (Level::Same, Rule::NameExtension));
+        // Three or more full names extended by more full names: applied.
+        assert_eq!(lvl("PersonName", "Ana Paula Ribeiro", "Ana Paula da Conceição Ribeiro"), (Level::Same, Rule::NameExtension));
         assert_eq!(lvl("PersonName", "FERRÁNDIZ OLMEDO, María Inmaculada", "María Inmaculada Ferrándiz Olmedo").0, Level::Same);
     }
 
@@ -853,6 +870,9 @@ mod tests {
         assert_eq!(lvl("PersonName", "Santos, M.", "Maria Santos"), (Level::Likely, Rule::Initial));
         assert_eq!(lvl("PersonName", "Kowalski, Jan", "Jan Kowalsky"), (Level::Likely, Rule::SimilarSpelling));
         assert_eq!(lvl("PersonName", "John Smith", "John Smith Jr."), (Level::Likely, Rule::NameExtension));
+        // Two names extended: "João Santos" may not be "João Pedro Silva Santos".
+        assert_eq!(lvl("PersonName", "Ana Ferrándiz", "Ana Ferrándiz Olmedo"), (Level::Likely, Rule::NameExtension));
+        assert_eq!(lvl("PersonName", "Maria Santos", "Maria Fernanda Santos"), (Level::Likely, Rule::NameExtension));
     }
 
     #[test]
@@ -863,6 +883,9 @@ mod tests {
         assert_eq!(lvl("PersonName", "Mr. Santos", "Ms. Santos").0, Level::Conflict);
         assert_eq!(lvl("PersonName", "John Smith Jr.", "John Smith Sr.").0, Level::Conflict);
         assert_eq!(lvl("PersonName", "Maria Santos", "Maria Silva").0, Level::Conflict);
+        assert_eq!(lvl("PersonName", "Sra. Ferrándiz Olmedo", "Sra. Ferrándiz Ruiz").0, Level::Conflict);
+        // Possibly surnames only on one side: no positive difference.
+        assert_eq!(lvl("PersonName", "Sra. Ferrándiz Olmedo", "María Ferrándiz").0, Level::Unrelated);
         // A given name alone says nothing.
         assert_eq!(lvl("PersonName", "Maria", "Maria Santos").0, Level::Unrelated);
         assert_eq!(lvl("PersonName", "Dana Holloway", "Peter Novak").0, Level::Unrelated);

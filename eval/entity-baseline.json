@@ -1,0 +1,23 @@
+{
+  "tolerance": 0.01,
+  "auto_precision": 0.9917,
+  "auto_recall": 0.379,
+  "reviewed_recall": 0.9904,
+  "accepted_precision": 0.5325,
+  "accepted_recall": 0.9904,
+  "proposal_precision": 0.6788,
+  "known_entity": {
+    "layers12: approved in an earlier document (upper bound)": {
+      "recovered": 65,
+      "false_suggestions": 1
+    },
+    "layers12: same document, after review": {
+      "recovered": 13,
+      "false_suggestions": 0
+    },
+    "layers12: same document, unreviewed": {
+      "recovered": 13,
+      "false_suggestions": 12
+    }
+  }
+}

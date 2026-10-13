@@ -152,6 +152,7 @@ impl Database {
                     rule TEXT NOT NULL,
                     score REAL NOT NULL,
                     cosine REAL,
+                    ambiguous INTEGER NOT NULL DEFAULT 0,
                     PRIMARY KEY (group_a, group_b)
                 );
                 -- Why a suggestion was made (known-entity layer).
