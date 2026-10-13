@@ -211,6 +211,44 @@
   </div>
 </section>
 
+<section id="built-on">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Built on</span>
+      <h2>Open-source AI, running on your machine.</h2>
+      <p>Qvault’s AI features run on open models and open-source software. All of it runs locally; nothing is sent to these projects.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3>QVAC by Tether</h3>
+        <p>Tether’s open-source SDK for local AI. Qvault uses its llama.cpp-based inference and OCR in a bundled helper process that talks only over standard input/output.</p>
+        <p class="meta"><a href="https://github.com/tetherto/qvac">github.com/tetherto/qvac</a> · Apache-2.0</p>
+      </div>
+      <div class="card">
+        <h3>OpenAI Privacy Filter <span class="tag">in integration</span></h3>
+        <p>An open-weight model built for finding personal data: it labels a whole page in one pass and returns exact spans. We measured it on our test set and are integrating it as the default AI detector, run through QVAC’s ONNX add-on.</p>
+        <p class="meta"><a href="https://huggingface.co/openai/privacy-filter">Hugging Face</a> · <a href="https://github.com/openai/privacy-filter">GitHub</a> · Apache-2.0</p>
+      </div>
+      <div class="card">
+        <h3>Qwen3</h3>
+        <p>Language models by the Qwen team. Qwen3-1.7B is the current default for Layer 3; 0.6B, 4B and 8B are optional.</p>
+        <p class="meta"><a href="https://huggingface.co/Qwen/Qwen3-1.7B-GGUF">Hugging Face</a> · Apache-2.0</p>
+      </div>
+      <div class="card">
+        <h3>EasyOCR and CRAFT</h3>
+        <p>The text detector and Latin recognizer behind on-device OCR, as GGUF files converted for QVAC.</p>
+        <p class="meta"><a href="https://github.com/JaidedAI/EasyOCR">EasyOCR</a> (Apache-2.0) · <a href="https://github.com/clovaai/CRAFT-pytorch">CRAFT</a> (MIT)</p>
+      </div>
+      <div class="card">
+        <h3>Nomic Embed Text v2</h3>
+        <p>An optional embedding model that adds similarity-based proposals when grouping name variants.</p>
+        <p class="meta"><a href="https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF">Hugging Face</a> · Apache-2.0</p>
+      </div>
+    </div>
+    <p class="muted small">Full licence notices are in <a href="{{repo}}/blob/main/ATTRIBUTION.txt">ATTRIBUTION.txt</a>.</p>
+  </div>
+</section>
+
 <section class="alt download" id="download">
   <div class="wrap">
     <div class="section-head">

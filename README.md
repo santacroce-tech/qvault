@@ -66,6 +66,19 @@ Free and open source under the [MIT License](LICENSE).
 - **Model Manager** (Settings → AI Detection): download LLMs in-app with size,
   progress, cancel and checksum, or import any catalog model from a file.
 
+## Built on
+
+- [QVAC](https://github.com/tetherto/qvac) by Tether (Apache-2.0): local AI SDK; runs Layer 3 and OCR
+  in the bundled sidecar.
+- [OpenAI Privacy Filter](https://huggingface.co/openai/privacy-filter) ([GitHub](https://github.com/openai/privacy-filter), Apache-2.0): open-weight
+  PII detection model, measured in [eval/reports/privacy-filter.md](eval/reports/privacy-filter.md)
+  and being integrated as the default Layer 3 detector through QVAC's ONNX
+  add-on.
+- [Qwen3](https://huggingface.co/Qwen/Qwen3-1.7B-GGUF) (Apache-2.0): current default Layer 3 model.
+- [EasyOCR](https://github.com/JaidedAI/EasyOCR) (Apache-2.0) and [CRAFT](https://github.com/clovaai/CRAFT-pytorch) (MIT): OCR models.
+- [Nomic Embed Text v2](https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF) (Apache-2.0): optional embeddings for entity
+  grouping.
+
 ## Install
 
 Download the installer for your platform from

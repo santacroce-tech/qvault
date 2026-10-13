@@ -211,6 +211,44 @@
   </div>
 </section>
 
+<section id="built-on">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Construído sobre</span>
+      <h2>IA de código aberto, no seu próprio computador.</h2>
+      <p>Os recursos de IA do Qvault usam modelos e software de código aberto. Tudo roda localmente; nada é enviado a esses projetos.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3>QVAC da Tether</h3>
+        <p>O SDK de código aberto da Tether para IA local. O Qvault usa a inferência baseada em llama.cpp e o OCR dele num processo auxiliar incluído, que se comunica apenas por entrada e saída padrão.</p>
+        <p class="meta"><a href="https://github.com/tetherto/qvac">github.com/tetherto/qvac</a> · Apache-2.0</p>
+      </div>
+      <div class="card">
+        <h3>OpenAI Privacy Filter <span class="tag">em integração</span></h3>
+        <p>Um modelo de pesos abertos feito para encontrar dados pessoais: rotula uma página inteira de uma vez e devolve os trechos exatos. Nós o medimos no nosso conjunto de teste e estamos integrando-o como detector de IA padrão, executado pelo complemento ONNX do QVAC.</p>
+        <p class="meta"><a href="https://huggingface.co/openai/privacy-filter">Hugging Face</a> · <a href="https://github.com/openai/privacy-filter">GitHub</a> · Apache-2.0</p>
+      </div>
+      <div class="card">
+        <h3>Qwen3</h3>
+        <p>Modelos de linguagem da equipe Qwen. O Qwen3-1.7B é o padrão atual da camada 3; 0.6B, 4B e 8B são opcionais.</p>
+        <p class="meta"><a href="https://huggingface.co/Qwen/Qwen3-1.7B-GGUF">Hugging Face</a> · Apache-2.0</p>
+      </div>
+      <div class="card">
+        <h3>EasyOCR e CRAFT</h3>
+        <p>O detector de texto e o reconhecedor latino do OCR local, como arquivos GGUF convertidos para o QVAC.</p>
+        <p class="meta"><a href="https://github.com/JaidedAI/EasyOCR">EasyOCR</a> (Apache-2.0) · <a href="https://github.com/clovaai/CRAFT-pytorch">CRAFT</a> (MIT)</p>
+      </div>
+      <div class="card">
+        <h3>Nomic Embed Text v2</h3>
+        <p>Um modelo de embeddings opcional que acrescenta propostas por similaridade ao agrupar variantes de nomes.</p>
+        <p class="meta"><a href="https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF">Hugging Face</a> · Apache-2.0</p>
+      </div>
+    </div>
+    <p class="muted small">Os avisos de licença completos estão em <a href="{{repo}}/blob/main/ATTRIBUTION.txt">ATTRIBUTION.txt</a>.</p>
+  </div>
+</section>
+
 <section class="alt download" id="download">
   <div class="wrap">
     <div class="section-head">
