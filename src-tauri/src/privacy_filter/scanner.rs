@@ -88,6 +88,11 @@ pub struct PfConfig {
     pub drop_untyped_accounts: bool,
     /// Also flag the other occurrences on the page of an accepted person name.
     pub page_wide_names: bool,
+    /// Start a person name after a leading title ("Dr. Amara Okafor" →
+    /// "Amara Okafor"): the model includes titles, Qvault's labels and the
+    /// other layers do not. Single-letter titles ("D.") are kept, since they
+    /// may be an initial.
+    pub trim_honorifics: bool,
 }
 
 impl Default for PfConfig {
@@ -102,6 +107,7 @@ impl Default for PfConfig {
             min_single_name_letters: 0,
             drop_untyped_accounts: false,
             page_wide_names: false,
+            trim_honorifics: true,
         }
     }
 }
@@ -119,7 +125,24 @@ impl PfConfig {
             min_single_name_letters: 0,
             drop_untyped_accounts: false,
             page_wide_names: false,
+            trim_honorifics: false,
         }
+    }
+}
+
+/// Byte offset where a person name starts after any leading titles ("Dr.",
+/// "Sra.", "Herr"), or `start` when there is none or nothing would be left.
+pub fn skip_honorifics(text: &str, start: usize, end: usize) -> usize {
+    let mut pos = start;
+    loop {
+        let rest = &text[pos..end];
+        let word_len = rest.find(char::is_whitespace).unwrap_or(rest.len());
+        let word = rest[..word_len].trim_end_matches('.').to_lowercase();
+        let after = rest[word_len..].trim_start();
+        if word.chars().count() < 2 || !llm_scanner::HONORIFICS.contains(&word.as_str()) || after.is_empty() {
+            return pos;
+        }
+        pos = end - after.len();
     }
 }
 
@@ -221,7 +244,11 @@ pub fn detections(
     rep.stats.spans = spans.len();
     let mut found: Vec<(usize, usize, PiiCategory, Option<TypedBy>)> = Vec::new();
     for s in &spans {
-        let span_text = &text[s.start..s.end];
+        let mut start = s.start;
+        if cfg.trim_honorifics && s.label_name() == "private_person" {
+            start = skip_honorifics(text, s.start, s.end);
+        }
+        let span_text = &text[start..s.end];
         let mut category = base_category(s.label_name());
         let mut typed = None;
         if category == PiiCategory::BankAccount && cfg.retype_accounts {
@@ -256,7 +283,7 @@ pub fn detections(
                 continue;
             }
         }
-        found.push((s.start, s.end, category, typed));
+        found.push((start, s.end, category, typed));
     }
     if cfg.page_wide_names {
         let names: Vec<String> = found
@@ -437,6 +464,19 @@ mod tests {
         // the model's span, then the other occurrence found by page-wide mapping
         assert_eq!(got, vec!["Ann Lee", "ANN LEE"]);
         assert_eq!((r.stats.short_names, r.stats.untyped_dropped, r.stats.page_wide_hits), (1, 1, 1));
+    }
+
+    #[test]
+    fn titles_are_trimmed_from_names() {
+        let t = "Dr. Amara Okafor, Sra. Dña. Lucía Ortega, D. Holloway, Dr.";
+        let cut = |s: &str| {
+            let a = t.find(s).unwrap();
+            &t[skip_honorifics(t, a, a + s.len())..a + s.len()]
+        };
+        assert_eq!(cut("Dr. Amara Okafor"), "Amara Okafor");
+        assert_eq!(cut("Sra. Dña. Lucía Ortega"), "Lucía Ortega");
+        assert_eq!(cut("D. Holloway"), "D. Holloway", "a single letter may be an initial");
+        assert_eq!(cut("Dr."), "Dr.", "nothing would be left");
     }
 
     #[test]

@@ -57,7 +57,7 @@ pub async fn ai_download_model(id: String, state: State<'_, AppState>, app: taur
     let s = svc(&state);
     let progress_app = app.clone();
     let done_app = app.clone();
-    let size = crate::qvac::catalog::find(&id).map(|m| m.size).unwrap_or(0);
+    let size = crate::qvac::catalog::find(&id).map(|m| m.total_size()).unwrap_or(0);
     let _ = state.db.insert_audit_log(None, "model_download_start", Some(&format!("model={} size={}", id, size)));
     s.start_download(
         &id,
@@ -102,9 +102,47 @@ pub async fn ai_import_model(
             id,
             started.elapsed().as_millis()
         )),
+        ImportOutcome::Incomplete { id, missing } => Some(format!(
+            "model={} partial=true missing_files={} sha256=verified duration_ms={}",
+            id,
+            missing.len(),
+            started.elapsed().as_millis()
+        )),
         ImportOutcome::NeedsConsent { .. } => None,
     };
     if let Some(d) = details {
+        let _ = state.db.insert_audit_log(None, "model_import", Some(&d));
+    }
+    Ok(r)
+}
+
+/// Import several files and/or folders at once (models made of several
+/// files, such as Privacy Filter). Only files that match a catalog file by
+/// size and SHA-256 are taken; a model is installed once all its files are
+/// in, and the files found so far are kept for a later import.
+#[tauri::command]
+pub async fn ai_import_model_paths(
+    paths: Vec<String>,
+    state: State<'_, AppState>,
+) -> Result<crate::qvac::models::ImportSummary, String> {
+    if paths.is_empty() {
+        return Err("no files selected".into());
+    }
+    let s = svc(&state);
+    let ps: Vec<PathBuf> = paths.iter().map(PathBuf::from).collect();
+    let started = std::time::Instant::now();
+    let r = blocking(move || s.import_paths(&ps)).await??;
+    for o in &r.outcomes {
+        let d = match o {
+            ImportOutcome::Installed { id } => format!("model={} sha256=verified source=paths duration_ms={}", id, started.elapsed().as_millis()),
+            ImportOutcome::Incomplete { id, missing } => format!(
+                "model={} partial=true missing_files={} sha256=verified source=paths duration_ms={}",
+                id,
+                missing.len(),
+                started.elapsed().as_millis()
+            ),
+            _ => continue,
+        };
         let _ = state.db.insert_audit_log(None, "model_import", Some(&d));
     }
     Ok(r)
@@ -138,6 +176,29 @@ pub async fn ai_set_layer3(enabled: bool, model_id: Option<String>, state: State
     Ok(())
 }
 
+/// Choose the Layer 3 detector ("privacy-filter" | "llm") and whether the
+/// language model also runs after Privacy Filter (thorough mode).
+#[tauri::command]
+pub async fn ai_set_layer3_detector(
+    detector: Option<String>,
+    thorough: Option<bool>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let s = svc(&state);
+    let (d, t) = (detector.clone(), thorough);
+    blocking(move || s.set_layer3_detector(d, t)).await??;
+    let _ = state.db.insert_audit_log(
+        None,
+        "ai_settings",
+        Some(&format!(
+            "layer3_detector={} layer3_thorough={}",
+            detector.unwrap_or_else(|| "-".into()),
+            thorough.map(|t| t.to_string()).unwrap_or_else(|| "-".into())
+        )),
+    );
+    Ok(())
+}
+
 /// Turn the embedding model's use for entity grouping on or off.
 #[tauri::command]
 pub async fn ai_set_entity_embeddings(enabled: bool, state: State<'_, AppState>) -> Result<(), String> {
@@ -162,12 +223,14 @@ pub async fn ai_self_test(state: State<'_, AppState>, app: tauri::AppHandle) -> 
         None,
         "ai_self_test",
         Some(&format!(
-            "ok={} ocr_ms={:?} layer3_model={:?} layer3_ms={:?} layer3_entities={} embedding_ms={:?}",
-            rep.error.is_none() && rep.ocr_error.is_none() && rep.layer3_error.is_none() && rep.embedding_error.is_none(),
+            "ok={} ocr_ms={:?} layer3_model={:?} layer3_ms={:?} layer3_entities={} pf_ms={:?} pf_entities={} embedding_ms={:?}",
+            rep.error.is_none() && rep.ocr_error.is_none() && rep.layer3_error.is_none() && rep.embedding_error.is_none() && rep.pf_error.is_none(),
             rep.ocr_ms,
             rep.layer3_model,
             rep.layer3_ms,
             rep.layer3_entities.len(),
+            rep.pf_ms,
+            rep.pf_entities.len(),
             rep.embedding_ms
         )),
     );

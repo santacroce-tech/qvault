@@ -507,7 +507,7 @@ pub fn find_occurrences_with(hay: &str, needle: &str, o: MatchOpts) -> Vec<(usiz
         .collect()
 }
 
-const HONORIFICS: &[&str] = &[
+pub const HONORIFICS: &[&str] = &[
     "mr", "mrs", "ms", "miss", "dr", "dra", "prof", "sr", "sra", "srta", "d", "dña", "dª", "don", "doña", "eng",
     "lic", "ldo", "lda", "herr", "frau",
 ];

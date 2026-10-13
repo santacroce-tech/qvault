@@ -145,56 +145,74 @@ pub async fn scan_document_text(
     let mut total_pii = 0;
     let total_pages = pages.len();
 
-    // Layer 3 (QVAC LLM in the sidecar). Preparing it may start the sidecar
-    // and load the model; any failure means Layers 1-2 only, never a failed
-    // scan. The reason is surfaced to the UI via `layer3-status`.
+    // Layer 3 (docs/qvac-integration.md §15): Privacy Filter and/or the
+    // language model, both in the QVAC sidecar. Preparing them may start the
+    // sidecar and load models; whatever fails, the scan finishes with what is
+    // available (at worst Layers 1-2). Reasons reach the UI via
+    // `layer3-status`.
     #[cfg(desktop)]
     let layer3_enabled = state.qvac.settings().layer3_enabled;
     #[cfg(not(desktop))]
     let layer3_enabled = false;
     let mut layer3_skip: Option<String> = None;
+    let mut layer3_notices: Vec<String> = Vec::new();
     let layer3_started = std::time::Instant::now();
     #[cfg(desktop)]
-    let mut layer3 = if layer3_enabled {
+    let (mut pf, mut layer3) = if layer3_enabled {
         let _ = app_handle.emit("scan-progress", serde_json::json!({
             "documentId": id, "page": 0, "totalPages": total_pages,
             "llmActive": true, "phase": "llm-loading",
         }));
-        match state.qvac.prepare_layer3() {
-            Ok(session) => {
-                if let Some(d) = session.loaded_in {
-                    let _ = state.db.insert_audit_log(
-                        Some(&id),
-                        "model_load",
-                        Some(&format!("model={} purpose=layer3 duration_ms={}", session.model, d.as_millis())),
-                    );
-                }
-                let app_tokens = app_handle.clone();
-                let doc_tokens = id.clone();
-                session.set_token_callback(Some(std::sync::Arc::new(move |data: &serde_json::Value| {
-                    let _ = app_tokens.emit("llm-progress", serde_json::json!({
-                        "documentId": doc_tokens,
-                        "tokensGenerated": data.get("tokens").and_then(|v| v.as_u64()).unwrap_or(0),
-                        "phase": "generating",
-                    }));
-                })));
-                Some(session)
-            }
-            Err(reason) => {
-                log::warn!("Layer 3 skipped for this scan: {}", reason);
-                layer3_skip = Some(reason);
-                None
+        let plan = state.qvac.prepare_layer3_plan();
+        if let Some(s) = &plan.pf {
+            if let Some(d) = s.loaded_in {
+                let _ = state.db.insert_audit_log(
+                    Some(&id),
+                    "model_load",
+                    Some(&format!("model={} purpose=layer3 duration_ms={}", s.model, d.as_millis())),
+                );
             }
         }
+        if let Some(session) = &plan.llm {
+            if let Some(d) = session.loaded_in {
+                let _ = state.db.insert_audit_log(
+                    Some(&id),
+                    "model_load",
+                    Some(&format!("model={} purpose=layer3 duration_ms={}", session.model, d.as_millis())),
+                );
+            }
+            let app_tokens = app_handle.clone();
+            let doc_tokens = id.clone();
+            session.set_token_callback(Some(std::sync::Arc::new(move |data: &serde_json::Value| {
+                let _ = app_tokens.emit("llm-progress", serde_json::json!({
+                    "documentId": doc_tokens,
+                    "tokensGenerated": data.get("tokens").and_then(|v| v.as_u64()).unwrap_or(0),
+                    "phase": "generating",
+                }));
+            })));
+        }
+        if let Some(r) = &plan.skip_reason {
+            log::warn!("Layer 3 skipped for this scan: {}", r);
+        }
+        layer3_skip = plan.skip_reason;
+        layer3_notices = plan.notices;
+        (plan.pf, plan.llm)
     } else {
-        None
+        (None, None)
     };
     #[cfg(desktop)]
-    let layer3_model = layer3.as_ref().map(|s| s.model.clone());
+    let pf_model = pf.as_ref().map(|s| s.model.clone());
+    #[cfg(not(desktop))]
+    let pf_model: Option<String> = None;
+    #[cfg(desktop)]
+    let mut layer3_model = layer3.as_ref().map(|s| s.model.clone());
     #[cfg(not(desktop))]
     let layer3_model: Option<String> = None;
     let mut layer3_entities = 0usize;
     let mut layer3_failed_chunks = 0usize;
+    let mut pf_entities = 0usize;
+    let mut pf_failed_pages = 0usize;
+    let mut merge_stats = crate::privacy_filter::scanner::MergeStats::default();
 
     // Review memory (§13): earlier decisions and the "Not personal data"
     // list. Without it (database error) the scan runs as before.
@@ -211,7 +229,7 @@ pub async fn scan_document_text(
 
     for (page_num, text) in pages.iter().enumerate() {
         #[cfg(desktop)]
-        let llm_active = layer3.is_some();
+        let llm_active = layer3.is_some() || pf.is_some();
         #[cfg(not(desktop))]
         let llm_active = false;
         // Emit scan progress event
@@ -245,15 +263,8 @@ pub async fn scan_document_text(
                 "phase": phase,
             }));
         });
-        #[cfg(desktop)]
-        let engine: Option<&dyn crate::llm::llm_scanner::Layer3Engine> =
-            layer3.as_ref().map(|s| s as &dyn crate::llm::llm_scanner::Layer3Engine);
-        #[cfg(not(desktop))]
-        let engine: Option<&dyn crate::llm::llm_scanner::Layer3Engine> = None;
-        let on_progress = if engine.is_some() { Some(&progress_cb) } else { None };
-
         // Layers 1-2 first: stored and announced right away, so the review
-        // list fills in while the (much slower) Layer 3 works on the page.
+        // list fills in while Layer 3 works on the page.
         let found = pipeline::run_pipeline_no_llm(text, page_num as u32, &jurisdictions);
         // Layer 3 skips every range Layers 1-2 found, suppressed ones included.
         let existing: Vec<(usize, usize)> = found.iter().map(|e| (e.start, e.end)).collect();
@@ -262,26 +273,84 @@ pub async fn scan_document_text(
             "documentId": id, "page": page_num, "layer": "rules", "count": entities.len(),
         }));
 
-        if let Some(engine) = engine {
-            let report = crate::llm::llm_scanner::scan(engine, text, page_num as u32, &existing, on_progress);
-            layer3_entities += report.entities.len();
-            layer3_failed_chunks += report.failed_chunks;
-            let kept = store_page_entities(&state, &id, page_num, report.entities, &memory, &mut learned)?;
-            let _ = app_handle.emit("scan-page-results", serde_json::json!({
-                "documentId": id, "page": page_num, "layer": "llm", "count": kept.len(),
-            }));
-            if let Some(reason) = report.aborted {
-                log::warn!("Layer 3 stopped on page {}: {}", page_num, reason);
-                layer3_skip = Some(reason);
-                // Remaining pages: Layers 1-2 only.
-                #[cfg(desktop)]
-                {
-                    layer3 = None;
+        #[cfg(desktop)]
+        {
+            // Privacy Filter (fast): stored at once unless the language model
+            // also runs, in which case both are merged first (longer span wins).
+            let mut pf_found: Option<Vec<crate::pipeline::types::PiiEntity>> = None;
+            if let Some(session) = pf.as_ref() {
+                let cfg = crate::privacy_filter::scanner::PfConfig::default();
+                match crate::privacy_filter::scanner::scan(session, session.tokenizer(), session.calibration(), text, page_num as u32, &existing, &cfg) {
+                    Ok(r) => pf_found = Some(r.entities),
+                    Err(crate::llm::llm_scanner::Layer3Error::Chunk(reason)) => {
+                        log::warn!("Privacy Filter: page {} skipped: {}", page_num, reason);
+                        pf_failed_pages += 1;
+                    }
+                    Err(crate::llm::llm_scanner::Layer3Error::Fatal(reason)) => {
+                        log::warn!("Privacy Filter stopped on page {}: {}", page_num, reason);
+                        pf_failed_pages += total_pages - page_num;
+                        pf = None;
+                        // Fall back to the language model for the rest, if installed.
+                        if layer3.is_none() {
+                            match state.qvac.prepare_layer3() {
+                                Ok(s) => {
+                                    layer3_model = Some(s.model.clone());
+                                    layer3 = Some(s);
+                                    layer3_notices.push(format!(
+                                        "Privacy Filter stopped on page {} ({}); the language model was used for the remaining pages",
+                                        page_num + 1, reason
+                                    ));
+                                }
+                                Err(_) => layer3_notices.push(format!(
+                                    "Privacy Filter stopped on page {} ({}); the remaining pages have Layers 1-2 only",
+                                    page_num + 1, reason
+                                )),
+                            }
+                        } else {
+                            layer3_notices.push(format!("Privacy Filter stopped on page {} ({})", page_num + 1, reason));
+                        }
+                    }
                 }
             }
-            entities.extend(kept);
+            let mut l3: Vec<crate::pipeline::types::PiiEntity> = Vec::new();
+            if let Some(found) = pf_found.take() {
+                pf_entities += found.len();
+                if layer3.is_none() {
+                    let kept = store_page_entities(&state, &id, page_num, found, &memory, &mut learned)?;
+                    let _ = app_handle.emit("scan-page-results", serde_json::json!({
+                        "documentId": id, "page": page_num, "layer": crate::privacy_filter::LAYER, "count": kept.len(),
+                    }));
+                    entities.extend(kept);
+                } else {
+                    l3 = found;
+                }
+            }
+            if let Some(engine) = layer3.as_ref() {
+                let _ = app_handle.emit("scan-progress", serde_json::json!({
+                    "documentId": id, "page": page_num, "totalPages": total_pages, "llmActive": true, "phase": "llm",
+                }));
+                let report = crate::llm::llm_scanner::scan(engine, text, page_num as u32, &existing, Some(&progress_cb));
+                layer3_entities += report.entities.len();
+                layer3_failed_chunks += report.failed_chunks;
+                let (merged, ms) = crate::privacy_filter::scanner::merge_detectors(std::mem::take(&mut l3), report.entities);
+                merge_stats.second_dropped += ms.second_dropped;
+                merge_stats.first_replaced += ms.first_replaced;
+                merge_stats.agreements += ms.agreements;
+                let kept = store_page_entities(&state, &id, page_num, merged, &memory, &mut learned)?;
+                let _ = app_handle.emit("scan-page-results", serde_json::json!({
+                    "documentId": id, "page": page_num, "layer": "llm", "count": kept.len(),
+                }));
+                if let Some(reason) = report.aborted {
+                    log::warn!("Layer 3 stopped on page {}: {}", page_num, reason);
+                    layer3_notices.push(format!("the language model stopped on page {} ({})", page_num + 1, reason));
+                    layer3 = None;
+                }
+                entities.extend(kept);
+            }
             entities.sort_by_key(|e| e.start);
         }
+        #[cfg(not(desktop))]
+        let _ = &progress_cb;
 
         // Build cleaned text by applying redactions
         let mut cleaned = text.clone();
@@ -343,33 +412,59 @@ pub async fn scan_document_text(
     );
 
     if layer3_enabled {
-        let status = match (&layer3_model, &layer3_skip) {
-            (None, Some(_)) => "skipped",
-            (Some(_), Some(_)) => "partial",
-            (Some(_), None) if layer3_failed_chunks > 0 => "partial",
-            _ => "ran",
+        let ran_any = layer3_model.is_some() || pf_model.is_some();
+        let status = if !ran_any {
+            "skipped"
+        } else if layer3_failed_chunks > 0 || pf_failed_pages > 0 || !layer3_notices.is_empty() {
+            "partial"
+        } else {
+            "ran"
         };
+        let mut detectors: Vec<&str> = Vec::new();
+        if pf_model.is_some() {
+            detectors.push(crate::privacy_filter::LAYER);
+        }
+        if layer3_model.is_some() {
+            detectors.push("llm");
+        }
+        let reason = layer3_skip.clone().filter(|_| !ran_any).or_else(|| {
+            let mut parts = layer3_notices.clone();
+            if layer3_failed_chunks > 0 {
+                parts.push(format!("{} text chunk(s) could not be analysed", layer3_failed_chunks));
+            }
+            if pf_failed_pages > 0 && layer3_notices.is_empty() {
+                parts.push(format!("{} page(s) could not be analysed by Privacy Filter", pf_failed_pages));
+            }
+            (!parts.is_empty()).then(|| parts.join("; "))
+        });
         let _ = state.db.insert_audit_log(
             Some(&id),
             "ai_scan",
             Some(&format!(
-                "layer=3 model={} status={} duration_ms={} entities={} pages={} failed_chunks={}{}",
+                "layer=3 detectors={} pf_model={} model={} status={} duration_ms={} pf_entities={} entities={} pages={} failed_chunks={} pf_failed_pages={} merge_replaced={} merge_dropped={}{}",
+                if detectors.is_empty() { "-".to_string() } else { detectors.join("+") },
+                pf_model.as_deref().unwrap_or("-"),
                 layer3_model.as_deref().unwrap_or("-"),
                 status,
                 layer3_started.elapsed().as_millis(),
+                pf_entities,
                 layer3_entities,
                 pages.len(),
                 layer3_failed_chunks,
-                layer3_skip.as_ref().map(|r| format!(" reason={}", r)).unwrap_or_default(),
+                pf_failed_pages,
+                merge_stats.first_replaced,
+                merge_stats.second_dropped,
+                reason.as_ref().map(|r| format!(" reason={}", r)).unwrap_or_default(),
             )),
         );
         let _ = app_handle.emit("layer3-status", serde_json::json!({
             "documentId": id,
             "status": status,
-            "reason": layer3_skip.clone().or_else(|| (layer3_failed_chunks > 0)
-                .then(|| format!("{} text chunk(s) could not be analysed", layer3_failed_chunks))),
+            "reason": reason,
             "model": layer3_model,
-            "entities": layer3_entities,
+            "pfModel": pf_model,
+            "detectors": detectors,
+            "entities": layer3_entities + pf_entities,
             "failedChunks": layer3_failed_chunks,
         }));
     }
