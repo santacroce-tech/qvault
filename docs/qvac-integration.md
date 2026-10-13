@@ -1,6 +1,6 @@
 # QVAC integration — Phase 0 design
 
-Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1B (sidecar, Model Manager, Layer 3 on QVAC) built — see [§4.3](#43-as-built-phase-1b) and [§6](#6-installer-size). Phase 2 (OCR for scanned PDFs and images) built — see [§10](#10-phase-2-as-built-ocr-for-scanned-pdfs-and-images). Phase 3 (eval harness, Layer 1 gaps, Layer 3 quality, model choice) built — see [§11](#11-phase-3-layer-3-quality-model-choice-and-the-eval-harness). Phase 4 (entity grouping and known-entity suggestions) built — see [§12](#12-phase-4-entity-resolution). Phase 5 (LoRA fine-tuning) measured and dropped; replaced by learning from review decisions — see [§13](#13-learning-from-review-decisions-replaces-phase-5-lora).**
+Status: **Phase 0 complete; decisions recorded in [§9](#9-decisions-approved-2026-10-12). Phase 1B (sidecar, Model Manager, Layer 3 on QVAC) built — see [§4.3](#43-as-built-phase-1b) and [§6](#6-installer-size). Phase 2 (OCR for scanned PDFs and images) built — see [§10](#10-phase-2-as-built-ocr-for-scanned-pdfs-and-images). Phase 3 (eval harness, Layer 1 gaps, Layer 3 quality, model choice) built — see [§11](#11-phase-3-layer-3-quality-model-choice-and-the-eval-harness). Phase 4 (entity grouping and known-entity suggestions) built — see [§12](#12-phase-4-entity-resolution). Phase 5 (LoRA fine-tuning) measured and dropped; replaced by learning from review decisions — see [§13](#13-learning-from-review-decisions-replaces-phase-5-lora). OpenAI Privacy Filter measured as a Layer 3 candidate, not integrated — see [§14](#14-openai-privacy-filter-measured-not-integrated).**
 Date: 2026-10-12. Branch: `feature/qvac-integration`.
 
 This document covers what Qvault looks like today, the export redaction audit, what QVAC actually provides at the version we would pin, the proposed sidecar architecture, measured size impact, and open questions. Where the original task prompt turned out to be wrong, that is called out in [§8](#8-corrections-to-the-task-prompt).
@@ -955,3 +955,42 @@ The code path and the opt-in eval stay, so this can be measured again on a large
 - **Plaintext:** the list and the rejected strings are stored unencrypted (§7.8), and rejections survive document deletion until cleared.
 - **Not measured on real firm documents**, where repeated boilerplate should make the memory more useful than on this synthetic, deliberately varied set.
 - Branch `experiment/phase5-lora` also used schema version 2, for different tables; it must not be merged as is.
+
+---
+
+## 14. OpenAI Privacy Filter: measured, not integrated
+
+[`openai/privacy-filter`](https://huggingface.co/openai/privacy-filter) (Apache-2.0, revision `7ffa9a04…385b`) is a 1.5B-parameter mixture-of-experts token classifier with about 50M active parameters. It tags tokens with BIOES labels over 8 PII labels and decodes them into spans with a constrained Viterbi decoder. It was measured offline on the eval fixtures, with OpenAI's reference code (`opf`, commit `f7f00ca7`) and decoding. App behaviour is unchanged.
+
+- The only repository code is an opt-in harness path. `QVAULT_EVAL_EXTERNAL=preds.json` scores predictions made elsewhere, using UTF-8 byte offsets validated against the fixture text. They are scored alone, added to Layers 1+2 the way Layer 3 is added, and added to Layer 1 alone.
+- Full report, file hashes and every table: [`eval/reports/privacy-filter.md`](../eval/reports/privacy-filter.md) and `.json`.
+- Apple M4 Pro, 461 labels, overlap matching; Privacy Filter numbers are for the int8 ONNX file:
+
+| | L3 alone P / R / F1 | L1+2+3 P / R / F1 | covered R | F1 EN / ES / PT | holdout R / F1 | s/page | memory |
+|---|---|---|---:|---|---|---:|---:|
+| Layers 1+2 only | — | 84.9 / 83.1 / 84.0 | 75.5 | 80.0 / 88.2 / 90.2 | 66.7 / 75.4 | — | — |
+| Qwen3-1.7B (default) | 97.2 / 67.0 / 79.3 | 84.9 / 93.1 / 88.8 | 85.0 | 87.1 / 89.7 / 92.5 | 85.0 / 87.1 | 6.2 (Metal) | 2.4 GB |
+| Gemma 4 E4B | 99.5 / 89.2 / 94.1 | 86.4 / 96.7 / 91.3 | 88.7 | 89.0 / 93.8 / 94.8 | 88.3 / 89.0 | 15.5 (Metal) | 5.8 GB |
+| Privacy Filter, default | 93.1 / 67.5 / 78.2 | 83.0 / 96.3 / 89.2 | 88.3 | 88.7 / 90.7 / 89.0 | 90.0 / 87.7 | 0.08–0.19 (CPU) | 1.3–2.4 GB |
+| Privacy Filter, recall point (`stay3`) | 90.3 / 76.1 / 82.6 | 81.2 / 97.2 / 88.5 | 90.0 | 88.5 / 89.2 / 87.8 | 95.0 / 89.9 | same | same |
+
+- **Equivalent F1, different profile.** Compared with Qwen3-1.7B, Privacy Filter has:
+  - higher recall: +3.2 overall, +3.3 covered, +5.0 held out, most of it from person names (94 % alone);
+  - lower precision: 23 false suggestions in the combined output against 8;
+  - lower Portuguese F1 (−3.5).
+- **Taxonomy gaps.** It has no label for company names, money amounts, or case and court-file numbers; it adds nothing to Layers 1+2 for companies. Every other identifier (national ID, tax ID, passport, plate, IP address) is reported as `account_number`: it is often found, but with the wrong type (type accuracy 74 % vs 93 %). Its label policy can only be changed by fine-tuning.
+- **Operating points.** The published calibration file contains only `default` (all biases 0); there is no recall preset. A hand-set background-stay bias of −3 (`stay3`, chosen on the dev split) trades 2.8 points of precision for 8.6 points of recall when the model runs alone.
+- **Quantisation.** int8 (`model_quantized`, 1.62 GB) equals the bf16 reference. q4 and q4f16 (0.92 and 0.81 GB) lose 6.7 points of held-out recall. Shipping candidate: int8.
+- **Complement.** Layers 1+2 with both Qwen3-1.7B and Privacy Filter would miss 7 labels instead of 30 (overlap recall about 98.5 %).
+- **Runtimes, measured:**
+  - (a) Rust `ort` 2.0.0-rc.13 adds 17.9 MB to the binary (static ONNX Runtime) and gives outputs identical to Python.
+  - (b) Transformers.js in WKWebView runs only on WebGPU (q4f16, 0.51 s/page, about 5 GB in WebKit processes). The WASM backend cannot load the quantized files, and the default configuration fetches from `cdn.jsdelivr.net` and `huggingface.co` unless overridden.
+  - (c) QVAC's LLM, embedding and OCR addons cannot run this model. QVAC does publish **`@qvac/onnx`** 0.15.1, a generic ONNX Runtime addon, and it runs the model **inside the existing Bare sidecar**: 20.7 MB on macOS arm64, 0.19 s/page, outputs identical to Python.
+
+**Decision: not adopted now.** Qwen3-1.7B stays the default Layer 3. Privacy Filter is recorded as the leading candidate for a *fast, CPU-friendly complement*. If CPU-only speed or maximum recall becomes the priority, the next step is a prototype through `@qvac/onnx` in the sidecar, with:
+
+- the int8 model, imported from a local file with its SHA-256 pinned;
+- opf's Viterbi decoding;
+- Layer 2 kept: without it F1 rises to 92.7, but recall falls by 5.4 points;
+- low confidence for `account_number` suggestions;
+- a broader Spanish and Portuguese check first. The 461-label synthetic set is small, and the model card says the model is "primarily English" and flags legal workflows as high-risk.

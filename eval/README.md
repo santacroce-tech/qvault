@@ -21,6 +21,7 @@ personal data**: this repository is public.
 | `reports/` | Reports referenced by the docs (Layers 1–2 and Layer 3 model runs) |
 | `../src-tauri/tests/eval_harness.rs` | Scoring, the CI test, the report writer |
 | `../src-tauri/tests/eval_support/layer3.rs` | Opt-in Layer 3 runs with real models |
+| `../src-tauri/tests/eval_support/external.rs` | Opt-in scoring of predictions made outside Qvault (`QVAULT_EVAL_EXTERNAL`) |
 
 ## Label format
 
@@ -150,6 +151,24 @@ per-category precision used to calibrate confidence.
 Peak RSS is sampled with `ps` every 300 ms. On Apple Silicon, Metal buffers
 backed by the memory-mapped model file count towards RSS; GPU-private
 allocations may not.
+
+**External predictions (opt-in):** scores spans produced outside Qvault, for
+example another model run in Python, as if they came from Layer 3. They are
+scored alone, added to Layers 1+2 (a span that overlaps a Layer 1–2
+detection is dropped, as in the app), and added to Layer 1 alone.
+
+```sh
+QVAULT_EVAL_EXTERNAL=/abs/a.json,/abs/b.json QVAULT_EVAL_OUT=../eval/reports \
+cargo test --test eval_harness external_predictions -- --nocapture
+# report per file: external-<system>.{md,json}
+```
+
+File format: `{"system": "...", "meta": {...}, "fixtures": {"<fixture id>": [[{"start", "end", "category", "text"}, ...], ...]}}`,
+with one inner list per page. `start`/`end` are UTF-8 byte offsets into the
+fixture page text, and `category` is a Qvault category name. Every span is
+validated (range, char boundary, `text` equal to the slice, known category),
+and the test fails on any mismatch. Used for OpenAI Privacy Filter:
+[`reports/privacy-filter.md`](reports/privacy-filter.md).
 
 ## Entity resolution and known-entity suggestions (Phase 4)
 
