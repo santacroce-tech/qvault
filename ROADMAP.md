@@ -27,7 +27,16 @@ Last updated: 2026-10-13.
 
 ## Next
 
-Ordered by expected value.
+Queued after the work in progress:
+
+- **Evaluate OpenAI Privacy Filter** ([openai/privacy-filter](https://huggingface.co/openai/privacy-filter),
+  Apache-2.0, 1.5B parameters with 50M active, ONNX). A token classifier that returns exact spans in
+  one pass, with tunable recall. Measure it offline on the eval set (EN/ES/PT; the card says
+  "primarily English") against Qwen3-1.7B, alone and combined with Layers 1–2, with speed and
+  memory. Only if it clearly wins, choose a runtime: ONNX Runtime in Rust (a second runtime next
+  to QVAC) or Transformers.js in the webview with local files only.
+
+Then, ordered by expected value.
 
 1. **Layer 2 name precision.** The name heuristic is about 52 % precise and
    caps combined precision at about 85 %; with a strong model, Layer 3 alone
