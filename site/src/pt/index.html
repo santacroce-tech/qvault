@@ -1,19 +1,20 @@
-<!-- title: Qvault: detecção e tarja local de dados pessoais em documentos jurídicos
-     description: O Qvault encontra dados pessoais em PDFs, arquivos do Word e documentos digitalizados, permite revisar cada ocorrência e exporta cópias tarjadas. Tudo roda no seu computador. Gratuito e com licença MIT. -->
+<!-- title: Qvault: detecção e redação local de dados pessoais em documentos jurídicos
+     description: O Qvault encontra dados pessoais em PDFs, arquivos do Word e documentos digitalizados, permite revisar cada ocorrência e exporta cópias redigidas. Tudo roda no seu computador. Gratuito e com licença MIT. -->
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
       <span class="eyebrow">Gratuito · código aberto · roda no seu computador</span>
-      <h1>Tarje documentos de clientes sem enviá-los a lugar nenhum.</h1>
-      <p class="lead">O Qvault encontra nomes, números de documentos, endereços, dados bancários e outros dados pessoais em PDFs, arquivos do Word e páginas digitalizadas. Você revisa cada ocorrência e depois exporta uma cópia em que o texto tarjado foi realmente removido.</p>
+      <h1>Redija documentos de clientes sem enviá-los a lugar nenhum.</h1>
+      <p class="lead">O Qvault encontra nomes, números de documentos, endereços, dados bancários e outros dados pessoais em PDFs, arquivos do Word e páginas digitalizadas. Você revisa cada ocorrência e depois exporta uma cópia em que o texto redigido foi realmente removido.</p>
       <div class="btn-row">
         <a class="btn" href="{{releases}}">Baixar o Qvault</a>
         <a class="btn btn-ghost" href="#how">Como funciona</a>
       </div>
       <p class="hero-note">macOS, Windows e Linux · licença MIT · sem conta, sem chave de licença, sem telemetria</p>
+      <p class="hero-article"><a href="{{root}}blog/qvault-local-redaction.html" hreflang="en">Leia o artigo: por que criei o Qvault e o que as medições mostraram (em inglês) →</a></p>
     </div>
     <figure class="shot">
-      <img src="{{root}}assets/screenshots/review-view.jpg" width="1600" height="1000" alt="Tela de revisão do Qvault: um contrato de prestação de serviços à esquerda com os dados pessoais detectados destacados e, à direita, a lista de tarjas com botões para aprovar e rejeitar.">
+      <img src="{{root}}assets/screenshots/review-view.jpg" width="1600" height="1000" alt="Tela de revisão do Qvault: um contrato de prestação de serviços à esquerda com os dados pessoais detectados destacados e, à direita, a lista de redações com botões para aprovar e rejeitar.">
     </figure>
   </div>
 </section>
@@ -55,11 +56,11 @@
       </div>
       <div class="card">
         <h3><span class="num">2</span> Revise cada ocorrência</h3>
-        <p>Cada detecção aparece destacada no documento com sua categoria, grau de confiança e a camada que a encontrou. Aprove, rejeite ou edite, ou selecione um trecho para adicionar suas próprias tarjas.</p>
+        <p>Cada detecção aparece destacada no documento com sua categoria, grau de confiança e a camada que a encontrou. Aprove, rejeite ou edite, ou selecione um trecho para adicionar suas próprias redações.</p>
       </div>
       <div class="card">
         <h3><span class="num">3</span> Exporte uma cópia limpa</h3>
-        <p>Só as tarjas aprovadas são aplicadas. O Qvault relê o arquivo exportado e se recusa a salvá-lo se algum texto aprovado ainda puder ser encontrado nele.</p>
+        <p>Só as redações aprovadas são aplicadas. O Qvault relê o arquivo exportado e se recusa a salvá-lo se algum texto aprovado ainda puder ser encontrado nele.</p>
       </div>
     </div>
   </div>
@@ -96,12 +97,12 @@
   <div class="wrap hero-grid">
     <div>
       <span class="eyebrow">Revisão em primeiro lugar</span>
-      <h2>Nada é tarjado automaticamente.</h2>
+      <h2>Nada é redigido automaticamente.</h2>
       <p>Ferramentas de detecção erram para os dois lados. O Qvault trata cada ocorrência como uma sugestão: mostra o texto, a categoria, a confiança e a camada (padrão, heurística ou IA) para que você decida, e aplica apenas o que você aprovar.</p>
       <ul class="checks">
         <li>Aprove ou rejeite uma ocorrência, todas as repetições dela ou tudo de uma vez.</li>
-        <li>Modo avançado: selecione qualquer trecho do documento para adicionar uma tarja manual.</li>
-        <li>Os grupos de entidades ligam as diferentes grafias de um mesmo nome ou número nos seus documentos (“Maria Santos”, “Santos, Maria”, “Sra. Santos”). Correspondências incertas aguardam a sua revisão, e um nome conhecido que os detectores não encontraram num documento novo é sugerido para tarja.</li>
+        <li>Modo avançado: selecione qualquer trecho do documento para adicionar uma redação manual.</li>
+        <li>Os grupos de entidades ligam as diferentes grafias de um mesmo nome ou número nos seus documentos (“Maria Santos”, “Santos, Maria”, “Sra. Santos”). Correspondências incertas aguardam a sua revisão, e um nome conhecido que os detectores não encontraram num documento novo é sugerido para redação.</li>
         <li>Um registro de auditoria anota as ações (envios, análises, aprovações, exportações, mudanças de modelo) sem guardar o texto dos documentos.</li>
       </ul>
     </div>
@@ -141,22 +142,22 @@
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Exportação</span>
-      <h2>Tarjas que não podem ser desfeitas com copiar e colar.</h2>
-      <p>Um retângulo preto desenhado sobre um texto não é uma tarja se o texto continua por baixo. O Qvault remove o texto.</p>
+      <h2>Redações que não podem ser desfeitas com copiar e colar.</h2>
+      <p>Um retângulo preto desenhado sobre um texto não é uma redação se o texto continua por baixo. O Qvault remove o texto.</p>
     </div>
     <div class="grid grid-2">
       <div class="card">
         <h3>PDF</h3>
         <ul class="checks">
-          <li>Cada página com uma tarja aprovada é convertida em imagem e os retângulos são gravados nos pixels. O texto, as fontes e as anotações originais dessa página são descartados.</li>
+          <li>Cada página com uma redação aprovada é convertida em imagem e os retângulos são gravados nos pixels. O texto, as fontes e as anotações originais dessa página são descartados.</li>
           <li>Metadados do documento, XMP, marcadores, formulários, anexos e scripts são removidos de todo o arquivo.</li>
-          <li>A exportação é recusada se uma tarja aprovada não puder ser posicionada na página ou se um texto aprovado aparecer em uma página que não será tarjada.</li>
+          <li>A exportação é recusada se uma redação aprovada não puder ser posicionada na página ou se um texto aprovado aparecer em uma página que não será redigida.</li>
         </ul>
       </div>
       <div class="card">
         <h3>Word (DOCX)</h3>
         <ul class="checks">
-          <li>Tarja ciente dos trechos de formatação: um texto dividido em vários trechos ainda é encontrado e substituído.</li>
+          <li>Redação ciente dos trechos de formatação: um texto dividido em vários trechos ainda é encontrado e substituído.</li>
           <li>Abrange corpo, cabeçalhos, rodapés, notas de rodapé e de fim, comentários e controle de alterações; o texto excluído nas revisões é removido.</li>
           <li>Autores de comentários e revisões e as propriedades do documento são apagados, e a miniatura da página é removida.</li>
         </ul>
@@ -174,7 +175,7 @@
     </div>
     <div class="shots">
       <figure>
-        <div class="shot"><img src="{{root}}assets/screenshots/review-view.jpg" width="1600" height="1000" loading="lazy" alt="Tela de revisão com as ocorrências destacadas no documento e a lista de tarjas."></div>
+        <div class="shot"><img src="{{root}}assets/screenshots/review-view.jpg" width="1600" height="1000" loading="lazy" alt="Tela de revisão com as ocorrências destacadas no documento e a lista de redações."></div>
         <figcaption>Revisão: as ocorrências são destacadas no próprio documento, com categoria e confiança.</figcaption>
       </figure>
       <figure>
@@ -195,7 +196,7 @@
     <div class="section-head">
       <span class="eyebrow">Exemplo</span>
       <h2>Antes e depois.</h2>
-      <p>Um contrato fictício de prestação de serviços de três páginas, em inglês e cheio de dados pessoais, e uma versão tarjada dele. Teste o original no Qvault e compare.</p>
+      <p>Um contrato fictício de prestação de serviços de três páginas, em inglês e cheio de dados pessoais, e uma versão redigida dele. Teste o original no Qvault e compare.</p>
     </div>
     <div class="demo-grid">
       <figure>
@@ -204,10 +205,10 @@
       </figure>
       <figure>
         <div class="shot"><img src="{{root}}assets/demo/demo-cleaned-p1.jpg" width="680" height="880" loading="lazy" alt="Página 1 do contrato de exemplo com os dados pessoais substituídos por etiquetas como [PERSON NAME] e [EMAIL]."></div>
-        <figcaption>Tarjado com etiquetas · <a href="{{root}}assets/demo/demo-cleaned.pdf">baixar demo-cleaned.pdf</a> (PDF, 9 KB)</figcaption>
+        <figcaption>Redigido com etiquetas · <a href="{{root}}assets/demo/demo-cleaned.pdf">baixar demo-cleaned.pdf</a> (PDF, 9 KB)</figcaption>
       </figure>
     </div>
-    <p class="muted small">A versão tarjada ilustra o resultado de uma revisão completa com etiquetas de categoria. Uma exportação real de PDF pelo Qvault grava retângulos pretos em imagens de página, como descrito acima. O que o Qvault encontra sozinho depende das camadas ativadas; alguns itens deste exemplo, como os códigos de roteamento bancário e SWIFT, podem exigir uma tarja manual.</p>
+    <p class="muted small">A versão redigida ilustra o resultado de uma revisão completa com etiquetas de categoria. Uma exportação real de PDF pelo Qvault grava retângulos pretos em imagens de página, como descrito acima. O que o Qvault encontra sozinho depende das camadas ativadas; alguns itens deste exemplo, como os códigos de roteamento bancário e SWIFT, podem exigir uma redação manual.</p>
   </div>
 </section>
 
