@@ -420,7 +420,9 @@ pub struct MatchOpts {
 
 impl Default for MatchOpts {
     fn default() -> Self {
-        MatchOpts { fold_accents: true, hyphen_wrap: true }
+        // Accent folding never changed a result on the Phase 3 eval (models
+        // copied accents faithfully), so it is off by default.
+        MatchOpts { fold_accents: false, hyphen_wrap: true }
     }
 }
 
@@ -667,21 +669,23 @@ impl PostConfig {
     }
 }
 
-/// Confidence by category for [`ConfidenceMode::ByCategory`]. Derived from
-/// Layer 3's measured precision on the eval fixtures (default model and
-/// prompt; docs/qvac-integration.md §11): categories where the model was
-/// reliably right get more, the noisy ones (names, companies, dates) less.
-/// Capped below Layer 1's 0.95 and floored at 0.50; detections confirmed by
-/// two overlapping chunks get +0.05.
+
+/// Confidence by category for [`ConfidenceMode::ByCategory`], from the
+/// precision of Layer 3's *additions* to Layers 1–2 on the eval fixtures,
+/// pooled over the 7 models measured (docs/qvac-integration.md §11.3):
+/// PersonName 96 % (n=224), BankAccount 100 % (21), NationalId 92 % (12),
+/// DateOfBirth 100 % (9) → 0.80; CompanyName 89 % (37) → 0.70; Date 61 %
+/// (23) → 0.60; Address 42 % (36), CaseNumber 13 % (23) → 0.50. Categories
+/// Layer 3 rarely adds (too few samples) get 0.65. Two agreeing chunks add
+/// 0.05; the maximum (0.85) stays below Layer 1's 0.95.
 pub fn category_confidence(c: &PiiCategory) -> f64 {
     use PiiCategory::*;
     match c {
-        Email | IpAddress | Url | IBAN | CreditCard => 0.85,
-        PhoneNumber | SocialSecurityNumber | TaxId | NationalId | PassportNumber | BankAccount
-        | MonetaryAmount | DateOfBirth => 0.80,
-        Address | CaseNumber | CourtFileNumber | DriversLicense | MedicalRecordNumber | LicensePlate => 0.75,
-        PersonName | ClientId | Date => 0.70,
-        CompanyName => 0.60,
+        PersonName | BankAccount | NationalId | DateOfBirth => 0.80,
+        CompanyName => 0.70,
+        Date => 0.60,
+        Address | CaseNumber => 0.50,
+        _ => 0.65,
     }
 }
 
@@ -1064,7 +1068,7 @@ mod tests {
         let r = scan(&fake, &text, 0, &[], None);
         assert_eq!(fake.seen.borrow().len(), 3);
         assert_eq!(found(&text, &r), vec!["Olga Petrova"], "the longer span from chunk 2 replaces chunk 1's");
-        assert_eq!(r.entities[0].confidence, 0.75, "two chunks agree: PersonName 0.70 + 0.05");
+        assert_eq!(r.entities[0].confidence, 0.85, "two chunks agree: PersonName 0.80 + 0.05");
     }
 
     #[test]
@@ -1091,7 +1095,7 @@ mod tests {
 
     #[test]
     fn accent_and_line_wrap_tolerant_matching() {
-        let o = MatchOpts::default();
+        let o = MatchOpts { fold_accents: true, hyphen_wrap: true };
         let text = "Sra. Ferrandiz Olmedo; e-mail j.richardson@atlas-  \n  digital.com";
         assert_eq!(find_occurrences_with(text, "Ferrándiz Olmedo", o), vec![(5, 21)]);
         let (s, e) = find_occurrences_with(text, "j.richardson@atlas-digital.com", o)[0];
