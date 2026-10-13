@@ -34,8 +34,8 @@ Free and open source under the [MIT License](LICENSE).
   2. *Heuristics*: names of people, company names with legal suffixes, and
      addresses.
   3. *Local AI (optional)*: a small LLM via Tether's
-     [QVAC](https://github.com/tetherto/qvac) SDK (Qwen2.5-0.5B-Instruct by
-     default, 1.5B optional) running in the bundled sidecar. Desktop only.
+     [QVAC](https://github.com/tetherto/qvac) SDK (Qwen3-1.7B by default;
+     0.6B, 4B and 8B optional) running in the bundled sidecar. Desktop only.
 - **Review first.** Every detection goes to review with its confidence and
   source layer. Nothing is redacted automatically. Manual redactions, an entity
   overview across documents, and a metadata-only audit log.
@@ -132,6 +132,11 @@ QVAC_SIDECAR_IT=1 QVAC_MODELS_DIR=/path/to/models \
   cargo test --manifest-path src-tauri/Cargo.toml --test qvac_sidecar_it -- --nocapture
 ```
 
+The detection eval (`src-tauri/tests/eval_harness.rs`, fixtures and reports in
+[eval/](eval/README.md)) runs Layers 1–2 in every `cargo test` and fails if
+recall drops below `eval/baseline.json`; Layer 3 runs are opt-in
+(`QVAULT_EVAL_L3=1`). CI runs both on Linux.
+
 `src-tauri/tests/redaction_export_test.rs` is the regression gate for export:
 it fails if any approved string can be extracted from an exported PDF or DOCX.
 
@@ -156,8 +161,9 @@ React UI ──Tauri IPC──▶ Rust backend ──JSON lines over stdio──
 More detail: the [architecture page](https://santacroce-tech.github.io/qvault/architecture.html)
 and the design notes in [docs/qvac-integration.md](docs/qvac-integration.md).
 
-Known limits: detection is not exhaustive and Layer 3 quality has not yet been
-formally measured; OCR is CPU-bound and imperfect; document files, extracted text
+Known limits: detection is not exhaustive, and detection quality has been
+measured only on a small synthetic eval set written by the developers
+([eval/](eval/README.md)); OCR is CPU-bound and imperfect; document files, extracted text
 and findings are stored unencrypted in the app data folder (use full-disk
 encryption such as FileVault, BitLocker or LUKS); redacted PDF pages become images; on Windows the QVAC runtime needs
 a recent Vulkan driver.

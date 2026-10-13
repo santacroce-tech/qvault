@@ -21,7 +21,7 @@
       <thead><tr><th>Feature</th><th>Model</th><th>How to get it</th></tr></thead>
       <tbody>
         <tr><td>Layers 1–2 (patterns, heuristics)</td><td>None</td><td>Built in</td></tr>
-        <tr><td>Layer 3 (local AI)</td><td>Qwen2.5-0.5B-Instruct (default) or 1.5B</td><td>Download in the app, or import from a file</td></tr>
+        <tr><td>Layer 3 (local AI)</td><td>Qwen3-1.7B (default); 0.6B, 4B or 8B</td><td>Download in the app, or import from a file</td></tr>
         <tr><td>OCR (scanned PDFs, PNG, JPG, TIFF)</td><td>CRAFT detector + Latin recognizer</td><td>Download manually, then import</td></tr>
       </tbody>
     </table>
@@ -32,16 +32,24 @@
   <p>In the Model Manager, click <strong>Download</strong> next to a model. Qvault shows the size and the source host before anything is transferred. The download comes straight from Hugging Face over HTTPS (never peer-to-peer), shows real progress, can be cancelled, and is verified against the size and SHA-256 below before it is moved into place.</p>
   <div class="table-scroll">
     <table>
-      <thead><tr><th>Model</th><th>File</th><th>Size</th><th>Licence</th></tr></thead>
+      <thead><tr><th>Model</th><th>File</th><th>Size</th><th>Memory needed</th><th>Licence</th></tr></thead>
       <tbody>
-        <tr><td>Qwen2.5 0.5B Instruct (Q4_K_M), recommended</td><td><code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code></td><td>491,400,032 bytes (≈ 491 MB)</td><td>Apache-2.0</td></tr>
-        <tr><td>Qwen2.5 1.5B Instruct (Q4_K_M)</td><td><code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code></td><td>1,117,320,736 bytes (≈ 1.1 GB)</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 1.7B (Q8_0), default</td><td><code>qwen3-1.7b-q8_0.gguf</code></td><td>1,834,426,016 bytes (≈ 1.8 GB)</td><td>≈ 2.75 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 0.6B (Q8_0), light, for 4–8 GB computers</td><td><code>qwen3-0.6b-q8_0.gguf</code></td><td>639,446,688 bytes (≈ 639 MB)</td><td>≈ 1.5 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 4B (Q4_K_M), 16 GB or a GPU</td><td><code>qwen3-4b-q4_k_m.gguf</code></td><td>2,497,280,256 bytes (≈ 2.5 GB)</td><td>≈ 3.5 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 8B (Q4_K_M), GPU workstations</td><td><code>qwen3-8b-q4_k_m.gguf</code></td><td>5,027,783,488 bytes (≈ 5.0 GB)</td><td>≈ 6 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen2.5 0.5B Instruct (Q4_K_M), superseded</td><td><code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code></td><td>491,400,032 bytes (≈ 491 MB)</td><td>≈ 1 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen2.5 1.5B Instruct (Q4_K_M), superseded</td><td><code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code></td><td>1,117,320,736 bytes (≈ 1.1 GB)</td><td>≈ 1.75 GB</td><td>Apache-2.0</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="small">SHA-256 (0.5B): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
-  SHA-256 (1.5B): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
-  <p>Then turn on <strong>Use AI detection (Layer 3) when scanning</strong>. AI findings are added at 70% confidence and always wait for your review. If the AI engine is unavailable or a chunk fails, the scan still completes with Layers 1–2 and the viewer tells you what was skipped.</p>
+  <p class="small">SHA-256 (<code>qwen3-1.7b-q8_0.gguf</code>): <span class="hash">061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a</span><br>
+  SHA-256 (<code>qwen3-0.6b-q8_0.gguf</code>): <span class="hash">9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031</span><br>
+  SHA-256 (<code>qwen3-4b-q4_k_m.gguf</code>): <span class="hash">7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5</span><br>
+  SHA-256 (<code>qwen3-8b-q4_k_m.gguf</code>): <span class="hash">d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785</span><br>
+  SHA-256 (<code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code>): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
+  SHA-256 (<code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code>): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
+  <p>Then turn on <strong>Use AI detection (Layer 3) when scanning</strong>. AI findings are added with a confidence that depends on the category (80% for names, ID numbers, bank details and dates of birth, down to 50% for addresses and case numbers) and always wait for your review. If the AI engine is unavailable or a chunk fails, the scan still completes with Layers 1–2 and the viewer tells you what was skipped.</p>
 
   <h2 id="ocr">OCR models: download and import</h2>
   <p>The OCR models are not downloaded by the app. Download the two files below yourself, check them, and import them. You only need to do this once per computer.</p>
@@ -98,13 +106,13 @@ dd1c7a436e9175904e63683e939635892f45c8c6377d5e14e87cf8b175e10768  latin_g2.gguf<
     <li>Copy the files to removable media and onto the air-gapped machine. Verify the checksums again there.</li>
     <li>Install Qvault and import each model with <em>Import from file…</em>. No network connection is needed at any point.</li>
   </ol>
-  <p class="small">Qwen files at the pinned revisions: <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf">qwen2.5-0.5b-instruct-q4_k_m.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf">qwen2.5-1.5b-instruct-q4_k_m.gguf</a></p>
+  <p class="small">Qwen files at the pinned revisions: <a href="https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/90862c4b9d2787eaed51d12237eafdfe7c5f6077/Qwen3-1.7B-Q8_0.gguf">Qwen3-1.7B-Q8_0.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/23749fefcc72300e3a2ad315e1317431b06b590a/Qwen3-0.6B-Q8_0.gguf">Qwen3-0.6B-Q8_0.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/bc640142c66e1fdd12af0bd68f40445458f3869b/Qwen3-4B-Q4_K_M.gguf">Qwen3-4B-Q4_K_M.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/7c41481f57cb95916b40956ab2f0b139b296d974/Qwen3-8B-Q4_K_M.gguf">Qwen3-8B-Q4_K_M.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf">qwen2.5-0.5b-instruct-q4_k_m.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf">qwen2.5-1.5b-instruct-q4_k_m.gguf</a></p>
 
   <h2 id="trouble">Troubleshooting</h2>
   <ul>
     <li><strong>“Unrecognised model file”.</strong> The file’s hash does not match any model Qvault knows. It is usually an incomplete download: download it again and re-check the hash. Do not accept an unknown file for OCR.</li>
     <li><strong>“AI engine is not included in this build”.</strong> You are running a build without the bundled QVAC helper (for example a plain <code>cargo build</code>). Layers 1–2 still work; use an official release for AI and OCR.</li>
-    <li><strong>“Likely too large for this computer”.</strong> Qvault checks whether a model fits your memory before loading it. Use the 0.5B model.</li>
+    <li><strong>“Likely too large for this computer”.</strong> Qvault checks whether a model fits your memory before loading it. Choose a smaller model, such as Qwen3 0.6B. The Model Manager shows each model’s memory need next to your computer’s memory before you download.</li>
     <li><strong>Windows.</strong> The QVAC runtime needs a recent Vulkan driver even for CPU inference. On virtual machines or very old graphics hardware, AI and OCR may be unavailable; Layers 1–2 are unaffected.</li>
   </ul>
 </article>

@@ -21,7 +21,7 @@
       <thead><tr><th>Función</th><th>Modelo</th><th>Cómo obtenerlo</th></tr></thead>
       <tbody>
         <tr><td>Capas 1–2 (patrones, heurística)</td><td>Ninguno</td><td>Incluidas</td></tr>
-        <tr><td>Capa 3 (IA local)</td><td>Qwen2.5-0.5B-Instruct (por defecto) o 1.5B</td><td>Descarga desde la aplicación o importación desde archivo</td></tr>
+        <tr><td>Capa 3 (IA local)</td><td>Qwen3-1.7B (por defecto); 0.6B, 4B u 8B</td><td>Descarga desde la aplicación o importación desde archivo</td></tr>
         <tr><td>OCR (PDF escaneados, PNG, JPG, TIFF)</td><td>Detector CRAFT + reconocedor latino</td><td>Descarga manual e importación</td></tr>
       </tbody>
     </table>
@@ -32,16 +32,24 @@
   <p>En el gestor de modelos, pulse <strong>Descargar</strong> junto a un modelo. Qvault muestra el tamaño y el servidor de origen antes de transferir nada. La descarga procede directamente de Hugging Face por HTTPS (nunca de redes entre pares), muestra el progreso real, puede cancelarse y se comprueba contra el tamaño y el SHA-256 indicados abajo antes de darla por buena.</p>
   <div class="table-scroll">
     <table>
-      <thead><tr><th>Modelo</th><th>Archivo</th><th>Tamaño</th><th>Licencia</th></tr></thead>
+      <thead><tr><th>Modelo</th><th>Archivo</th><th>Tamaño</th><th>Memoria necesaria</th><th>Licencia</th></tr></thead>
       <tbody>
-        <tr><td>Qwen2.5 0.5B Instruct (Q4_K_M), recomendado</td><td><code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code></td><td>491.400.032 bytes (≈ 491 MB)</td><td>Apache-2.0</td></tr>
-        <tr><td>Qwen2.5 1.5B Instruct (Q4_K_M)</td><td><code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code></td><td>1.117.320.736 bytes (≈ 1,1 GB)</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 1.7B (Q8_0), por defecto</td><td><code>qwen3-1.7b-q8_0.gguf</code></td><td>1.834.426.016 bytes (≈ 1,8 GB)</td><td>≈ 2,75 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 0.6B (Q8_0), ligero, para equipos de 4–8 GB</td><td><code>qwen3-0.6b-q8_0.gguf</code></td><td>639.446.688 bytes (≈ 639 MB)</td><td>≈ 1,5 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 4B (Q4_K_M), 16 GB o GPU</td><td><code>qwen3-4b-q4_k_m.gguf</code></td><td>2.497.280.256 bytes (≈ 2,5 GB)</td><td>≈ 3,5 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 8B (Q4_K_M), estaciones con GPU</td><td><code>qwen3-8b-q4_k_m.gguf</code></td><td>5.027.783.488 bytes (≈ 5,0 GB)</td><td>≈ 6 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen2.5 0.5B Instruct (Q4_K_M), sustituido</td><td><code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code></td><td>491.400.032 bytes (≈ 491 MB)</td><td>≈ 1 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen2.5 1.5B Instruct (Q4_K_M), sustituido</td><td><code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code></td><td>1.117.320.736 bytes (≈ 1,1 GB)</td><td>≈ 1,75 GB</td><td>Apache-2.0</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="small">SHA-256 (0.5B): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
-  SHA-256 (1.5B): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
-  <p>A continuación, active <strong>Usar detección con IA (capa 3) al escanear</strong>. Los hallazgos de la IA se añaden con un 70 % de confianza y siempre quedan pendientes de su revisión. Si el motor de IA no está disponible o un fragmento falla, el análisis termina igualmente con las capas 1–2 y el visor indica qué se ha omitido.</p>
+  <p class="small">SHA-256 (<code>qwen3-1.7b-q8_0.gguf</code>): <span class="hash">061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a</span><br>
+  SHA-256 (<code>qwen3-0.6b-q8_0.gguf</code>): <span class="hash">9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031</span><br>
+  SHA-256 (<code>qwen3-4b-q4_k_m.gguf</code>): <span class="hash">7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5</span><br>
+  SHA-256 (<code>qwen3-8b-q4_k_m.gguf</code>): <span class="hash">d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785</span><br>
+  SHA-256 (<code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code>): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
+  SHA-256 (<code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code>): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
+  <p>A continuación, active <strong>Usar detección con IA (capa 3) al escanear</strong>. Los hallazgos de la IA se añaden con una confianza que depende de la categoría (80 % para nombres, números de identificación, datos bancarios y fechas de nacimiento; 50 % para direcciones y números de expediente) y siempre quedan pendientes de su revisión. Si el motor de IA no está disponible o un fragmento falla, el análisis termina igualmente con las capas 1–2 y el visor indica qué se ha omitido.</p>
 
   <h2 id="ocr">Modelos de OCR: descarga e importación</h2>
   <p>La aplicación no descarga los modelos de OCR. Descargue usted mismo los dos archivos siguientes, compruébelos e impórtelos. Solo hay que hacerlo una vez por equipo.</p>
@@ -98,13 +106,13 @@ dd1c7a436e9175904e63683e939635892f45c8c6377d5e14e87cf8b175e10768  latin_g2.gguf<
     <li>Copie los archivos en un soporte extraíble y llévelos al equipo aislado. Vuelva a comprobar las sumas allí.</li>
     <li>Instale Qvault e importe cada modelo con <em>Importar desde archivo…</em>. No hace falta conexión en ningún momento.</li>
   </ol>
-  <p class="small">Archivos Qwen en las revisiones fijadas: <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf">qwen2.5-0.5b-instruct-q4_k_m.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf">qwen2.5-1.5b-instruct-q4_k_m.gguf</a></p>
+  <p class="small">Archivos Qwen en las revisiones fijadas: <a href="https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/90862c4b9d2787eaed51d12237eafdfe7c5f6077/Qwen3-1.7B-Q8_0.gguf">Qwen3-1.7B-Q8_0.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/23749fefcc72300e3a2ad315e1317431b06b590a/Qwen3-0.6B-Q8_0.gguf">Qwen3-0.6B-Q8_0.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/bc640142c66e1fdd12af0bd68f40445458f3869b/Qwen3-4B-Q4_K_M.gguf">Qwen3-4B-Q4_K_M.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/7c41481f57cb95916b40956ab2f0b139b296d974/Qwen3-8B-Q4_K_M.gguf">Qwen3-8B-Q4_K_M.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf">qwen2.5-0.5b-instruct-q4_k_m.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf">qwen2.5-1.5b-instruct-q4_k_m.gguf</a></p>
 
   <h2 id="trouble">Solución de problemas</h2>
   <ul>
     <li><strong>«Archivo de modelo no reconocido».</strong> El hash del archivo no coincide con ningún modelo conocido por Qvault. Suele tratarse de una descarga incompleta: vuelva a descargarlo y compruebe de nuevo el hash. No acepte un archivo desconocido como modelo de OCR.</li>
     <li><strong>«El motor de IA no está incluido en esta compilación».</strong> Está usando una compilación sin el proceso auxiliar de QVAC (por ejemplo, un <code>cargo build</code> sin más). Las capas 1–2 siguen funcionando; use una versión oficial para la IA y el OCR.</li>
-    <li><strong>«Probablemente demasiado grande para este equipo».</strong> Qvault comprueba si un modelo cabe en la memoria antes de cargarlo. Use el modelo 0.5B.</li>
+    <li><strong>«Probablemente demasiado grande para este equipo».</strong> Qvault comprueba si un modelo cabe en la memoria antes de cargarlo. Elija un modelo más pequeño, como Qwen3 0.6B. El gestor de modelos muestra, antes de descargar, la memoria que necesita cada modelo y la de su equipo.</li>
     <li><strong>Windows.</strong> El motor de QVAC necesita un controlador Vulkan reciente incluso para inferencia en CPU. En máquinas virtuales o con gráficos muy antiguos, la IA y el OCR pueden no estar disponibles; las capas 1–2 no se ven afectadas.</li>
   </ul>
 </article>

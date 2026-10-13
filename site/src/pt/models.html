@@ -21,7 +21,7 @@
       <thead><tr><th>Recurso</th><th>Modelo</th><th>Como obter</th></tr></thead>
       <tbody>
         <tr><td>Camadas 1–2 (padrões, heurística)</td><td>Nenhum</td><td>Já incluídas</td></tr>
-        <tr><td>Camada 3 (IA local)</td><td>Qwen2.5-0.5B-Instruct (padrão) ou 1.5B</td><td>Download pelo aplicativo ou importação de arquivo</td></tr>
+        <tr><td>Camada 3 (IA local)</td><td>Qwen3-1.7B (padrão); 0.6B, 4B ou 8B</td><td>Download pelo aplicativo ou importação de arquivo</td></tr>
         <tr><td>OCR (PDFs digitalizados, PNG, JPG, TIFF)</td><td>Detector CRAFT + reconhecedor latino</td><td>Download manual e importação</td></tr>
       </tbody>
     </table>
@@ -32,16 +32,24 @@
   <p>No gerenciador de modelos, clique em <strong>Baixar</strong> ao lado de um modelo. O Qvault mostra o tamanho e o servidor de origem antes de transferir qualquer coisa. O download vem direto do Hugging Face por HTTPS (nunca de redes ponto a ponto), mostra o progresso real, pode ser cancelado e é conferido contra o tamanho e o SHA-256 abaixo antes de ser aceito.</p>
   <div class="table-scroll">
     <table>
-      <thead><tr><th>Modelo</th><th>Arquivo</th><th>Tamanho</th><th>Licença</th></tr></thead>
+      <thead><tr><th>Modelo</th><th>Arquivo</th><th>Tamanho</th><th>Memória necessária</th><th>Licença</th></tr></thead>
       <tbody>
-        <tr><td>Qwen2.5 0.5B Instruct (Q4_K_M), recomendado</td><td><code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code></td><td>491.400.032 bytes (≈ 491 MB)</td><td>Apache-2.0</td></tr>
-        <tr><td>Qwen2.5 1.5B Instruct (Q4_K_M)</td><td><code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code></td><td>1.117.320.736 bytes (≈ 1,1 GB)</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 1.7B (Q8_0), padrão</td><td><code>qwen3-1.7b-q8_0.gguf</code></td><td>1.834.426.016 bytes (≈ 1,8 GB)</td><td>≈ 2,75 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 0.6B (Q8_0), leve, para computadores de 4–8 GB</td><td><code>qwen3-0.6b-q8_0.gguf</code></td><td>639.446.688 bytes (≈ 639 MB)</td><td>≈ 1,5 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 4B (Q4_K_M), 16 GB ou GPU</td><td><code>qwen3-4b-q4_k_m.gguf</code></td><td>2.497.280.256 bytes (≈ 2,5 GB)</td><td>≈ 3,5 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 8B (Q4_K_M), estações com GPU</td><td><code>qwen3-8b-q4_k_m.gguf</code></td><td>5.027.783.488 bytes (≈ 5,0 GB)</td><td>≈ 6 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen2.5 0.5B Instruct (Q4_K_M), substituído</td><td><code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code></td><td>491.400.032 bytes (≈ 491 MB)</td><td>≈ 1 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen2.5 1.5B Instruct (Q4_K_M), substituído</td><td><code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code></td><td>1.117.320.736 bytes (≈ 1,1 GB)</td><td>≈ 1,75 GB</td><td>Apache-2.0</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="small">SHA-256 (0.5B): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
-  SHA-256 (1.5B): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
-  <p>Em seguida, ative <strong>Usar detecção por IA (camada 3) ao analisar</strong>. As ocorrências encontradas pela IA entram com 70% de confiança e sempre aguardam a sua revisão. Se o mecanismo de IA não estiver disponível ou um trecho falhar, a análise termina mesmo assim com as camadas 1–2 e o visualizador informa o que foi pulado.</p>
+  <p class="small">SHA-256 (<code>qwen3-1.7b-q8_0.gguf</code>): <span class="hash">061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a</span><br>
+  SHA-256 (<code>qwen3-0.6b-q8_0.gguf</code>): <span class="hash">9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031</span><br>
+  SHA-256 (<code>qwen3-4b-q4_k_m.gguf</code>): <span class="hash">7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5</span><br>
+  SHA-256 (<code>qwen3-8b-q4_k_m.gguf</code>): <span class="hash">d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785</span><br>
+  SHA-256 (<code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code>): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
+  SHA-256 (<code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code>): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
+  <p>Em seguida, ative <strong>Usar detecção por IA (camada 3) ao analisar</strong>. As ocorrências encontradas pela IA entram com uma confiança que depende da categoria (80% para nomes, números de identificação, dados bancários e datas de nascimento; 50% para endereços e números de processo) e sempre aguardam a sua revisão. Se o mecanismo de IA não estiver disponível ou um trecho falhar, a análise termina mesmo assim com as camadas 1–2 e o visualizador informa o que foi pulado.</p>
 
   <h2 id="ocr">Modelos de OCR: download e importação</h2>
   <p>O aplicativo não baixa os modelos de OCR. Baixe você mesmo os dois arquivos abaixo, confira-os e importe-os. Isso só precisa ser feito uma vez por computador.</p>
@@ -98,13 +106,13 @@ dd1c7a436e9175904e63683e939635892f45c8c6377d5e14e87cf8b175e10768  latin_g2.gguf<
     <li>Copie os arquivos para uma mídia removível e leve-os à máquina isolada. Confira as somas novamente lá.</li>
     <li>Instale o Qvault e importe cada modelo com <em>Importar de arquivo…</em>. Nenhuma conexão é necessária em momento algum.</li>
   </ol>
-  <p class="small">Arquivos Qwen nas revisões fixadas: <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf">qwen2.5-0.5b-instruct-q4_k_m.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf">qwen2.5-1.5b-instruct-q4_k_m.gguf</a></p>
+  <p class="small">Arquivos Qwen nas revisões fixadas: <a href="https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/90862c4b9d2787eaed51d12237eafdfe7c5f6077/Qwen3-1.7B-Q8_0.gguf">Qwen3-1.7B-Q8_0.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/23749fefcc72300e3a2ad315e1317431b06b590a/Qwen3-0.6B-Q8_0.gguf">Qwen3-0.6B-Q8_0.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/bc640142c66e1fdd12af0bd68f40445458f3869b/Qwen3-4B-Q4_K_M.gguf">Qwen3-4B-Q4_K_M.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/7c41481f57cb95916b40956ab2f0b139b296d974/Qwen3-8B-Q4_K_M.gguf">Qwen3-8B-Q4_K_M.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf">qwen2.5-0.5b-instruct-q4_k_m.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf">qwen2.5-1.5b-instruct-q4_k_m.gguf</a></p>
 
   <h2 id="trouble">Solução de problemas</h2>
   <ul>
     <li><strong>“Arquivo de modelo não reconhecido”.</strong> O hash do arquivo não corresponde a nenhum modelo conhecido pelo Qvault. Geralmente é um download incompleto: baixe de novo e confira o hash. Não aceite um arquivo desconhecido como modelo de OCR.</li>
     <li><strong>“O mecanismo de IA não está incluído nesta versão”.</strong> Você está usando uma compilação sem o processo auxiliar do QVAC (por exemplo, um <code>cargo build</code> simples). As camadas 1–2 continuam funcionando; use uma versão oficial para IA e OCR.</li>
-    <li><strong>“Provavelmente grande demais para este computador”.</strong> O Qvault verifica se um modelo cabe na memória antes de carregá-lo. Use o modelo 0.5B.</li>
+    <li><strong>“Provavelmente grande demais para este computador”.</strong> O Qvault verifica se um modelo cabe na memória antes de carregá-lo. Escolha um modelo menor, como o Qwen3 0.6B. O gerenciador de modelos mostra, antes do download, a memória que cada modelo precisa e a do seu computador.</li>
     <li><strong>Windows.</strong> O mecanismo do QVAC precisa de um driver Vulkan recente mesmo para inferência na CPU. Em máquinas virtuais ou com placas de vídeo muito antigas, IA e OCR podem ficar indisponíveis; as camadas 1–2 não são afetadas.</li>
   </ul>
 </article>
