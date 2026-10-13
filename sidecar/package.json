@@ -16,6 +16,7 @@
     "@qvac/langdetect-text": "0.1.2",
     "@qvac/llm-llamacpp": "0.55.0",
     "@qvac/ocr-ggml": "0.26.0",
+    "@qvac/onnx": "0.15.1",
     "bare-fs": "4.8.4",
     "bare-path": "3.1.2",
     "bare-process": "4.5.1",

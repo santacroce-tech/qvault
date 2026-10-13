@@ -1,5 +1,6 @@
-// Qvault QVAC sidecar — Bare + @qvac/inference 0.21.0 behind a JSON-lines
-// protocol on stdin/stdout. See docs/qvac-integration.md §4.1.
+// Qvault QVAC sidecar — Bare + @qvac/inference 0.21.0 (+ @qvac/onnx 0.15.1
+// for token classification) behind a JSON-lines protocol on stdin/stdout.
+// See docs/qvac-integration.md §4.1 and §15.
 //
 // Invariants (do not relax without updating the design doc):
 //   * stdio only: this process never opens a listening socket and never
@@ -17,7 +18,7 @@ globalThis.process = process
 import fs from 'bare-fs'
 import path from 'bare-path'
 
-const SIDECAR_VERSION = '0.1.0'
+const SIDECAR_VERSION = '0.2.0'
 const INFERENCE_VERSION = '0.21.0'
 const PROTOCOL = 1
 
@@ -81,6 +82,26 @@ const { llmPlugin } = await import('@qvac/inference/llamacpp-completion/plugin')
 const { embeddingsPlugin } = await import('@qvac/inference/llamacpp-embedding/plugin')
 const sdk = qvac.plugins([ocrPlugin, llmPlugin, embeddingsPlugin])
 
+// Second inference engine (docs/qvac-integration.md §15): QVAC's generic
+// ONNX Runtime addon, for token-classification models (OpenAI Privacy
+// Filter). Loaded defensively: if this platform has no working prebuild the
+// worker still starts, and `hello` reports `onnx: false` so the app falls
+// back to the LLM / Layers 1–2.
+const ONNX_VERSION = '0.15.1'
+let onnx = null
+let onnxError = null
+try {
+  const mod = await import('@qvac/onnx')
+  onnx = mod.default || mod
+  // ORT's own logger writes to stdout; keep it to fatal errors only so it
+  // cannot interleave with protocol lines (Rust ignores non-JSON lines).
+  onnx.configureEnvironment({ loggingLevel: 'fatal', loggingId: 'qvault' })
+} catch (e) {
+  onnx = null
+  onnxError = (e && e.message) ? String(e.message).slice(0, 200) : 'failed to load'
+  process.stderr.write(`[sidecar] ONNX addon unavailable: ${onnxError}\n`)
+}
+
 // ── validation helpers ───────────────────────────────────────────────────
 class ProtocolError extends Error {
   constructor (code, message) { super(message); this.code = code }
@@ -137,6 +158,18 @@ const CONFIG_KEYS = {
 const EMBED_MAX_ITEMS = 256
 const EMBED_MAX_CHARS = 2000
 
+// Token classification (ONNX). One request is one window of token ids, as
+// produced by the app's tokenizer; the bound matches the model's 4,096-token
+// window (opf's CPU default), and ids must fit the model's vocabulary.
+const CLASSIFY_MAX_TOKENS = 4096
+const CLASSIFY_MAX_ID = 262143
+// Config keys for token-classifier sessions. The execution provider is not
+// configurable: always CPU (measured: CoreML is slower for this model).
+const CLASSIFIER_CONFIG_KEYS = { threads: 'int' }
+// modelId -> { handle, labels }
+const onnxSessions = new Map()
+let nextOnnxId = 1
+
 function sanitizeConfig (type, config) {
   if (config == null) return {}
   if (typeof config !== 'object' || Array.isArray(config)) {
@@ -187,6 +220,56 @@ function errorPayload (e) {
   return { error: { code: 'INTERNAL', message: msg } }
 }
 
+// ── token classifier (ONNX) ───────────────────────────────────────────────
+// @qvac/onnx's C++ logger prints a few INFO/DEBUG lines to stdout (not
+// configurable at run time) while a session is created. Rust skips non-JSON
+// lines, but a native print must never land inside a protocol line that is
+// still being written, so pending stdout writes are drained first; the native
+// calls are synchronous, so no protocol write can start during them.
+function drainStdout () {
+  return new Promise((resolve) => process.stdout.write('', resolve))
+}
+
+async function loadClassifier (params) {
+  if (!onnx) throw new ProtocolError('UNAVAILABLE', 'the ONNX engine is not available on this platform')
+  const modelPath = requireLocalPath(params.path, 'path')
+  if (!modelPath.toLowerCase().endsWith('.onnx')) {
+    throw new ProtocolError('BAD_PARAMS', 'path must name an .onnx file')
+  }
+  const config = params.config == null ? {} : params.config
+  if (typeof config !== 'object' || Array.isArray(config)) throw new ProtocolError('BAD_PARAMS', 'config must be an object')
+  for (const [k, v] of Object.entries(config)) {
+    if (!CLASSIFIER_CONFIG_KEYS[k]) throw new ProtocolError('BAD_PARAMS', `config key not allowed: ${k}`)
+    if (!Number.isInteger(v) || v < 0 || v > 256) throw new ProtocolError('BAD_PARAMS', `config.${k} must be a small integer`)
+  }
+  await drainStdout()
+  const started = Date.now()
+  // ONNX Runtime reads the external weights file (`<name>.onnx_data`) from
+  // the model's own directory; nothing else is opened.
+  const handle = onnx.createSession(modelPath, {
+    provider: 'cpu',
+    optimization: 'all',
+    intraOpThreads: config.threads || 0
+  })
+  const inputs = onnx.getInputInfo(handle).map((i) => i.name)
+  const outputs = onnx.getOutputInfo(handle)
+  if (!inputs.includes('input_ids') || !inputs.includes('attention_mask') || outputs.length === 0) {
+    onnx.destroySession(handle)
+    throw new ProtocolError('BAD_PARAMS', 'not a token-classification model (expects input_ids, attention_mask -> logits)')
+  }
+  const modelId = `onnx-${nextOnnxId++}`
+  onnxSessions.set(modelId, { handle })
+  logMeta(`loaded token-classifier model in ${Date.now() - started} ms`)
+  return { modelId }
+}
+
+function destroyOnnxSessions () {
+  for (const [, s] of onnxSessions) {
+    try { onnx.destroySession(s.handle) } catch {}
+  }
+  onnxSessions.clear()
+}
+
 // ── methods ──────────────────────────────────────────────────────────────
 const methods = {
   async hello () {
@@ -195,13 +278,16 @@ const methods = {
       sidecar: SIDECAR_VERSION,
       inference: INFERENCE_VERSION,
       platform: `${process.platform}-${process.arch}`,
-      plugins: ['ocr', 'llm', 'embeddings']
+      plugins: onnx ? ['ocr', 'llm', 'embeddings', 'token-classifier'] : ['ocr', 'llm', 'embeddings'],
+      onnx: onnx ? ONNX_VERSION : null,
+      onnxError: onnx ? null : onnxError
     }
   },
 
   async loadModel (params, ctx) {
     const type = params.type
-    if (!MODEL_TYPES[type]) throw new ProtocolError('BAD_PARAMS', 'type must be one of ocr|llm|embeddings')
+    if (type === 'token-classifier') return loadClassifier(params)
+    if (!MODEL_TYPES[type]) throw new ProtocolError('BAD_PARAMS', 'type must be one of ocr|llm|embeddings|token-classifier')
     const modelSrc = requireLocalPath(params.path, 'path')
     const modelConfig = sanitizeConfig(type, params.config)
     if (type === 'ocr' && !modelConfig.detectorModelSrc) {
@@ -218,9 +304,55 @@ const methods = {
 
   async unloadModel (params) {
     const modelId = requireString(params.modelId, 'modelId')
+    if (onnxSessions.has(modelId)) {
+      const sess = onnxSessions.get(modelId)
+      onnxSessions.delete(modelId)
+      onnx.destroySession(sess.handle)
+      return { ok: true }
+    }
     // clearStorage:false — never let QVAC delete files it did not download.
     await sdk.unloadModel({ modelId, clearStorage: false })
     return { ok: true }
+  },
+
+  // Run a token classifier on one window of token ids. Returns the raw
+  // logits, row-major [tokens, labels], as base64 little-endian float32 (exact
+  // and ~4x smaller than JSON numbers). Decoding happens in the app.
+  async classify (params, ctx) {
+    if (!onnx) throw new ProtocolError('UNAVAILABLE', 'the ONNX engine is not available on this platform')
+    const modelId = requireString(params.modelId, 'modelId')
+    const sess = onnxSessions.get(modelId)
+    if (!sess) throw new ProtocolError('MODEL_NOT_LOADED', 'model not loaded')
+    const ids = params.inputIds
+    if (!Array.isArray(ids) || ids.length === 0 || ids.length > CLASSIFY_MAX_TOKENS) {
+      throw new ProtocolError('BAD_PARAMS', `inputIds must hold 1..${CLASSIFY_MAX_TOKENS} token ids`)
+    }
+    const n = ids.length
+    const x = new BigInt64Array(n)
+    for (let i = 0; i < n; i++) {
+      const v = ids[i]
+      if (!Number.isInteger(v) || v < 0 || v > CLASSIFY_MAX_ID) {
+        throw new ProtocolError('BAD_PARAMS', 'inputIds must be non-negative integers within the vocabulary')
+      }
+      x[i] = BigInt(v)
+    }
+    ctx.entry.kind = 'classify'
+    await drainStdout()
+    const mask = new BigInt64Array(n).fill(1n)
+    // Synchronous native call (~0.2 s per page); a cancel arriving meanwhile
+    // is handled after it returns and drops the result.
+    const out = onnx.run(sess.handle, [
+      { name: 'input_ids', shape: [1, n], type: 'int64', data: x },
+      { name: 'attention_mask', shape: [1, n], type: 'int64', data: mask }
+    ])
+    const logits = out.find((o) => o.name === 'logits') || out[0]
+    if (!logits || logits.type !== 'float32' || !logits.data || logits.data.length % n !== 0) {
+      throw new ProtocolError('INTERNAL', 'unexpected classifier output')
+    }
+    const labels = logits.data.length / n
+    const data = logits.data
+    const b64 = Buffer.from(data.buffer, data.byteOffset, data.byteLength).toString('base64')
+    return { shape: [n, labels], logits: b64 }
   },
 
   async ocr (params, ctx) {
@@ -355,6 +487,7 @@ const methods = {
       entry.cancelled = true
       finish(id, { error: { code: 'CANCELLED', message: 'shutting down' } })
     }
+    destroyOnnxSessions()
     try { await qvac.close() } catch {}
     wipeTmp()
     return { bye: true }
@@ -408,10 +541,11 @@ process.stdin.on('data', (chunk) => {
 })
 process.stdin.on('end', async () => {
   // Parent went away: release native resources and exit.
+  destroyOnnxSessions()
   try { await qvac.close() } catch {}
   wipeTmp()
   process.exit(0)
 })
 
 wipeTmp()
-send({ ready: true, version: `qvac-sidecar ${SIDECAR_VERSION} / @qvac/inference ${INFERENCE_VERSION}`, protocol: PROTOCOL })
+send({ ready: true, version: `qvac-sidecar ${SIDECAR_VERSION} / @qvac/inference ${INFERENCE_VERSION}` + (onnx ? ` / @qvac/onnx ${ONNX_VERSION}` : ''), protocol: PROTOCOL })

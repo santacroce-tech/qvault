@@ -55,6 +55,26 @@ along with their copyright notices.
    License: Apache-2.0 / MIT
    Source: https://github.com/algesten/ureq
 
+7. @qvac/onnx 0.15.1 (QVAC's ONNX Runtime addon for Bare; runs the
+   Privacy Filter token classifier inside the QVAC sidecar)
+   Copyright 2026 Tether Data, S.A. de C.V.
+   License: Apache-2.0
+   Source: https://github.com/tetherto/qvac/tree/main/packages/onnx
+   NOTICE (ships unmodified under qvac-worker/node_modules/@qvac/onnx/):
+     "@qvac/onnx
+      Copyright 2026 Tether Data, S.A. de C.V.
+
+      This product includes third-party components under their
+      respective licenses. @qvac/onnx itself is licensed under
+      Apache-2.0; bundled dependencies are governed by the licenses
+      listed below.
+
+      C++ Dependencies
+      --- mit (MIT License) ---
+        onnxruntime
+          https://github.com/microsoft/onnxruntime"
+   ONNX Runtime: Copyright (c) Microsoft Corporation, MIT License.
+
 ────────────────────────────────────────────────────────────────────────
 
 AI MODELS (not bundled; downloaded or imported only at the user's request)
