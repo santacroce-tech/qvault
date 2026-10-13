@@ -16,14 +16,7 @@ Last updated: 2026-10-13.
 | 2 | OCR for scanned PDFs and images | QVAC OCR (CRAFT + Latin recognizer), import-only models from the `ocr-models-v1` release. |
 | 3 | Eval harness, Layer 1 fixes, Layer 3 quality | Qwen3-1.7B is the default. Layers 1–2 eval runs in CI against a baseline. |
 | 4 | Entity groups and known-entity suggestions | Rules first; the optional embedding model (Nomic Embed Text v2) did not change results on the eval set. |
-
-## In progress
-
-- **Learn from review decisions** (replaces the LoRA fine-tuning of Phase 5):
-  findings rejected before are marked and can be rejected in one click; a
-  user-managed "Not personal data" list that a firm can export and share;
-  few-shot examples from past decisions in the Layer 3 prompt, shipped only
-  if the eval shows it helps.
+| 5′ | Learn from review decisions (replaces LoRA) | Rejected-before marking and a user-managed “Not personal data” list (0 labelled items suppressed on the eval set, a CI test). Few-shot examples in the Layer 3 prompt were measured and not shipped: no better than a placebo prompt change, and held-out F1 dropped. |
 
 ## Next
 
@@ -47,8 +40,9 @@ Then, ordered by expected value.
    tuning. Add held-out documents written by someone else, and real-world
    layouts (letterheads, tables, signatures).
 3. **Check the new screens in the real app.** The entity group screens
-   (merge, split, proposals) were checked only in the browser preview with
-   mock data.
+   (merge, split, proposals) and the review-decision screens (sidebar marks,
+   Settings list, import/export) were checked only in the browser preview
+   with mock data.
 4. **Benchmarks beyond Apple Silicon.** Layer 3, OCR and embedding speed and
    memory were measured only on an M4 Pro with Metal. Measure CPU-only,
    Windows (Vulkan) and Linux, and adjust the model notes and memory estimates.
@@ -60,6 +54,10 @@ Then, ordered by expected value.
 ## Backlog
 
 ### Detection
+
+- Rejecting one occurrence does not mark other pending occurrences of the
+  same string in the same document; a string typed as a name by one layer and
+  a company by another needs two list entries.
 
 - Scanned pages: the new address and phone patterns break on OCR line wraps
   (scan finds 92 % of text-layer detections, down from 98 %). Join wrapped
@@ -91,7 +89,7 @@ Then, ordered by expected value.
 - Decide whether to retire qvault.tech (`landing/` + `deploy-website.yml`) or
   point it at the GitHub Pages site.
 - Set the repository's About homepage link.
-- User docs for entity groups and decision memory on the website (the Model
+- User docs for entity groups and the “Not personal data” list on the website (the Model
   Manager, OCR and offline setup are already covered on the Models page).
 
 ## Parked

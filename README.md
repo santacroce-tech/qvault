@@ -45,6 +45,12 @@ Free and open source under the [MIT License](LICENSE).
   detectors missed are suggested as pending redactions. An optional embedding
   model (Nomic Embed Text v2) adds similarity proposals; rules alone work
   without it.
+- **Learns from your reviews.** Findings you rejected before are marked and
+  sorted last (never hidden), with a one-click "reject all previously
+  rejected". A "Not personal data" list, filled only by your explicit
+  choice, suppresses those strings in later scans (always counted and
+  restorable) and can be exported and shared within a firm. Decisions and
+  the list are stored unencrypted in the app data folder.
 - **OCR.** QVAC OCR (EasyOCR CRAFT text detector + Latin recognizer, GGUF)
   for Latin-script text; recognised text goes through the same layers and
   review.
