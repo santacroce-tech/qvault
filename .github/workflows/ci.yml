@@ -74,7 +74,7 @@ jobs:
       # Layers 1-2, against eval/entity-baseline.json.
       - name: Entity eval (no model) vs baseline
         working-directory: src-tauri
-        run: cargo test --locked --test eval_harness entities:: -- --nocapture
+        run: 'cargo test --locked --test eval_harness entities:: -- --nocapture'
 
       - name: Upload eval report
         if: always()
