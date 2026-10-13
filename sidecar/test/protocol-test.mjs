@@ -149,6 +149,27 @@ if (llm && existsSync(llm)) {
   console.log('skip LLM (set QVAC_LLM)')
 }
 
+const embedModel = process.env.QVAC_EMBED
+if (embedModel && existsSync(embedModel)) {
+  let t = Date.now()
+  const load = await rpc('loadModel', { path: embedModel, type: 'embeddings', config: { gpuLayers: 99 } })
+  assert.ok(load.result, JSON.stringify(load.error))
+  console.log(`embed load ${Date.now() - t} ms`)
+  assert.equal((await rpc('embed', { modelId: load.result.modelId, text: [] })).error.code, 'BAD_PARAMS')
+  assert.equal((await rpc('embed', { modelId: load.result.modelId, text: ['x'.repeat(2001)] })).error.code, 'BAD_PARAMS')
+  t = Date.now()
+  const out = await rpc('embed', { modelId: load.result.modelId, text: ['Maria Santos', 'Santos, Maria', 'Acme Holdings LLC'] })
+  assert.ok(out.result, JSON.stringify(out.error))
+  const [a, b, c] = out.result.embedding
+  const dot = (x, y) => x.reduce((s, v, i) => s + v * y[i], 0)
+  console.log(`embed ${Date.now() - t} ms, dim ${a.length}; cos(name, reordered) ${dot(a, b).toFixed(3)} cos(name, company) ${dot(a, c).toFixed(3)}`)
+  assert.ok(Math.abs(dot(a, a) - 1) < 1e-3, 'vectors are L2-normalised')
+  assert.ok(dot(a, b) > dot(a, c))
+  await rpc('unloadModel', { modelId: load.result.modelId })
+} else {
+  console.log('skip embeddings (set QVAC_EMBED)')
+}
+
 const sockets = inetSockets()
 assert.equal(sockets, '', `sidecar holds inet sockets:\n${sockets}`)
 console.log('no inet sockets')
