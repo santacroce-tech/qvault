@@ -165,7 +165,6 @@ mod with_sidecar {
         }
         let (svc, root) = service("golden");
         let session = svc.prepare_privacy_filter().expect("Privacy Filter loads");
-        let reference = fixture("reference_spans.json");
         let pages = eval_pages();
         let mut checked = 0;
         let t = std::time::Instant::now();
@@ -242,6 +241,76 @@ mod with_sidecar {
         }
         eprintln!("{} reference spans checked", checked);
         svc.shutdown();
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    /// Import from a folder in the Hugging Face layout (tokenizer.json and
+    /// viterbi_calibration.json at the root, the ONNX files under onnx/;
+    /// other files ignored), then from single files one at a time.
+    #[test]
+    fn folder_and_file_imports_install_the_model() {
+        let Some(dir) = model_dir() else {
+            eprintln!("skipping: set QVAULT_PF_MODEL_DIR");
+            return;
+        };
+        use app_lib::qvac::models::{ImportOutcome, ModelStore};
+        let root = std::env::temp_dir().join(format!("qvault-pf-import-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let store = ModelStore::new(&root);
+        let pf = catalog::privacy_filter();
+        let t = std::time::Instant::now();
+        let sum = store.import_paths(&[dir.clone()], None).expect("folder import");
+        eprintln!("folder import in {:.1}s: {:?}", t.elapsed().as_secs_f64(), sum);
+        assert!(matches!(&sum.outcomes[..], [ImportOutcome::Installed { id }] if id == pf.id));
+        assert!(sum.ignored > 0, "the folder's other files (README, other quantisations) are ignored");
+        assert!(store.is_installed(pf));
+        assert_eq!(store.verify_model(pf).unwrap(), None);
+        store.delete(pf.id).unwrap();
+        assert!(!store.is_installed(pf));
+        // one file at a time: incomplete until the last one
+        let files = [dir.join("tokenizer.json"), dir.join("viterbi_calibration.json"), dir.join("onnx/model_quantized.onnx")];
+        for f in &files {
+            assert!(matches!(store.import(f, false).unwrap(), ImportOutcome::Incomplete { .. }));
+        }
+        assert!(matches!(store.import(&dir.join("onnx/model_quantized.onnx_data"), false).unwrap(), ImportOutcome::Installed { .. }));
+        assert!(store.is_installed(pf));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    /// Real download from Hugging Face (1.65 GB): cancel once, then download
+    /// fully and verify. Opt-in: QVAULT_PF_DOWNLOAD_IT=1.
+    #[test]
+    fn download_cancel_then_install() {
+        if std::env::var("QVAULT_PF_DOWNLOAD_IT").map(|v| v != "1").unwrap_or(true) {
+            eprintln!("skipping: set QVAULT_PF_DOWNLOAD_IT=1 (downloads 1.65 GB)");
+            return;
+        }
+        use app_lib::qvac::client::CancelToken;
+        use app_lib::qvac::models::{ModelError, ModelStore};
+        let root = std::env::temp_dir().join(format!("qvault-pf-dl-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let store = ModelStore::new(&root);
+        let pf = catalog::privacy_filter();
+        let cancel = CancelToken::new();
+        let c2 = cancel.clone();
+        let err = store
+            .download(pf, &cancel, move |rx, _total| {
+                if rx > 50_000_000 {
+                    c2.cancel();
+                }
+            })
+            .unwrap_err();
+        assert_eq!(err, ModelError::Cancelled);
+        assert!(!store.is_installed(pf));
+        assert!(!root.join("models/.partial/openai-privacy-filter-int8").exists(), "staging removed after cancel");
+        let t = std::time::Instant::now();
+        let mut last = (0u64, 0u64);
+        let path = store.download(pf, &CancelToken::new(), |rx, total| last = (rx, total)).expect("download");
+        eprintln!("downloaded {} bytes in {:.0}s", last.0, t.elapsed().as_secs_f64());
+        assert_eq!(last, (pf.total_size(), pf.total_size()));
+        assert!(path.ends_with("openai-privacy-filter-int8/model_quantized.onnx"));
+        assert!(store.is_installed(pf));
+        assert_eq!(store.verify_model(pf).unwrap(), None);
         let _ = std::fs::remove_dir_all(root);
     }
 
