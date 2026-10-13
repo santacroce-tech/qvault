@@ -149,9 +149,63 @@ pub fn es_dni_nie(m: &str) -> Option<(usize, f64)> {
     (DNI_LETTERS[(n % 23) as usize] == b[8]).then(|| (m.len(), 0.95))
 }
 
+/// Brazilian CPF (11 digits, two mod-11 check digits). Used to type
+/// Privacy Filter's untyped `account_number` spans; Layer 1's own CPF pattern
+/// relies on the 000.000.000-00 layout instead.
+pub fn br_cpf(m: &str) -> Option<(usize, f64)> {
+    let d = digits(m);
+    if d.len() != 11 || d.iter().all(|&x| x == d[0]) {
+        return None;
+    }
+    let dv = |n: usize| -> u32 {
+        let s: u32 = (0..n).map(|i| d[i] * (n as u32 + 1 - i as u32)).sum();
+        (s * 10 % 11) % 10
+    };
+    (dv(9) == d[9] && dv(10) == d[10]).then(|| (m.len(), 0.95))
+}
+
+/// Brazilian CNPJ (14 digits, two mod-11 check digits).
+pub fn br_cnpj(m: &str) -> Option<(usize, f64)> {
+    let d = digits(m);
+    if d.len() != 14 || d.iter().all(|&x| x == d[0]) {
+        return None;
+    }
+    let dv = |w: &[u32]| -> u32 {
+        let s: u32 = w.iter().zip(&d).map(|(a, b)| a * b).sum();
+        if s % 11 < 2 { 0 } else { 11 - s % 11 }
+    };
+    let ok = dv(&[5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]) == d[12] && dv(&[6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]) == d[13];
+    ok.then(|| (m.len(), 0.95))
+}
+
+/// Portuguese NIF / NIPC (9 digits, mod-11 check digit, valid first digit).
+pub fn pt_nif(m: &str) -> Option<(usize, f64)> {
+    let d = digits(m);
+    if d.len() != 9 || ![1, 2, 3, 5, 6, 8, 9].contains(&d[0]) {
+        return None;
+    }
+    let s: u32 = (0..8).map(|i| d[i] * (9 - i as u32)).sum();
+    let c = 11 - s % 11;
+    ((if c >= 10 { 0 } else { c }) == d[8]).then(|| (m.len(), 0.95))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn br_and_pt_numbers() {
+        assert!(br_cpf("222.333.444-05").is_some());
+        assert!(br_cpf("22233344405").is_some());
+        assert!(br_cpf("222.333.444-06").is_none());
+        assert!(br_cpf("111.111.111-11").is_none(), "repeated digits are not issued");
+        assert!(br_cnpj("11.222.333/0001-81").is_some());
+        assert!(br_cnpj("11.222.333/0001-82").is_none());
+        assert!(pt_nif("123456789").is_some());
+        assert!(pt_nif("123 456 789").is_some());
+        assert!(pt_nif("123456780").is_none());
+        assert!(pt_nif("423456789").is_none(), "no NIF starts with 4");
+    }
 
     #[test]
     fn luhn_and_cards() {

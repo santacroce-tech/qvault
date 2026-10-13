@@ -75,6 +75,21 @@ along with their copyright notices.
           https://github.com/microsoft/onnxruntime"
    ONNX Runtime: Copyright (c) Microsoft Corporation, MIT License.
 
+8. OpenAI Privacy Filter reference code ("opf"), decoding logic
+   Copyright: OpenAI
+   License: Apache-2.0
+   Source: https://github.com/openai/privacy-filter
+           (commit f7f00ca7fb869683eb732c010299d901457f19c3)
+   src-tauri/src/privacy_filter/decoder.rs is a Rust port of opf's
+   ViterbiCRFDecoder (opf/_core/decoding.py), labels_to_spans,
+   token_spans_to_char_spans and trim_char_spans_whitespace
+   (opf/_core/spans.py) and _select_non_overlapping_spans
+   (opf/_core/runtime.py). Changes: rewritten in Rust; offsets are UTF-8
+   bytes instead of Python characters; label space fixed to the published
+   model's. src-tauri/src/privacy_filter/tokenizer.rs follows tiktoken's
+   (MIT, Copyright (c) 2022 OpenAI, Shantanu Jain) byte-pair merge
+   algorithm and o200k_base pre-tokenizer pattern.
+
 ────────────────────────────────────────────────────────────────────────
 
 AI MODELS (not bundled; downloaded or imported only at the user's request)

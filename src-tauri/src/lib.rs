@@ -8,6 +8,7 @@ pub mod pipeline;
 pub mod storage;
 pub mod llm;
 pub mod ocr;
+pub mod privacy_filter;
 #[cfg(desktop)]
 pub mod qvac;
 
