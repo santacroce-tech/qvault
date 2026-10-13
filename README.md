@@ -33,9 +33,12 @@ Free and open source under the [MIT License](LICENSE).
      EIN), EU (VAT), BR (CPF, CNPJ, CEP) and DE (Steuernummer).
   2. *Heuristics*: names of people, company names with legal suffixes, and
      addresses.
-  3. *Local AI (optional)*: a small LLM via Tether's
-     [QVAC](https://github.com/tetherto/qvac) SDK (Qwen3-1.7B by default;
-     0.6B, 4B and 8B optional) running in the bundled sidecar. Desktop only.
+  3. *Local AI (optional)*: OpenAI Privacy Filter by default, a PII
+     detection model that labels a page in about 0.2 s on CPU, with an
+     optional thorough pass by a small LLM (Qwen3-1.7B; 0.6B, 4B and 8B
+     also available). Both run through Tether's
+     [QVAC](https://github.com/tetherto/qvac) SDK in the bundled sidecar.
+     Desktop only.
 - **Review first.** Every detection goes to review with its confidence and
   source layer. Nothing is redacted automatically. Manual redactions and a
   metadata-only audit log.
@@ -71,10 +74,10 @@ Free and open source under the [MIT License](LICENSE).
 - [QVAC](https://github.com/tetherto/qvac) by Tether (Apache-2.0): local AI SDK; runs Layer 3 and OCR
   in the bundled sidecar.
 - [OpenAI Privacy Filter](https://huggingface.co/openai/privacy-filter) ([GitHub](https://github.com/openai/privacy-filter), Apache-2.0): open-weight
-  PII detection model, measured in [eval/reports/privacy-filter.md](eval/reports/privacy-filter.md)
-  and being integrated as the default Layer 3 detector through QVAC's ONNX
-  add-on.
-- [Qwen3](https://huggingface.co/Qwen/Qwen3-1.7B-GGUF) (Apache-2.0): current default Layer 3 model.
+  PII detection model; the default Layer 3 detector, run through QVAC's ONNX
+  add-on ([eval report](eval/reports/privacy-filter-layer3.md)). The
+  decoder is a port of OpenAI's reference code.
+- [Qwen3](https://huggingface.co/Qwen/Qwen3-1.7B-GGUF) (Apache-2.0): optional thorough Layer 3 pass.
 - [EasyOCR](https://github.com/JaidedAI/EasyOCR) (Apache-2.0) and [CRAFT](https://github.com/clovaai/CRAFT-pytorch) (MIT): OCR models.
 - [Nomic Embed Text v2](https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF) (Apache-2.0): optional embeddings for entity
   grouping.
@@ -115,8 +118,8 @@ them once.
    recognises them by SHA-256.
 
 Air-gapped machines: download and verify the files on a connected computer,
-copy them over on removable media, verify again, and import. The Qwen LLM
-files can be imported the same way. Full instructions:
+copy them over on removable media, verify again, and import. The Privacy Filter
+and Qwen files can be imported the same way. Full instructions:
 [Models and setup](https://santacroce-tech.github.io/qvault/models.html).
 
 ## Build from source

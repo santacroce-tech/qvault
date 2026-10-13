@@ -85,8 +85,8 @@
       </div>
       <div class="card">
         <h3><span class="num">3</span> Local AI <span class="tag">optional</span></h3>
-        <p>A small language model reads the text in chunks and suggests personal data that rules miss. It runs through Tether’s <a href="https://github.com/tetherto/qvac">QVAC</a> SDK in a bundled helper process that talks to Qvault over standard input/output and opens no network sockets.</p>
-        <p class="meta">Qwen3-1.7B by default; 0.6B, 4B and 8B optional · desktop only</p>
+        <p>OpenAI Privacy Filter labels each page in one pass and suggests personal data that rules miss; an optional thorough pass with a small language model can follow. It runs through Tether’s <a href="https://github.com/tetherto/qvac">QVAC</a> SDK in a bundled helper process that talks to Qvault over standard input/output and opens no network sockets.</p>
+        <p class="meta">Privacy Filter by default; Qwen3 for the thorough pass · desktop only</p>
       </div>
     </div>
   </div>
@@ -225,13 +225,13 @@
         <p class="meta"><a href="https://github.com/tetherto/qvac">github.com/tetherto/qvac</a> · Apache-2.0</p>
       </div>
       <div class="card">
-        <h3>OpenAI Privacy Filter <span class="tag">in integration</span></h3>
-        <p>An open-weight model built for finding personal data: it labels a whole page in one pass and returns exact spans. We measured it on our test set and are integrating it as the default AI detector, run through QVAC’s ONNX add-on.</p>
+        <h3>OpenAI Privacy Filter <span class="tag">default</span></h3>
+        <p>An open-weight model built for finding personal data: it labels a whole page in one pass and returns exact spans. It is Qvault’s default AI detector, run through QVAC’s ONNX add-on: on our test set it found more and suggested fewer false positives than Qwen3-1.7B, at about 0.2 seconds per page on CPU.</p>
         <p class="meta"><a href="https://huggingface.co/openai/privacy-filter">Hugging Face</a> · <a href="https://github.com/openai/privacy-filter">GitHub</a> · Apache-2.0</p>
       </div>
       <div class="card">
         <h3>Qwen3</h3>
-        <p>Language models by the Qwen team. Qwen3-1.7B is the current default for Layer 3; 0.6B, 4B and 8B are optional.</p>
+        <p>Language models by the Qwen team. Used for the optional thorough pass of Layer 3: Qwen3-1.7B by default, 0.6B, 4B and 8B also available.</p>
         <p class="meta"><a href="https://huggingface.co/Qwen/Qwen3-1.7B-GGUF">Hugging Face</a> · Apache-2.0</p>
       </div>
       <div class="card">

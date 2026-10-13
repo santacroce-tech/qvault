@@ -85,8 +85,8 @@
       </div>
       <div class="card">
         <h3><span class="num">3</span> IA local <span class="tag">opcional</span></h3>
-        <p>Un modelo de lenguaje pequeño lee el texto por fragmentos y propone datos personales que las reglas no detectan. Funciona con el SDK <a href="https://github.com/tetherto/qvac">QVAC</a> de Tether en un proceso auxiliar incluido en la aplicación, que se comunica con Qvault por entrada y salida estándar y no abre ningún socket de red.</p>
-        <p class="meta">Qwen3-1.7B por defecto; 0.6B, 4B y 8B opcionales · solo escritorio</p>
+        <p>OpenAI Privacy Filter etiqueta cada página de una vez y propone datos personales que las reglas no detectan; después puede ejecutarse una revisión exhaustiva opcional con un modelo de lenguaje pequeño. Funciona con el SDK <a href="https://github.com/tetherto/qvac">QVAC</a> de Tether en un proceso auxiliar incluido en la aplicación, que se comunica con Qvault por entrada y salida estándar y no abre ningún socket de red.</p>
+        <p class="meta">Privacy Filter por defecto; Qwen3 para la revisión exhaustiva · solo escritorio</p>
       </div>
     </div>
   </div>
@@ -225,13 +225,13 @@
         <p class="meta"><a href="https://github.com/tetherto/qvac">github.com/tetherto/qvac</a> · Apache-2.0</p>
       </div>
       <div class="card">
-        <h3>OpenAI Privacy Filter <span class="tag">en integración</span></h3>
-        <p>Un modelo de pesos abiertos diseñado para encontrar datos personales: etiqueta una página entera de una vez y devuelve los fragmentos exactos. Lo hemos medido con nuestro conjunto de prueba y lo estamos integrando como detector de IA por defecto, a través del complemento ONNX de QVAC.</p>
+        <h3>OpenAI Privacy Filter <span class="tag">por defecto</span></h3>
+        <p>Un modelo de pesos abiertos diseñado para encontrar datos personales: etiqueta una página entera de una vez y devuelve los fragmentos exactos. Es el detector de IA por defecto de Qvault, a través del complemento ONNX de QVAC: en nuestro conjunto de prueba encontró más datos y propuso menos falsos positivos que Qwen3-1.7B, con unos 0,2 segundos por página en CPU.</p>
         <p class="meta"><a href="https://huggingface.co/openai/privacy-filter">Hugging Face</a> · <a href="https://github.com/openai/privacy-filter">GitHub</a> · Apache-2.0</p>
       </div>
       <div class="card">
         <h3>Qwen3</h3>
-        <p>Modelos de lenguaje del equipo Qwen. Qwen3-1.7B es el modelo actual por defecto de la capa 3; 0.6B, 4B y 8B son opcionales.</p>
+        <p>Modelos de lenguaje del equipo Qwen. Se usan en la revisión exhaustiva opcional de la capa 3: Qwen3-1.7B por defecto, y también 0.6B, 4B y 8B.</p>
         <p class="meta"><a href="https://huggingface.co/Qwen/Qwen3-1.7B-GGUF">Hugging Face</a> · Apache-2.0</p>
       </div>
       <div class="card">

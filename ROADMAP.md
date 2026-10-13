@@ -5,7 +5,7 @@ Engineering detail for finished work is in
 [docs/qvac-integration.md](docs/qvac-integration.md); measurements are in
 [eval/](eval/README.md).
 
-Last updated: 2026-10-13.
+Last updated: 2026-10-13 (Privacy Filter default).
 
 ## Done
 
@@ -17,6 +17,7 @@ Last updated: 2026-10-13.
 | 3 | Eval harness, Layer 1 fixes, Layer 3 quality | Qwen3-1.7B is the default. Layers 1–2 eval runs in CI against a baseline. |
 | 4 | Entity groups and known-entity suggestions | Rules first; the optional embedding model (Nomic Embed Text v2) did not change results on the eval set. |
 | 5′ | Learn from review decisions (replaces LoRA) | Rejected-before marking and a user-managed “Not personal data” list (0 labelled items suppressed on the eval set, a CI test). Few-shot examples in the Layer 3 prompt were measured and not shipped: no better than a placebo prompt change, and held-out F1 dropped. |
+| 6′ | OpenAI Privacy Filter as the default Layer 3 | Run through `@qvac/onnx`; tokenizer and OpenAI's Viterbi decoder ported to Rust. With Layers 1–2: F1 90.7 vs 88.8 for Qwen3-1.7B, recall 96.1 vs 93.1, 5 false suggestions vs 8, about 0.2 s/page on CPU vs 6.4 s/page on GPU. Qwen3 stays as an optional thorough pass (recall 98.5). DMG 53.8 → 61.4 MB. Report: [eval/reports/privacy-filter-layer3.md](eval/reports/privacy-filter-layer3.md). |
 
 ## Next
 
@@ -31,11 +32,15 @@ Ordered by expected value.
    tuning. Add held-out documents written by someone else, and real-world
    layouts (letterheads, tables, signatures).
 3. **Check the new screens in the real app.** The entity group screens
-   (merge, split, proposals) and the review-decision screens (sidebar marks,
-   Settings list, import/export) were checked only in the browser preview
-   with mock data.
-4. **Benchmarks beyond Apple Silicon.** Layer 3, OCR and embedding speed and
-   memory were measured only on an M4 Pro with Metal. Measure CPU-only,
+   (merge, split, proposals), the review-decision screens (sidebar marks,
+   Settings list, import/export) and the Privacy Filter Model Manager
+   (detector choice, thorough pass, folder import) were checked only in the
+   browser preview with mock data. The Privacy Filter scan path itself was
+   tested end to end in a built DMG.
+4. **Benchmarks and builds beyond Apple Silicon.** Layer 3, OCR and embedding speed and
+   memory were measured only on an M4 Pro with Metal. `@qvac/onnx` ships
+   prebuilds for Linux and Windows, but Privacy Filter was not run there
+   (macOS x64 was checked under Rosetta only). Measure CPU-only,
    Windows (Vulkan) and Linux, and adjust the model notes and memory estimates.
 5. **Model Manager notes in Spanish and Portuguese.** The per-model notes come
    from the Rust catalog and are English only.
@@ -61,8 +66,17 @@ Ordered by expected value.
 - Gemma 4 E2B / E4B scored best in the Layer 3 eval and are Apache-2.0 (not
   the older Gemma terms). Consider adding them to the catalog as larger
   options.
-- Qwen2.5-7B: Qwen's official GGUF is split into two files, which the model
-  store does not support. Add multi-file models if a larger tier is wanted.
+- Privacy Filter: the eval's held-out set is only 60 labels, and the filters
+  were chosen after its numbers were seen, so held-out recall (88.3) is
+  optimistic. Re-check on the bigger independent eval set (Next, item 2).
+- Privacy Filter has no company, amount or case-number labels; Layers 1–2
+  cover them, and the thorough pass adds Qwen3. Thorough mode shows both
+  detectors' false suggestions (13 on the eval set vs 5).
+- Upgrading `@qvac/onnx` requires regenerating the strict golden spans
+  (int8 results differ slightly between ONNX Runtime builds).
+- Qwen2.5-7B: Qwen's official GGUF is split into two files. The model store
+  now supports multi-file models (added for Privacy Filter), so a larger tier
+  can be added if wanted.
 
 ### Product
 
@@ -84,18 +98,6 @@ Ordered by expected value.
   Manager, OCR and offline setup are already covered on the Models page).
 
 ## Parked
-
-- **OpenAI Privacy Filter as a fast complement to Layer 3.** Measured offline
-  ([report](eval/reports/privacy-filter.md), docs §14). Combined with
-  Layers 1–2 it matches Qwen3-1.7B (F1 89.2 vs 88.8, recall 96.3 vs 93.1,
-  held-out recall 90.0 vs 85.0) and runs at about 0.2 s/page on CPU instead
-  of 6.2 s/page on GPU. Not adopted: no company, amount or case-number labels,
-  national and tax IDs come back as `account_number` (type accuracy 74 % vs
-  93 %), weaker Portuguese, and about 3× more false suggestions. Both models
-  together would miss 7 labels instead of 30. If CPU-only speed or maximum
-  recall becomes the priority: run the int8 ONNX file through `@qvac/onnx`
-  in the existing sidecar (+20.7 MB on macOS arm64), with OpenAI's Viterbi
-  decoder, after checking Spanish and Portuguese on more data.
 
 - **Local LoRA fine-tuning (original Phase 5).** Built and measured, then
   stopped. Training works on the pinned QVAC version, but on a simulated

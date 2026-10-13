@@ -21,7 +21,7 @@
       <thead><tr><th>Feature</th><th>Model</th><th>How to get it</th></tr></thead>
       <tbody>
         <tr><td>Layers 1–2 (patterns, heuristics)</td><td>None</td><td>Built in</td></tr>
-        <tr><td>Layer 3 (local AI)</td><td>Qwen3-1.7B (default); 0.6B, 4B or 8B</td><td>Download in the app, or import from a file</td></tr>
+        <tr><td>Layer 3 (local AI)</td><td>OpenAI Privacy Filter (default); Qwen3 language models for an optional thorough pass</td><td>Download in the app, or import from a file</td></tr>
         <tr><td>Entity grouping (optional similarity)</td><td>Nomic Embed Text v2 MoE</td><td>Download in the app, or import from a file. Grouping works without it.</td></tr>
         <tr><td>OCR (scanned PDFs, PNG, JPG, TIFF)</td><td>CRAFT detector + Latin recognizer</td><td>Download manually, then import</td></tr>
       </tbody>
@@ -31,11 +31,32 @@
 
   <h2 id="llm">AI detection models (Layer 3)</h2>
   <p>In the Model Manager, click <strong>Download</strong> next to a model. Qvault shows the size and the source host before anything is transferred. The download comes straight from Hugging Face over HTTPS (never peer-to-peer), shows real progress, can be cancelled, and is verified against the size and SHA-256 below before it is moved into place.</p>
+  <h3 id="pf">Privacy Filter (default detector)</h3>
+  <p>OpenAI Privacy Filter is the recommended detector. It labels each page in one pass, in about 0.2 seconds on a CPU, and needs about 2 GB of memory. It is four files (about 1.65 GB in total) from the pinned revision of <a href="https://huggingface.co/openai/privacy-filter">openai/privacy-filter</a>, Apache-2.0. The Model Manager downloads all four; to import, choose <strong>Import folder…</strong> and pick a folder that contains them (the Hugging Face layout with an <code>onnx/</code> subfolder also works), or import the files one at a time. Qvault keeps a partial set until the last file arrives.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>File</th><th>Size</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/onnx/model_quantized.onnx"><code>model_quantized.onnx</code></a></td><td>162,239 bytes (≈ 162 KB)</td></tr>
+        <tr><td><a href="https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/onnx/model_quantized.onnx_data"><code>model_quantized.onnx_data</code></a></td><td>1,618,042,064 bytes (≈ 1.6 GB)</td></tr>
+        <tr><td><a href="https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/tokenizer.json"><code>tokenizer.json</code></a></td><td>27,868,174 bytes (≈ 28 MB)</td></tr>
+        <tr><td><a href="https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/viterbi_calibration.json"><code>viterbi_calibration.json</code></a></td><td>372 bytes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">SHA-256 (<code>model_quantized.onnx</code>): <span class="hash">a325fb5341567a73c94e91ec5e49060d38d9b16111f518ad34773039a0c9c098</span><br>
+  SHA-256 (<code>model_quantized.onnx_data</code>): <span class="hash">50f4c8c7f3c27fbc1fe16d4f74f6f7c3b74ba8f18a262e8b6911854c64c33a6d</span><br>
+  SHA-256 (<code>tokenizer.json</code>): <span class="hash">0614fe83cadab421296e664e1f48f4261fa8fef6e03e63bb75c20f38e37d07d3</span><br>
+  SHA-256 (<code>viterbi_calibration.json</code>): <span class="hash">bbc8611ef08a55ed72d64856cbbbb9a91db8dfa881f0a92e2afbad6e4bbc775a</span></p>
+  <p>Privacy Filter does not look for company names, amounts or case numbers; Layers 1–2 still cover those, and the optional thorough pass below adds a language model.</p>
+
+  <h3 id="qwen">Language models (optional thorough pass)</h3>
+  <p>A language model can run after Privacy Filter (<strong>Also run the language model</strong>), which finds the most but is much slower (about 6 seconds per page with a GPU), or instead of it.</p>
   <div class="table-scroll">
     <table>
       <thead><tr><th>Model</th><th>File</th><th>Size</th><th>Memory needed</th><th>Licence</th></tr></thead>
       <tbody>
-        <tr><td>Qwen3 1.7B (Q8_0), default</td><td><code>qwen3-1.7b-q8_0.gguf</code></td><td>1,834,426,016 bytes (≈ 1.8 GB)</td><td>≈ 2.75 GB</td><td>Apache-2.0</td></tr>
+        <tr><td>Qwen3 1.7B (Q8_0), recommended language model</td><td><code>qwen3-1.7b-q8_0.gguf</code></td><td>1,834,426,016 bytes (≈ 1.8 GB)</td><td>≈ 2.75 GB</td><td>Apache-2.0</td></tr>
         <tr><td>Qwen3 0.6B (Q8_0), light, for 4–8 GB computers</td><td><code>qwen3-0.6b-q8_0.gguf</code></td><td>639,446,688 bytes (≈ 639 MB)</td><td>≈ 1.5 GB</td><td>Apache-2.0</td></tr>
         <tr><td>Qwen3 4B (Q4_K_M), 16 GB or a GPU</td><td><code>qwen3-4b-q4_k_m.gguf</code></td><td>2,497,280,256 bytes (≈ 2.5 GB)</td><td>≈ 3.5 GB</td><td>Apache-2.0</td></tr>
         <tr><td>Qwen3 8B (Q4_K_M), GPU workstations</td><td><code>qwen3-8b-q4_k_m.gguf</code></td><td>5,027,783,488 bytes (≈ 5.0 GB)</td><td>≈ 6 GB</td><td>Apache-2.0</td></tr>
@@ -50,7 +71,7 @@
   SHA-256 (<code>qwen3-8b-q4_k_m.gguf</code>): <span class="hash">d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785</span><br>
   SHA-256 (<code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code>): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
   SHA-256 (<code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code>): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
-  <p>Then turn on <strong>Use AI detection (Layer 3) when scanning</strong>. AI findings are added with a confidence that depends on the category (80% for names, ID numbers, bank details and dates of birth, down to 50% for addresses and case numbers) and always wait for your review. If the AI engine is unavailable or a chunk fails, the scan still completes with Layers 1–2 and the viewer tells you what was skipped.</p>
+  <p>Then turn on <strong>Use AI detection (Layer 3) when scanning</strong>. AI findings are labelled with the detector that found them and added with a confidence that depends on the category (for example 80% for names, down to 50% for addresses and case numbers) and always wait for your review. If Privacy Filter cannot run, the scan uses the language model if one is installed. If the AI engine is unavailable or a chunk fails, the scan still completes with Layers 1–2 and the viewer tells you what was skipped.</p>
 
   <h2 id="embed">Entity grouping model (optional)</h2>
   <p>Qvault groups spellings of the same name, company or number with rules that need no model. An optional embedding model adds extra <em>proposals</em> based on meaning; it never merges anything by itself. On our small test set it did not improve the result, so you can skip it.</p>
@@ -114,18 +135,19 @@ dd1c7a436e9175904e63683e939635892f45c8c6377d5e14e87cf8b175e10768  latin_g2.gguf<
   <h2 id="airgap">Air-gapped machines</h2>
   <p>Many firms keep document review machines off the network. Qvault supports this fully:</p>
   <ol>
-    <li>On a connected computer, download the Qvault installer from <a href="{{releases}}">GitHub Releases</a>, the two OCR files above and, if you want Layer 3, a Qwen model file from the links below.</li>
+    <li>On a connected computer, download the Qvault installer from <a href="{{releases}}">GitHub Releases</a>, the two OCR files above and, if you want Layer 3, the four Privacy Filter files and optionally a Qwen model file from the links below.</li>
     <li>Verify every checksum on the connected computer.</li>
     <li>Copy the files to removable media and onto the air-gapped machine. Verify the checksums again there.</li>
     <li>Install Qvault and import each model with <em>Import from file…</em>. No network connection is needed at any point.</li>
   </ol>
+  <p class="small">Privacy Filter files at the pinned revision: <a href="https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/onnx/model_quantized.onnx">model_quantized.onnx</a> · <a href="https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/onnx/model_quantized.onnx_data">model_quantized.onnx_data</a> · <a href="https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/tokenizer.json">tokenizer.json</a> · <a href="https://huggingface.co/openai/privacy-filter/resolve/7ffa9a043d54d1be65afb281eddf0ffbe629385b/viterbi_calibration.json">viterbi_calibration.json</a></p>
   <p class="small">Qwen files at the pinned revisions: <a href="https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/90862c4b9d2787eaed51d12237eafdfe7c5f6077/Qwen3-1.7B-Q8_0.gguf">Qwen3-1.7B-Q8_0.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/23749fefcc72300e3a2ad315e1317431b06b590a/Qwen3-0.6B-Q8_0.gguf">Qwen3-0.6B-Q8_0.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/bc640142c66e1fdd12af0bd68f40445458f3869b/Qwen3-4B-Q4_K_M.gguf">Qwen3-4B-Q4_K_M.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/7c41481f57cb95916b40956ab2f0b139b296d974/Qwen3-8B-Q4_K_M.gguf">Qwen3-8B-Q4_K_M.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q4_k_m.gguf">qwen2.5-0.5b-instruct-q4_k_m.gguf</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf">qwen2.5-1.5b-instruct-q4_k_m.gguf</a></p>
 
   <h2 id="trouble">Troubleshooting</h2>
   <ul>
     <li><strong>“Unrecognised model file”.</strong> The file’s hash does not match any model Qvault knows. It is usually an incomplete download: download it again and re-check the hash. Do not accept an unknown file for OCR.</li>
     <li><strong>“AI engine is not included in this build”.</strong> You are running a build without the bundled QVAC helper (for example a plain <code>cargo build</code>). Layers 1–2 still work; use an official release for AI and OCR.</li>
-    <li><strong>“Likely too large for this computer”.</strong> Qvault checks whether a model fits your memory before loading it. Choose a smaller model, such as Qwen3 0.6B. The Model Manager shows each model’s memory need next to your computer’s memory before you download.</li>
+    <li><strong>“Likely too large for this computer”.</strong> Qvault checks whether a model fits your memory before loading it. Choose a smaller model, such as Qwen3 0.6B, or use Privacy Filter without the thorough pass. The Model Manager shows each model’s memory need next to your computer’s memory before you download.</li>
     <li><strong>Windows.</strong> The QVAC runtime needs a recent Vulkan driver even for CPU inference. On virtual machines or very old graphics hardware, AI and OCR may be unavailable; Layers 1–2 are unaffected.</li>
   </ul>
 </article>
