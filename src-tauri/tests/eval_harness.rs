@@ -720,3 +720,9 @@ fn scoring_rules() {
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[path = "eval_support/layer3.rs"]
 mod layer3;
+
+// ── entity resolution and known-entity suggestions (Phase 4) ─────────────
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[path = "eval_support/entities.rs"]
+mod entities;

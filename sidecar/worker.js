@@ -124,8 +124,18 @@ const CONFIG_KEYS = {
     gpu_layers: 'any', lora: 'path', device: 'any', predict: 'any',
     repeat_penalty: 'any', threads: 'any', 'batch-size': 'any', 'flash-attn': 'any'
   },
-  embeddings: { device: 'any', gpu_layers: 'any', ctx_size: 'any', 'batch-size': 'any', threads: 'any' }
+  // Keys of @qvac/inference 0.21.0's embedConfigBaseSchema (camelCase; the
+  // snake_case keys listed here before Phase 4 were silently ignored).
+  embeddings: {
+    device: 'any', gpuLayers: 'any', batchSize: 'any', pooling: 'any',
+    attention: 'any', embdNormalize: 'any', flashAttention: 'any'
+  }
 }
+
+// Bounds for one `embed` request (entity names are short; this keeps a
+// misbehaving caller from queueing unbounded work in the native addon).
+const EMBED_MAX_ITEMS = 256
+const EMBED_MAX_CHARS = 2000
 
 function sanitizeConfig (type, config) {
   if (config == null) return {}
@@ -287,6 +297,13 @@ const methods = {
     const text = params.text
     if (!(typeof text === 'string' || (Array.isArray(text) && text.every((t) => typeof t === 'string')))) {
       throw new ProtocolError('BAD_PARAMS', 'text must be a string or string[]')
+    }
+    const items = Array.isArray(text) ? text : [text]
+    if (items.length === 0 || items.length > EMBED_MAX_ITEMS) {
+      throw new ProtocolError('BAD_PARAMS', `text must hold 1..${EMBED_MAX_ITEMS} strings`)
+    }
+    if (items.some((t) => t.length === 0 || t.length > EMBED_MAX_CHARS)) {
+      throw new ProtocolError('BAD_PARAMS', `each text must be 1..${EMBED_MAX_CHARS} characters`)
     }
     ctx.entry.modelId = modelId
     ctx.entry.kind = 'embeddings'

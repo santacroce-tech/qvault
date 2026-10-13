@@ -1,10 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { exportRedactedDocx, exportRedactedPdf, openFile } from "../lib/tauri-commands";
+import { exportRedactedDocx, exportRedactedPdf, openFile, getRedactionNotes } from "../lib/tauri-commands";
 import type { UseRedactionsReturn } from "../hooks/useRedactions";
 import type { RenderRedactedPages } from "../App";
 import { PII_COLORS, piiCategoryLabel } from "../lib/types";
-import type { PiiCategory } from "../lib/types";
+import type { PiiCategory, RedactionNote } from "../lib/types";
 
 interface Props {
   documentId: string;
@@ -61,6 +61,22 @@ export default function RedactionSidebar({
     })();
     return () => { cancelled = true; unlisten?.(); };
   }, [documentId]);
+  // Why each known-entity suggestion was made (loaded with the list).
+  const [notes, setNotes] = useState<Record<string, RedactionNote>>({});
+  const knownCount = redactions.filter((r) => r.detection_layer === "known-entity").length;
+  useEffect(() => {
+    if (knownCount === 0) {
+      setNotes({});
+      return;
+    }
+    let cancelled = false;
+    getRedactionNotes(documentId)
+      .then((list) => {
+        if (!cancelled) setNotes(Object.fromEntries((list ?? []).map((n) => [n.redactionId, n])));
+      })
+      .catch((e) => console.warn("[Qvault] redaction notes unavailable:", e));
+    return () => { cancelled = true; };
+  }, [documentId, knownCount]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
 
@@ -330,7 +346,24 @@ export default function RedactionSidebar({
                     <span className="text-xs text-gray-300">
                       {Math.round(r.confidence * 100)}%
                     </span>
+                    {r.detection_layer === "known-entity" && (
+                      <span className="text-[10px] uppercase tracking-wide bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
+                        {t('sidebar.knownEntity')}
+                      </span>
+                    )}
                   </div>
+                  {r.detection_layer === "known-entity" && notes[r.id] && (
+                    <div className="mt-1 text-xs text-gray-500 leading-snug">
+                      {t(`sidebar.knownRule.${notes[r.id].rule}`, { source: notes[r.id].sourceText })}
+                      {" · "}
+                      {notes[r.id].sourceApproved
+                        ? t('sidebar.knownApproved', { count: notes[r.id].documents })
+                        : t('sidebar.knownUnreviewed')}
+                      {notes[r.id].groupLabel && notes[r.id].groupLabel !== notes[r.id].sourceText && (
+                        <> · {t('sidebar.knownGroup', { label: notes[r.id].groupLabel })}</>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -106,7 +106,83 @@ impl Database {
             );
         ")?;
 
+        // Versioned migrations on top of the base schema above (which every
+        // database before Phase 4 has, at user_version 0).
+        let version: i64 = conn.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+        if version < 1 {
+            // Phase 4: entity groups, their variants (with optional embedding
+            // vectors), user decisions, proposals, and the explanation of
+            // known-entity suggestions. Existing entities are grouped on the
+            // first regroup run (lazily), not here.
+            conn.execute_batch("
+                BEGIN;
+                CREATE TABLE IF NOT EXISTS entity_groups (
+                    id TEXT PRIMARY KEY,
+                    category TEXT NOT NULL,
+                    label TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                -- One row per distinct (category, normalized text) in `entities`.
+                -- `embedding` is a little-endian f32 vector from `embedding_model`.
+                CREATE TABLE IF NOT EXISTS entity_variants (
+                    id TEXT PRIMARY KEY,
+                    category TEXT NOT NULL,
+                    text TEXT NOT NULL,
+                    group_id TEXT,
+                    pinned INTEGER NOT NULL DEFAULT 0,
+                    embedding BLOB,
+                    embedding_model TEXT,
+                    created_at TEXT NOT NULL,
+                    UNIQUE(category, text)
+                );
+                CREATE INDEX IF NOT EXISTS idx_entity_variants_group ON entity_variants(group_id);
+                -- Variant pairs the user separated (split / dismissed proposal); a < b.
+                CREATE TABLE IF NOT EXISTS entity_cannot_link (
+                    a TEXT NOT NULL,
+                    b TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (a, b)
+                );
+                CREATE TABLE IF NOT EXISTS entity_proposals (
+                    group_a TEXT NOT NULL,
+                    group_b TEXT NOT NULL,
+                    variant_a TEXT NOT NULL,
+                    variant_b TEXT NOT NULL,
+                    rule TEXT NOT NULL,
+                    score REAL NOT NULL,
+                    cosine REAL,
+                    ambiguous INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY (group_a, group_b)
+                );
+                -- Why a suggestion was made (known-entity layer).
+                CREATE TABLE IF NOT EXISTS redaction_notes (
+                    redaction_id TEXT PRIMARY KEY,
+                    document_id TEXT NOT NULL,
+                    kind TEXT NOT NULL,
+                    rule TEXT NOT NULL,
+                    source_text TEXT NOT NULL,
+                    source_approved INTEGER NOT NULL,
+                    documents INTEGER NOT NULL,
+                    group_id TEXT,
+                    group_label TEXT,
+                    created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_redaction_notes_document ON redaction_notes(document_id);
+                CREATE INDEX IF NOT EXISTS idx_redactions_document ON redactions(document_id);
+                CREATE INDEX IF NOT EXISTS idx_entities_category_text ON entities(category, normalized_text);
+                PRAGMA user_version = 1;
+                COMMIT;
+            ")?;
+        }
+
         Ok(())
+    }
+
+    /// Schema version (`PRAGMA user_version`).
+    pub fn schema_version(&self) -> Result<i64> {
+        let conn = self.conn.lock().unwrap();
+        conn.query_row("PRAGMA user_version", [], |r| r.get(0))
     }
 
     pub fn with_conn<F, T>(&self, f: F) -> Result<T>
@@ -537,6 +613,7 @@ impl Database {
     pub fn delete_document(&self, id: &str) -> Result<()> {
         let conn = self.conn.lock().unwrap();
         conn.execute("DELETE FROM entities WHERE document_id = ?1", params![id])?;
+        conn.execute("DELETE FROM redaction_notes WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM document_pages WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM ocr_pages WHERE document_id = ?1", params![id])?;
         conn.execute("DELETE FROM redactions WHERE document_id = ?1", params![id])?;

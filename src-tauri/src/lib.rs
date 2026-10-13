@@ -2,6 +2,7 @@ use tauri::Manager;
 
 pub mod commands;
 pub mod document;
+pub mod entities;
 pub mod pipeline;
 pub mod storage;
 pub mod llm;
@@ -90,7 +91,7 @@ pub fn run() {
                         println!("{}", serde_json::to_string_pretty(&rep).unwrap_or_default());
                         svc.shutdown();
                         let _ = std::fs::remove_dir_all(&tmp);
-                        let ok = rep.error.is_none() && rep.ocr_error.is_none() && rep.layer3_error.is_none();
+                        let ok = rep.error.is_none() && rep.ocr_error.is_none() && rep.layer3_error.is_none() && rep.embedding_error.is_none();
                         handle.exit(if ok { 0 } else { 1 });
                     });
                 }
@@ -149,6 +150,16 @@ pub fn run() {
             #[cfg(desktop)]
             commands::ai::ai_self_test,
             commands::ai::ai_open_manual_download,
+            #[cfg(desktop)]
+            commands::ai::ai_set_entity_embeddings,
+            commands::entities::regroup_entities,
+            commands::entities::get_entity_groups,
+            commands::entities::get_entity_proposals,
+            commands::entities::get_entity_group_documents,
+            commands::entities::merge_entity_groups,
+            commands::entities::split_entity_variant,
+            commands::entities::dismiss_entity_proposal,
+            commands::entities::get_redaction_notes,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

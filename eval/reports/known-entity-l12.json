@@ -1,0 +1,209 @@
+{
+  "layers12": [
+    {
+      "by_rule": {
+        "honorific-surname": [
+          3,
+          0
+        ],
+        "initial-surname": [
+          1,
+          0
+        ],
+        "reordered": [
+          1,
+          0
+        ],
+        "same-text": [
+          18,
+          10
+        ]
+      },
+      "covered_after": 0.7765726681127982,
+      "covered_before": 0.754880694143167,
+      "false_items": [
+        "`en_demand_letter` p1 PersonName (same-text): \"New York\"",
+        "`en_demand_letter` p1 PersonName (same-text): \"New York\"",
+        "`en_demo_pdf` p1 PersonName (same-text): \"Managing Partner\"",
+        "`en_demo_pdf` p1 PersonName (same-text): \"Chief Executive Officer\"",
+        "`en_demo_pdf` p1 PersonName (same-text): \"Senior Director\"",
+        "`en_traps_llc_agreement` p1 CompanyName (same-text): \"Delaware limited\"",
+        "`en_traps_llc_agreement` p1 PersonName (same-text): \"Internal Revenue Code\"",
+        "`en_traps_llc_agreement` p1 PersonName (same-text): \"Entire Agreement\"",
+        "`es_demanda_reclamacion` p1 PersonName (same-text): \"JUICIO VERBAL\"",
+        "`pt_peticao_inicial` p1 PersonName (same-text): \"SÃO PAULO\""
+      ],
+      "false_suggestions": 10,
+      "labels": 461,
+      "missed_before": 78,
+      "precision_after": 0.8347457627118644,
+      "precision_before": 0.8485523385300668,
+      "recall_after": 0.8590021691973969,
+      "recall_before": 0.8308026030368764,
+      "recovered": 13,
+      "recovered_items": [
+        "`en_court_complaint` p1 PersonName: \"Holloway\"",
+        "`en_demand_letter` p1 PersonName: \"J. Whitfield\"",
+        "`en_demo_pdf` p1 PersonName: \"Roberto  \\n  Fernandes\"",
+        "`en_eu_share_purchase` p1 CompanyName: \"Zeeland Marine Technologies B.V.\"",
+        "`en_garnishment_affidavit` p1 PersonName: \"LORNA FETTERMAN\"",
+        "`en_settlement_agreement` p1 CompanyName: \"HALCYON DATA SYSTEMS LTD\"",
+        "`en_traps_llc_agreement` p1 PersonName: \"Constance Varga-Ellison\"",
+        "`es_demanda_reclamacion` p1 PersonName: \"LLORENTE ESCRIVÁ, Nuria\"",
+        "`es_demanda_reclamacion` p1 PersonName: \"Álvaro Sendra Peiró\"",
+        "`holdout_pt_notificacao` p1 PersonName: \"Vasconcelos\"",
+        "`pt_contrato_prestacao` p1 CompanyName: \"MOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI\"",
+        "`pt_peticao_inicial` p1 PersonName: \"Paixão\"",
+        "`pt_procuracao_portugal` p1 PersonName: \"Fonseca, Joaquim\""
+      ],
+      "scenario": "same document, unreviewed",
+      "suggestions": 23
+    },
+    {
+      "by_rule": {
+        "honorific-surname": [
+          3,
+          0
+        ],
+        "initial-surname": [
+          1,
+          0
+        ],
+        "reordered": [
+          1,
+          0
+        ],
+        "same-text": [
+          8,
+          0
+        ]
+      },
+      "covered_after": 0.7765726681127982,
+      "covered_before": 0.754880694143167,
+      "false_items": [],
+      "false_suggestions": 0,
+      "labels": 461,
+      "missed_before": 78,
+      "precision_after": 0.8528138528138528,
+      "precision_before": 0.8485523385300668,
+      "recall_after": 0.8590021691973969,
+      "recall_before": 0.8308026030368764,
+      "recovered": 13,
+      "recovered_items": [
+        "`en_court_complaint` p1 PersonName: \"Holloway\"",
+        "`en_demand_letter` p1 PersonName: \"J. Whitfield\"",
+        "`en_demo_pdf` p1 PersonName: \"Roberto  \\n  Fernandes\"",
+        "`en_eu_share_purchase` p1 CompanyName: \"Zeeland Marine Technologies B.V.\"",
+        "`en_garnishment_affidavit` p1 PersonName: \"LORNA FETTERMAN\"",
+        "`en_settlement_agreement` p1 CompanyName: \"HALCYON DATA SYSTEMS LTD\"",
+        "`en_traps_llc_agreement` p1 PersonName: \"Constance Varga-Ellison\"",
+        "`es_demanda_reclamacion` p1 PersonName: \"LLORENTE ESCRIVÁ, Nuria\"",
+        "`es_demanda_reclamacion` p1 PersonName: \"Álvaro Sendra Peiró\"",
+        "`holdout_pt_notificacao` p1 PersonName: \"Vasconcelos\"",
+        "`pt_contrato_prestacao` p1 CompanyName: \"MOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI\"",
+        "`pt_peticao_inicial` p1 PersonName: \"Paixão\"",
+        "`pt_procuracao_portugal` p1 PersonName: \"Fonseca, Joaquim\""
+      ],
+      "scenario": "same document, after review",
+      "suggestions": 13
+    },
+    {
+      "by_rule": {
+        "initial-surname": [
+          3,
+          0
+        ],
+        "reordered": [
+          5,
+          0
+        ],
+        "same-text": [
+          59,
+          1
+        ]
+      },
+      "covered_after": 0.8872017353579176,
+      "covered_before": 0.754880694143167,
+      "false_items": [
+        "`en_settlement_agreement` p1 PersonName (same-text): \"Achterberg\""
+      ],
+      "false_suggestions": 1,
+      "labels": 461,
+      "missed_before": 78,
+      "precision_after": 0.8662790697674418,
+      "precision_before": 0.8485523385300668,
+      "recall_after": 0.9718004338394793,
+      "recall_before": 0.8308026030368764,
+      "recovered": 65,
+      "recovered_items": [
+        "`en_court_complaint` p1 PersonName: \"HOLLOWAY, Dana\"",
+        "`en_court_complaint` p1 PersonName: \"Marcus T. Feeney\"",
+        "`en_court_complaint` p1 PersonName: \"Holloway\"",
+        "`en_court_complaint` p1 PersonName: \"Feeney\"",
+        "`en_court_complaint` p1 PersonName: \"Priya\\nRamaswamy\"",
+        "`en_court_complaint` p1 PersonName: \"Feeney\"",
+        "`en_court_complaint` p1 PersonName: \"Ramaswamy\"",
+        "`en_demand_letter` p1 PersonName: \"Tobias R. Lindqvist\"",
+        "`en_demand_letter` p1 PersonName: \"Tobias R. Lindqvist\"",
+        "`en_demand_letter` p1 PersonName: \"Lindqvist\"",
+        "`en_demand_letter` p1 PersonName: \"Lindqvist\"",
+        "`en_demand_letter` p1 PersonName: \"Lindqvist\"",
+        "`en_demand_letter` p1 PersonName: \"J. Whitfield\"",
+        "`en_demand_letter` p1 PersonName: \"T. R. Lindqvist\"",
+        "`en_demo_pdf` p1 Email: \"j.richardson@atlas-  \\n  digital.com\"",
+        "`en_demo_pdf` p1 PersonName: \"Roberto  \\n  Fernandes\"",
+        "`en_eu_share_purchase` p1 Address: \"Westerdok 118, 1013 BH Amsterdam\"",
+        "`en_eu_share_purchase` p1 PersonName: \"Felix Brandauer\"",
+        "`en_eu_share_purchase` p1 CaseNumber: \"16 O 248/24\"",
+        "`en_eu_share_purchase` p1 PersonName: \"Joost van der Linde\"",
+        "`en_eu_share_purchase` p1 CompanyName: \"Zeeland Marine Technologies B.V.\"",
+        "`en_eu_share_purchase` p1 PersonName: \"Joost van der Linde\"",
+        "`en_garnishment_affidavit` p1 CompanyName: \"Desert Sun Credit Union\"",
+        "`en_garnishment_affidavit` p1 PersonName: \"LORNA FETTERMAN\"",
+        "`en_garnishment_affidavit` p1 CompanyName: \"Desert Sun Credit Union\"",
+        "`en_garnishment_affidavit` p1 BankAccount: \"0047-221983\"",
+        "`en_garnishment_affidavit` p1 BankAccount: \"884 120 33571\"",
+        "`en_garnishment_affidavit` p1 BankAccount: \"3266 0519 8820\"",
+        "`en_settlement_agreement` p1 PersonName: \"Siobhan Achterberg\"",
+        "`en_settlement_agreement` p1 PersonName: \"S. Achterberg\"",
+        "`en_settlement_agreement` p1 PersonName: \"Achterberg\"",
+        "`en_settlement_agreement` p1 PersonName: \"Rafferty\\nOkonkwo-Bell\"",
+        "`en_settlement_agreement` p1 PersonName: \"Ms Achterberg\"",
+        "`en_settlement_agreement` p1 PersonName: \"Gideon Farquharson\"",
+        "`en_settlement_agreement` p1 PersonName: \"Achterberg, Siobhan\"",
+        "`en_settlement_agreement` p1 PersonName: \"Farquharson, Gideon\"",
+        "`en_settlement_agreement` p1 PersonName: \"SIOBHAN ACHTERBERG\"",
+        "`en_settlement_agreement` p1 PersonName: \"GIDEON FARQUHARSON\"",
+        "`en_settlement_agreement` p1 CompanyName: \"HALCYON DATA SYSTEMS LTD\"",
+        "`en_traps_llc_agreement` p1 PersonName: \"Constance Varga-Ellison\"",
+        "`en_traps_llc_agreement` p1 PersonName: \"Rupert Ashdown\"",
+        "`en_traps_llc_agreement` p1 PersonName: \"Imelda Szabo\"",
+        "`es_carta_requerimiento` p1 PersonName: \"Ramírez de la Garza\"",
+        "`es_contrato_arrendamiento` p1 PersonName: \"Rogelio Quintanilla Mateu\"",
+        "`es_demanda_reclamacion` p1 PersonName: \"LLORENTE ESCRIVÁ, Nuria\"",
+        "`es_demanda_reclamacion` p1 PersonName: \"Beatriz Coloma Ruano\"",
+        "`es_demanda_reclamacion` p1 PersonName: \"Fermín Aleixandre Bou\"",
+        "`es_demanda_reclamacion` p1 PersonName: \"Aleixandre\"",
+        "`es_demanda_reclamacion` p1 PersonName: \"Álvaro Sendra Peiró\"",
+        "`holdout_en_intake_memo` p1 CompanyName: \"Pellucid Freight Systems, Inc.\"",
+        "`holdout_en_intake_memo` p1 ClientId: \"M-25-0331\"",
+        "`holdout_en_intake_memo` p1 Address: \"2210 Rue Sainte-Catherine Ouest, Montréal, QC H3H 1M7\"",
+        "`holdout_en_intake_memo` p1 NationalId: \"046 454 286\"",
+        "`holdout_en_intake_memo` p1 PersonName: \"Desmond\"",
+        "`holdout_en_intake_memo` p1 BankAccount: \"000123456789\"",
+        "`holdout_es_acta_junta` p1 CompanyName: \"TALLERES METÁLICOS ARGAÑA, S.L.\"",
+        "`holdout_es_acta_junta` p1 Address: \"C/ Gran Vía de Don Diego López de Haro, 45, 48011 Bilbao\"",
+        "`holdout_es_acta_junta` p1 PersonName: \"Zabaleta\"",
+        "`holdout_es_acta_junta` p1 PersonName: \"Beloki\"",
+        "`holdout_es_acta_junta` p1 PersonName: \"Koldo Iturbe Larrañaga\"",
+        "`holdout_pt_notificacao` p1 NationalId: \"39053344705\"",
+        "`holdout_pt_notificacao` p1 PersonName: \"Vasconcelos\"",
+        "`pt_contrato_prestacao` p1 CompanyName: \"MOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI\"",
+        "`pt_peticao_inicial` p1 PersonName: \"Paixão\"",
+        "`pt_procuracao_portugal` p1 PersonName: \"Fonseca, Joaquim\""
+      ],
+      "scenario": "approved in an earlier document (upper bound)",
+      "suggestions": 67
+    }
+  ]
+}

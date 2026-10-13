@@ -150,3 +150,59 @@ per-category precision used to calibrate confidence.
 Peak RSS is sampled with `ps` every 300 ms. On Apple Silicon, Metal buffers
 backed by the memory-mapped model file count towards RSS; GPU-private
 allocations may not.
+
+## Entity resolution and known-entity suggestions (Phase 4)
+
+Results and decisions: [docs/qvac-integration.md §12](../docs/qvac-integration.md#12-phase-4-entity-resolution).
+Code: `../src-tauri/tests/eval_support/entities.rs` (part of the
+`eval_harness` test binary).
+
+| Path | What |
+|---|---|
+| `entities/variants.json` | Synthetic entity-resolution set: 59 EN/ES/PT entities, 199 mentions |
+| `entity-baseline.json` | No-model numbers CI must not fall below |
+| `reports/entity-resolution*.md` | Grouping without / with embedding models |
+| `reports/known-entity-*.md` | Known-entity suggestions on the detection fixtures |
+
+`variants.json` lists, per entity, the ways it is written (`"mentions"`).
+Mentions of *different* entities of one category are the hard negatives:
+same surname and different given name, same given name, Jr. / Filho, the
+same company with another legal form, one-letter-different companies,
+neighbouring house numbers. A string may appear under two entities on
+purpose ("J. Santos"): the app keeps one variant per distinct string, so no
+system can separate them, and the score shows it.
+
+Grouping is scored on mention pairs of the same category (pairwise P/R/F1)
+and with B-cubed, three ways: **applied automatically** (what the app does
+on its own), **after review** (a reviewer accepts the correct proposals and
+dismisses the rest) and **if every proposal is accepted**; plus proposal
+precision. Cross-category pairs are never linked (asserted).
+
+Known-entity suggestions are run on the detection fixtures with three
+knowledge bases: the document's own detections before review (what the app
+does right after a scan), the document's correct detections (as if
+reviewed), and every labelled entity of the document approved in an earlier
+document (upper bound). *Recovered* = labels no layer overlapped that a
+suggestion overlaps; *false* = suggestions that overlap no label.
+
+```sh
+# CI (no model): grouping + suggestions on Layers 1-2 vs entity-baseline.json
+cargo test --test eval_harness entities:: -- --nocapture
+QVAULT_EVAL_UPDATE_BASELINE=1 cargo test --test eval_harness entities::   # accept new numbers
+
+# Embedding models through the real sidecar (sweep of thresholds, speed, memory)
+QVAULT_EVAL_EMBED=1 QVAC_MODELS_DIR=/path/with/catalog/files \
+QVAULT_EVAL_EMBED_MODELS=nomic-embed-text-v2-moe-q8_0,qwen3-embedding-0.6b-q8_0=/abs/Qwen3-Embedding-0.6B-Q8_0.gguf \
+QVAULT_EVAL_OUT=../eval/reports \
+cargo test --release --test eval_harness entity_resolution_embeddings -- --nocapture --test-threads 1
+
+# Suggestions on top of Layers 1-3 with a real LLM
+QVAULT_EVAL_L3=1 QVAULT_EVAL_KNOWN=1 QVAC_MODELS_DIR=/path QVAULT_EVAL_MODELS=qwen3-1.7b-q8_0 \
+QVAULT_EVAL_OUT=../eval/reports \
+cargo test --release --test eval_harness known_entity_suggestions_layer3 -- --nocapture --test-threads 1
+```
+
+The CI test fails when applied / after-review / accepted precision or
+recall or proposal precision drops by more than 1 point below
+`entity-baseline.json`, when a knowledge-base scenario recovers fewer
+labels, or when it adds more than one extra false suggestion.

@@ -34,6 +34,9 @@ const LOAD_TIMEOUT: Duration = Duration::from_secs(180);
 const COMPLETE_TIMEOUT: Duration = Duration::from_secs(120);
 const OCR_TIMEOUT: Duration = Duration::from_secs(180);
 const FIT_TIMEOUT: Duration = Duration::from_secs(90);
+const EMBED_TIMEOUT: Duration = Duration::from_secs(120);
+/// Strings per `embed` request (the sidecar accepts up to 256).
+const EMBED_BATCH: usize = 64;
 const LLM_CTX: u64 = 4096;
 const LLM_PREDICT: u64 = 512;
 const LLM_SEED: u64 = 42;
@@ -81,6 +84,10 @@ pub struct AiSettings {
     /// OCR rasterisation resolution; `None` = [`crate::ocr::DEFAULT_OCR_DPI`].
     #[serde(default)]
     pub ocr_dpi: Option<u32>,
+    /// Use the embedding model (when installed) to improve entity grouping.
+    /// `None` = on.
+    #[serde(default)]
+    pub entity_embeddings: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -142,6 +149,12 @@ pub struct Capabilities {
     pub layer3_enabled: bool,
     pub layer3_model: Option<String>,
     pub layer3_ready: bool,
+    /// The entity-grouping embedding model is installed.
+    pub embedding_installed: bool,
+    /// The user setting (default on).
+    pub entity_embeddings_enabled: bool,
+    /// Embeddings will be used for grouping (installed, enabled, engine usable).
+    pub embedding_ready: bool,
     pub models: Vec<ModelInfo>,
     /// Physical memory of this computer, when it can be read (macOS, Linux).
     pub system_memory: Option<u64>,
@@ -264,6 +277,28 @@ impl QvacService {
         let mut s = self.settings.lock().unwrap();
         s.ocr_dpi = Some(dpi);
         self.save_settings(&s)
+    }
+
+    pub fn set_entity_embeddings(&self, enabled: bool) -> Result<(), String> {
+        let mut s = self.settings.lock().unwrap();
+        s.entity_embeddings = Some(enabled);
+        self.save_settings(&s)?;
+        drop(s);
+        if !enabled {
+            self.unload_purpose(ModelPurpose::Embedding);
+        }
+        Ok(())
+    }
+
+    /// The embedding model entity grouping should use: installed and not
+    /// turned off. (The engine may still be unavailable; callers fall back to
+    /// rules, and stored vectors of this model remain usable.)
+    pub fn embedding_model(&self) -> Option<String> {
+        if self.settings.lock().unwrap().entity_embeddings == Some(false) {
+            return None;
+        }
+        let m = catalog::embedding_model();
+        self.store.is_installed(m).then(|| m.id.to_string())
     }
 
     pub fn set_layer3(&self, enabled: bool, model: Option<String>) -> Result<(), String> {
@@ -440,6 +475,8 @@ impl QvacService {
                 ("ocr", json!({"detectorModelSrc": det_path, "langList": ["en"]}))
             }
             ModelPurpose::OcrDetector => return Err(QvacError::Protocol("load the recognizer instead".into())),
+            // Model defaults (pooling and normalisation from the GGUF).
+            ModelPurpose::Embedding => ("embeddings", json!({})),
         };
         let started = Instant::now();
         let r = self.call(
@@ -460,12 +497,16 @@ impl QvacService {
     }
 
     fn unload_all_llms(&self) {
+        self.unload_purpose(ModelPurpose::Llm)
+    }
+
+    fn unload_purpose(&self, purpose: ModelPurpose) {
         let ids: Vec<(String, String)> = self
             .loaded
             .lock()
             .unwrap()
             .iter()
-            .filter(|(id, _)| models::purpose_of(id) == ModelPurpose::Llm)
+            .filter(|(id, _)| models::purpose_of(id) == purpose)
             .map(|(id, (_, q))| (id.clone(), q.clone()))
             .collect();
         let running = self.client.lock().unwrap().as_ref().map(|c| c.is_running()).unwrap_or(false);
@@ -565,6 +606,38 @@ impl QvacService {
             }
             Err(e) => Err(Layer3Error::Chunk(e.to_string())),
         }
+    }
+
+    // ── embeddings (entity grouping) ─────────────────────────────────────
+
+    /// Embed strings with an installed embedding model. Vectors come back
+    /// L2-normalised (QVAC normalises them). Batched; any failure fails the
+    /// whole call (callers fall back to rules).
+    pub fn embed_texts(&self, model: &str, texts: &[String]) -> Result<Vec<Vec<f32>>, String> {
+        if models::purpose_of(model) != ModelPurpose::Embedding {
+            return Err("not an embedding model".into());
+        }
+        let qid = self.ensure_loaded(model).map_err(|e| e.to_string())?.0;
+        let mut out = Vec::with_capacity(texts.len());
+        for chunk in texts.chunks(EMBED_BATCH) {
+            let r = match self.call("embed", json!({"modelId": qid, "text": chunk}), CallOptions::timeout(EMBED_TIMEOUT)) {
+                Ok(r) => r,
+                Err(QvacError::Remote { code, message }) if code == "MODEL_NOT_LOADED" => {
+                    self.loaded.lock().unwrap().remove(model);
+                    return Err(message);
+                }
+                Err(e) => return Err(e.to_string()),
+            };
+            let vecs: Vec<Vec<f32>> = r
+                .get("embedding")
+                .and_then(|v| serde_json::from_value(v.clone()).ok())
+                .ok_or("the embedding model returned no vectors")?;
+            if vecs.len() != chunk.len() || vecs.iter().any(|v| v.is_empty()) {
+                return Err("the embedding model returned the wrong number of vectors".into());
+            }
+            out.extend(vecs);
+        }
+        Ok(out)
     }
 
     // ── OCR ──────────────────────────────────────────────────────────────
@@ -771,6 +844,9 @@ impl QvacService {
             layer3_enabled: settings.layer3_enabled,
             layer3_ready: settings.layer3_enabled && layer3_model.is_some() && available,
             layer3_model,
+            embedding_installed: self.store.is_installed(catalog::embedding_model()),
+            entity_embeddings_enabled: settings.entity_embeddings != Some(false),
+            embedding_ready: self.embedding_model().is_some() && available,
             models: self.list_models(),
             system_memory: system_memory_bytes(),
         }
@@ -861,7 +937,7 @@ impl QvacService {
         }
         // Unload it (and the OCR pair if either half goes).
         let affected: Vec<String> = match models::purpose_of(id) {
-            ModelPurpose::Llm => vec![id.to_string()],
+            ModelPurpose::Llm | ModelPurpose::Embedding => vec![id.to_string()],
             _ => {
                 let (d, r) = catalog::ocr_pair();
                 vec![d.id.to_string(), r.id.to_string()]
@@ -910,6 +986,17 @@ impl QvacService {
                 rep.ocr_error = Some("OCR models are not installed".into());
             }
         }
+        if let Some(model) = self.embedding_model() {
+            let t = Instant::now();
+            let names = vec!["Maria Santos".to_string(), "SANTOS, Maria".to_string(), "Atlas Logistics Inc.".to_string()];
+            match self.embed_texts(&model, &names) {
+                Ok(v) => {
+                    rep.embedding_ms = Some(t.elapsed().as_millis() as u64);
+                    rep.embedding_dims = Some(v[0].len());
+                }
+                Err(e) => rep.embedding_error = Some(e),
+            }
+        }
         match self.layer3_model() {
             Some(id) => {
                 let t = Instant::now();
@@ -955,6 +1042,24 @@ pub struct SelfTestReport {
     pub layer3_ms: Option<u64>,
     pub layer3_entities: Vec<String>,
     pub layer3_error: Option<String>,
+    pub embedding_ms: Option<u64>,
+    pub embedding_dims: Option<usize>,
+    pub embedding_error: Option<String>,
+}
+
+/// The sidecar's embedding model as an entity-grouping [`Embedder`].
+pub struct QvacEmbedder {
+    pub service: Arc<QvacService>,
+    pub model: String,
+}
+
+impl crate::entities::Embedder for QvacEmbedder {
+    fn model_id(&self) -> String {
+        self.model.clone()
+    }
+    fn embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>, String> {
+        self.service.embed_texts(&self.model, texts)
+    }
 }
 
 /// A prepared Layer 3 run; implements the scanner's engine trait.

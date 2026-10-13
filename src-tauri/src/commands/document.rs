@@ -291,6 +291,28 @@ pub async fn scan_document_text(
         total_pii += entities.len();
     }
 
+    // Known-entity suggestions: occurrences of entities the user approved
+    // before (or that a layer found elsewhere in this document) that no
+    // layer flagged. Pending, with their own layer and an explanation.
+    let known_started = std::time::Instant::now();
+    match crate::entities::service::flag_document(&state.db, &id, &pages) {
+        Ok(counts) => {
+            for (page_num, n) in counts.iter().enumerate().filter(|(_, n)| **n > 0) {
+                let _ = app_handle.emit("scan-page-results", serde_json::json!({
+                    "documentId": id, "page": page_num, "layer": crate::entities::known::LAYER, "count": n,
+                }));
+            }
+            let n: usize = counts.iter().sum();
+            total_pii += n;
+            let _ = state.db.insert_audit_log(
+                Some(&id),
+                "known_entity_scan",
+                Some(&format!("suggestions={} pages={} duration_ms={}", n, pages.len(), known_started.elapsed().as_millis())),
+            );
+        }
+        Err(e) => log::warn!("known-entity suggestions skipped: {}", e),
+    }
+
     // Update document page count and status
     state
         .db
@@ -340,6 +362,10 @@ pub async fn scan_document_text(
             "failedChunks": layer3_failed_chunks,
         }));
     }
+
+    // Group the new entities with the knowledge base (embedding them when
+    // the model is installed) without holding up the review.
+    crate::commands::entities::spawn_regroup(app_handle.clone(), "scan");
 
     Ok(total_pii as i32)
 }
@@ -761,6 +787,11 @@ pub async fn reset_app_data(
     state.db.with_conn(|conn| {
         conn.execute_batch("
             DELETE FROM entities;
+            DELETE FROM entity_variants;
+            DELETE FROM entity_groups;
+            DELETE FROM entity_cannot_link;
+            DELETE FROM entity_proposals;
+            DELETE FROM redaction_notes;
             DELETE FROM document_pages;
             DELETE FROM ocr_pages;
             DELETE FROM redactions;

@@ -12,6 +12,8 @@ pub enum ModelPurpose {
     OcrDetector,
     OcrRecognizer,
     Llm,
+    /// Text embeddings for entity grouping (Phase 4).
+    Embedding,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -182,6 +184,28 @@ pub const CATALOG: &[CatalogModel] = &[
         ram_needed: 1_879_048_192, // 1.75 GiB (measured 1.56 GB)
         note: Some("Superseded by Qwen3 1.7B (more precise suggestions)."),
     },
+    // Entity grouping (Phase 4, docs/qvac-integration.md §12). Official GGUF
+    // from Nomic AI at a pinned revision; SHA-256 computed after download
+    // (equal to the HF LFS object id). Chosen over Qwen3-Embedding-0.6B,
+    // which needed ~5 GB of memory on the pinned addon (its 32k context
+    // cannot be lowered through @qvac/embed-llamacpp 0.43.0's config) for no
+    // better result. Optional: grouping works without it.
+    CatalogModel {
+        id: "nomic-embed-text-v2-moe-q8_0",
+        name: "Nomic Embed Text v2 MoE (Q8_0)",
+        purpose: ModelPurpose::Embedding,
+        file_name: "nomic-embed-text-v2-moe.Q8_0.gguf",
+        url: Some("https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF/resolve/ffbcf4c99e5d617dda10ec8c0e9f75754b0cbb80/nomic-embed-text-v2-moe.Q8_0.gguf"),
+        manual_url: None,
+        size: 512_225_120,
+        sha256: "06e7a7e594a26985523c18383aba4aad39fe6e14f08ffc6ab5b554e1ccdc3cff",
+        licence: "Apache-2.0",
+        licence_url: "https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF/blob/ffbcf4c99e5d617dda10ec8c0e9f75754b0cbb80/README.md",
+        source: "Hugging Face nomic-ai/nomic-embed-text-v2-moe-GGUF @ ffbcf4c",
+        default_llm: false,
+        ram_needed: 1_879_048_192, // 1.75 GiB (measured 1.62 GB)
+        note: Some("Optional. Adds similarity-based suggestions when grouping name variants; grouping works without it."),
+    },
 ];
 
 pub fn find(id: &str) -> Option<&'static CatalogModel> {
@@ -194,6 +218,11 @@ pub fn find_by_sha256(sha: &str) -> Option<&'static CatalogModel> {
 
 pub fn default_llm() -> &'static CatalogModel {
     CATALOG.iter().find(|m| m.default_llm).expect("catalog has a default LLM")
+}
+
+/// The catalog embedding model (entity grouping).
+pub fn embedding_model() -> &'static CatalogModel {
+    CATALOG.iter().find(|m| m.purpose == ModelPurpose::Embedding).expect("catalog has an embedding model")
 }
 
 pub fn ocr_pair() -> (&'static CatalogModel, &'static CatalogModel) {
@@ -231,6 +260,7 @@ mod tests {
         }
         assert_eq!(CATALOG.iter().filter(|m| m.default_llm).count(), 1);
         assert_eq!(default_llm().purpose, ModelPurpose::Llm);
+        assert_eq!(embedding_model().purpose, ModelPurpose::Embedding);
         let (d, r) = ocr_pair();
         assert_eq!(d.file_name, "craft_mlt_25k.gguf");
         assert_eq!(r.file_name, "latin_g2.gguf");
