@@ -94,12 +94,22 @@ export default function ModelManager() {
     }
   };
 
+  // Before download only an estimate is possible (assessFit needs the file,
+  // and the app never asks QVAC about files it does not have).
+  const ramEstimate = (m: ModelInfo): "ok" | "low" | null => {
+    if (!m.ramNeeded || !caps?.systemMemory) return null;
+    // Leave room for the OS, the app and the document being scanned.
+    return m.ramNeeded <= caps.systemMemory * 0.6 ? "ok" : "low";
+  };
+
   const handleDownload = (m: ModelInfo) =>
     run(`dl-${m.id}`, async () => {
-      const ok = await ask(
-        t("ai.confirmDownload", { name: m.name, size: formatBytes(m.size), host: hostOf(m.source) }),
-        { title: t("ai.downloadTitle"), kind: "info" }
-      );
+      const est = ramEstimate(m);
+      const lines = [t("ai.confirmDownload", { name: m.name, size: formatBytes(m.size), host: hostOf(m.source) })];
+      if (m.ramNeeded) lines.push(t("ai.ramNeeded", { size: formatBytes(m.ramNeeded) }));
+      if (est === "low") lines.push(t("ai.ramEstimateLow", { total: formatBytes(caps!.systemMemory!) }));
+      if (m.note) lines.push(m.note);
+      const ok = await ask(lines.join("\n\n"), { title: t("ai.downloadTitle"), kind: est === "low" ? "warning" : "info" });
       if (!ok) return;
       setProgress((p) => ({ ...p, [m.id]: { received: 0, total: m.size } }));
       await downloadModel(m.id);
@@ -196,7 +206,16 @@ export default function ModelManager() {
             </div>
             <div className="text-xs text-gray-500">
               {formatBytes(m.size)} · {m.licence}
+              {m.purpose === "llm" && m.ramNeeded > 0 && <> · {t("ai.ramNeeded", { size: formatBytes(m.ramNeeded) })}</>}
             </div>
+            {m.purpose === "llm" && !m.installed && ramEstimate(m) && (
+              <div className={`text-xs mt-0.5 ${ramEstimate(m) === "ok" ? "text-gray-500" : "text-amber-600"}`}>
+                {ramEstimate(m) === "ok"
+                  ? t("ai.ramEstimateOk", { total: formatBytes(caps.systemMemory!) })
+                  : t("ai.ramEstimateLow", { total: formatBytes(caps.systemMemory!) })}
+              </div>
+            )}
+            {m.note && <div className="text-xs text-gray-500 mt-0.5">{m.note}</div>}
             {m.purpose === "llm" && m.installed && (
               <div className="text-xs mt-0.5">
                 {m.fit ? (
@@ -313,7 +332,10 @@ export default function ModelManager() {
             className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {installedLlms.map((m) => (
-              <option key={m.id} value={m.id}>{m.name}</option>
+              <option key={m.id} value={m.id} disabled={m.fit?.verdict === "likely-too-large" && m.id !== caps.layer3Model}>
+                {m.name} · {formatBytes(m.size)}
+                {m.fit ? ` · ${t(`ai.fit.${m.fit.verdict}`)}` : ""}
+              </option>
             ))}
           </select>
         )}

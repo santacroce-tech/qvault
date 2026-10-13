@@ -1,0 +1,199 @@
+{
+  "id": "pt_peticao_inicial",
+  "lang": "pt",
+  "split": "dev",
+  "kind": "court filing",
+  "description": "Petição inicial de ação indenizatória (Brasil). Número de processo no padrão CNJ, \"SOBRENOME, Nome\", nomes repetidos por sobrenome, placa Mercosul, data de nascimento, prontuário médico, cartão de crédito, IP. Armadilhas: tribunal, artigos do CPC/CDC, súmulas do STJ e precedentes (REsp).",
+  "source": "src/pt_peticao_inicial.txt",
+  "pages": [
+    {
+      "text": "EXCELENTÍSSIMO SENHOR DOUTOR JUIZ DE DIREITO DA 3ª VARA CÍVEL DO FORO REGIONAL DE PINHEIROS – COMARCA DE SÃO PAULO/SP\n\nProcesso nº 1002345-67.2024.8.26.0011\n\nCARVALHO, Juliana Rezende de, brasileira, solteira, enfermeira, nascida em 03/04/1990, portadora do CPF nº 529.982.247-25, residente e domiciliada na Rua dos Pinheiros, 1.288, apto. 54, Pinheiros, São Paulo/SP, CEP 05422-002, endereço eletrônico juliana.rezende@email.example.com.br, por sua advogada que esta subscreve (procuração anexa), vem, respeitosamente, à presença de Vossa Excelência, propor a presente\n\nAÇÃO DE INDENIZAÇÃO POR DANOS MATERIAIS E MORAIS\n\nem face de Transportes Rodovia Sul S.A., inscrita no CNPJ sob o nº 12.345.678/0001-95, com sede na Rodovia Régis Bittencourt, km 279, Embu das Artes/SP, CEP 06803-480, pelos fatos e fundamentos a seguir expostos.\n\nI – DOS FATOS\n\n1. Em 14 de março de 2024, a Autora conduzia seu veículo, placa FQX4D21, quando foi atingida pelo caminhão placa BRA-2E19, de propriedade da Ré, conduzido pelo motorista Edvaldo\nNogueira Paixão.\n\n2. A Autora foi socorrida ao Hospital das Clínicas, onde recebeu atendimento sob o prontuário nº HC-2024-118845, permanecendo internada até 22/03/2024.\n\n3. As despesas médicas, pagas com o cartão 4111 1111 1111 1111, somaram R$ 23.418,90, e os reparos do veículo, R$ 11.200,00.\n\n4. Em contato com a Ré pelo telefone (11) 4555-0123, a Autora foi informada pelo Sr. Paixão de que nada seria pago. O registro de atendimento online foi feito a partir do IP 198.51.100.77.\n\nII – DO DIREITO\n\n5. A responsabilidade da Ré é objetiva, nos termos do art. 37, § 6º, da Constituição Federal e dos arts. 186 e 927 do Código Civil. Nesse sentido: STJ, REsp 1.737.412/SE, Rel. Min. Nancy Andrighi, Terceira Turma, j. 05/02/2019; Súmula 37 do STJ.\n\n6. O valor da causa observa o art. 292, V, do Código de Processo Civil.\n\nIII – DOS PEDIDOS\n\nDiante do exposto, requer a condenação da Ré ao pagamento de R$ 34.618,90 a título de danos materiais e R$ 30.000,00 a título de danos morais.\n\nDá-se à causa o valor de R$ 64.618,90.\n\nTermos em que pede deferimento.\n\nSão Paulo, 2 de maio de 2024.\n\nFernanda Lopes Tavares\nOAB/SP 312.548\n",
+      "spans": [
+        {
+          "start": 138,
+          "end": 163,
+          "category": "CaseNumber",
+          "text": "1002345-67.2024.8.26.0011"
+        },
+        {
+          "start": 165,
+          "end": 193,
+          "category": "PersonName",
+          "text": "CARVALHO, Juliana Rezende de"
+        },
+        {
+          "start": 240,
+          "end": 250,
+          "category": "DateOfBirth",
+          "text": "03/04/1990"
+        },
+        {
+          "start": 273,
+          "end": 287,
+          "category": "NationalId",
+          "text": "529.982.247-25"
+        },
+        {
+          "start": 316,
+          "end": 391,
+          "category": "Address",
+          "text": "Rua dos Pinheiros, 1.288, apto. 54, Pinheiros, São Paulo/SP, CEP 05422-002"
+        },
+        {
+          "start": 415,
+          "end": 451,
+          "category": "Email",
+          "text": "juliana.rezende@email.example.com.br"
+        },
+        {
+          "start": 652,
+          "end": 680,
+          "category": "CompanyName",
+          "text": "Transportes Rodovia Sul S.A."
+        },
+        {
+          "start": 709,
+          "end": 727,
+          "category": "TaxId",
+          "text": "12.345.678/0001-95"
+        },
+        {
+          "start": 741,
+          "end": 809,
+          "category": "Address",
+          "text": "Rodovia Régis Bittencourt, km 279, Embu das Artes/SP, CEP 06803-480"
+        },
+        {
+          "start": 880,
+          "end": 900,
+          "category": "Date",
+          "text": "14 de março de 2024"
+        },
+        {
+          "start": 940,
+          "end": 947,
+          "category": "LicensePlate",
+          "text": "FQX4D21"
+        },
+        {
+          "start": 990,
+          "end": 998,
+          "category": "LicensePlate",
+          "text": "BRA-2E19"
+        },
+        {
+          "start": 1048,
+          "end": 1072,
+          "category": "PersonName",
+          "text": "Edvaldo\nNogueira Paixão"
+        },
+        {
+          "start": 1104,
+          "end": 1126,
+          "category": "CompanyName",
+          "text": "Hospital das Clínicas",
+          "optional": true
+        },
+        {
+          "start": 1175,
+          "end": 1189,
+          "category": "MedicalRecordNumber",
+          "text": "HC-2024-118845"
+        },
+        {
+          "start": 1219,
+          "end": 1229,
+          "category": "Date",
+          "text": "22/03/2024"
+        },
+        {
+          "start": 1277,
+          "end": 1296,
+          "category": "CreditCard",
+          "text": "4111 1111 1111 1111"
+        },
+        {
+          "start": 1306,
+          "end": 1318,
+          "category": "MonetaryAmount",
+          "text": "R$ 23.418,90"
+        },
+        {
+          "start": 1346,
+          "end": 1358,
+          "category": "MonetaryAmount",
+          "text": "R$ 11.200,00"
+        },
+        {
+          "start": 1399,
+          "end": 1413,
+          "category": "PhoneNumber",
+          "text": "(11) 4555-0123"
+        },
+        {
+          "start": 1447,
+          "end": 1454,
+          "category": "PersonName",
+          "text": "Paixão"
+        },
+        {
+          "start": 1537,
+          "end": 1550,
+          "category": "IpAddress",
+          "text": "198.51.100.77"
+        },
+        {
+          "start": 1760,
+          "end": 1774,
+          "category": "PersonName",
+          "text": "Nancy Andrighi",
+          "optional": true
+        },
+        {
+          "start": 1795,
+          "end": 1805,
+          "category": "Date",
+          "text": "05/02/2019",
+          "optional": true
+        },
+        {
+          "start": 1986,
+          "end": 1998,
+          "category": "MonetaryAmount",
+          "text": "R$ 34.618,90"
+        },
+        {
+          "start": 2030,
+          "end": 2042,
+          "category": "MonetaryAmount",
+          "text": "R$ 30.000,00"
+        },
+        {
+          "start": 2098,
+          "end": 2110,
+          "category": "MonetaryAmount",
+          "text": "R$ 64.618,90"
+        },
+        {
+          "start": 2158,
+          "end": 2175,
+          "category": "Date",
+          "text": "2 de maio de 2024"
+        },
+        {
+          "start": 2178,
+          "end": 2200,
+          "category": "PersonName",
+          "text": "Fernanda Lopes Tavares"
+        },
+        {
+          "start": 2208,
+          "end": 2215,
+          "category": "ClientId",
+          "text": "312.548",
+          "optional": true
+        }
+      ]
+    }
+  ]
+}

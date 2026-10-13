@@ -1,0 +1,238 @@
+{
+  "id": "en_court_complaint",
+  "lang": "en",
+  "split": "dev",
+  "kind": "court filing",
+  "description": "US civil complaint. Caption in \"LAST, First\" form, case number, attorney block, several phone formats, DOB vs. other dates, case citations and statutes as false-positive traps, a name split across a line break.",
+  "source": "src/en_court_complaint.txt",
+  "pages": [
+    {
+      "text": "UNITED STATES DISTRICT COURT\nNORTHERN DISTRICT OF CALIFORNIA\n\nHOLLOWAY, Dana, an individual,\n        Plaintiff,\n    v.\nBrightwater Logistics Corp., a Delaware corporation, and\nMarcus T. Feeney, an individual,\n        Defendants.\n\nCase No. 3:24-cv-01187-JSW\n\nCOMPLAINT FOR DAMAGES AND DEMAND FOR JURY TRIAL\n\nPlaintiff Dana Holloway (\"Plaintiff\" or \"Ms. Holloway\") alleges as follows:\n\nI. JURISDICTION AND VENUE\n\n1. This Court has jurisdiction under 28 U.S.C. § 1331 and 42 U.S.C. § 2000e-5(f)(3). Venue is proper in this District under 28 U.S.C. § 1391(b).\n\nII. PARTIES\n\n2. Plaintiff is an adult residing at 2287 Juniper Hollow Road, Apt. 4B, Oakland, CA 94611. Plaintiff was born on April 9, 1986 and was employed by Defendant from March 2, 2019 until August 30, 2023.\n\n3. Defendant Brightwater Logistics Corp. (\"Brightwater\") maintains its principal office at 900 Harbor Point Boulevard, Suite 1400, Alameda, CA 94501.\n\n4. Defendant Marcus T. Feeney was Plaintiff's direct supervisor. On information and belief, Mr. Feeney resides in Contra Costa County.\n\nIII. FACTUAL ALLEGATIONS\n\n5. On June 12, 2023, Plaintiff reported to Human Resources Director Priya\nRamaswamy that Mr. Feeney had altered her timesheets. Ms. Ramaswamy acknowledged the report by e-mail from p.ramaswamy@brightwater-logistics.example.com.\n\n6. Plaintiff's employee number was BWL-004417. Her payroll records list Social Security Number 666-41-2207 and a California driver's license, No. D4817265.\n\n7. Plaintiff was terminated on August 30, 2023, eleven weeks after her report. See Burlington N. & Santa Fe Ry. Co. v. White, 548 U.S. 53, 68 (2006); Yartzoff v. Thomas, 809 F.2d 1371, 1376 (9th Cir. 1987).\n\n8. Plaintiff's unpaid wages total $18,442.50. She seeks back pay, front pay and damages of not less than $250,000.\n\nIV. CAUSES OF ACTION\n\nFIRST CAUSE OF ACTION\n(Retaliation, Title VII of the Civil Rights Act of 1964)\n\n9. Plaintiff incorporates paragraphs 1 through 8. The Equal Employment Opportunity Commission issued a Notice of Right to Sue on January 5, 2024 (Charge No. 555-2023-01942).\n\nPRAYER FOR RELIEF\n\nWHEREFORE, Plaintiff requests judgment against Defendants, jointly and severally, together with costs under Fed. R. Civ. P. 54(d).\n\nDated: February 14, 2024\n\nRespectfully submitted,\nEllen K. Marsh (SBN 287731)\nMarsh & Okonjo LLP\n450 Sansome Street, 9th Floor, San Francisco, CA 94111\nTel: (415) 555-0142 | Fax: 415.555.0143\nMobile: +1 415 555 0199\nemarsh@marsh-okonjo.test\nAttorneys for Plaintiff Dana Holloway\n",
+      "spans": [
+        {
+          "start": 62,
+          "end": 76,
+          "category": "PersonName",
+          "text": "HOLLOWAY, Dana"
+        },
+        {
+          "start": 119,
+          "end": 146,
+          "category": "CompanyName",
+          "text": "Brightwater Logistics Corp."
+        },
+        {
+          "start": 176,
+          "end": 192,
+          "category": "PersonName",
+          "text": "Marcus T. Feeney"
+        },
+        {
+          "start": 239,
+          "end": 256,
+          "category": "CaseNumber",
+          "text": "3:24-cv-01187-JSW"
+        },
+        {
+          "start": 317,
+          "end": 330,
+          "category": "PersonName",
+          "text": "Dana Holloway"
+        },
+        {
+          "start": 352,
+          "end": 360,
+          "category": "PersonName",
+          "text": "Holloway"
+        },
+        {
+          "start": 610,
+          "end": 662,
+          "category": "Address",
+          "text": "2287 Juniper Hollow Road, Apt. 4B, Oakland, CA 94611"
+        },
+        {
+          "start": 686,
+          "end": 699,
+          "category": "DateOfBirth",
+          "text": "April 9, 1986"
+        },
+        {
+          "start": 735,
+          "end": 748,
+          "category": "Date",
+          "text": "March 2, 2019"
+        },
+        {
+          "start": 755,
+          "end": 770,
+          "category": "Date",
+          "text": "August 30, 2023"
+        },
+        {
+          "start": 786,
+          "end": 813,
+          "category": "CompanyName",
+          "text": "Brightwater Logistics Corp."
+        },
+        {
+          "start": 864,
+          "end": 921,
+          "category": "Address",
+          "text": "900 Harbor Point Boulevard, Suite 1400, Alameda, CA 94501"
+        },
+        {
+          "start": 937,
+          "end": 953,
+          "category": "PersonName",
+          "text": "Marcus T. Feeney"
+        },
+        {
+          "start": 1020,
+          "end": 1026,
+          "category": "PersonName",
+          "text": "Feeney"
+        },
+        {
+          "start": 1092,
+          "end": 1105,
+          "category": "Date",
+          "text": "June 12, 2023"
+        },
+        {
+          "start": 1154,
+          "end": 1169,
+          "category": "PersonName",
+          "text": "Priya\nRamaswamy"
+        },
+        {
+          "start": 1179,
+          "end": 1185,
+          "category": "PersonName",
+          "text": "Feeney"
+        },
+        {
+          "start": 1218,
+          "end": 1227,
+          "category": "PersonName",
+          "text": "Ramaswamy"
+        },
+        {
+          "start": 1267,
+          "end": 1312,
+          "category": "Email",
+          "text": "p.ramaswamy@brightwater-logistics.example.com"
+        },
+        {
+          "start": 1350,
+          "end": 1360,
+          "category": "ClientId",
+          "text": "BWL-004417"
+        },
+        {
+          "start": 1410,
+          "end": 1421,
+          "category": "SocialSecurityNumber",
+          "text": "666-41-2207"
+        },
+        {
+          "start": 1461,
+          "end": 1469,
+          "category": "DriversLicense",
+          "text": "D4817265"
+        },
+        {
+          "start": 1503,
+          "end": 1518,
+          "category": "Date",
+          "text": "August 30, 2023"
+        },
+        {
+          "start": 1714,
+          "end": 1724,
+          "category": "MonetaryAmount",
+          "text": "$18,442.50"
+        },
+        {
+          "start": 1785,
+          "end": 1793,
+          "category": "MonetaryAmount",
+          "text": "$250,000"
+        },
+        {
+          "start": 2027,
+          "end": 2042,
+          "category": "Date",
+          "text": "January 5, 2024"
+        },
+        {
+          "start": 2055,
+          "end": 2069,
+          "category": "CaseNumber",
+          "text": "555-2023-01942"
+        },
+        {
+          "start": 2231,
+          "end": 2248,
+          "category": "Date",
+          "text": "February 14, 2024"
+        },
+        {
+          "start": 2274,
+          "end": 2288,
+          "category": "PersonName",
+          "text": "Ellen K. Marsh"
+        },
+        {
+          "start": 2294,
+          "end": 2300,
+          "category": "ClientId",
+          "text": "287731",
+          "optional": true
+        },
+        {
+          "start": 2302,
+          "end": 2320,
+          "category": "CompanyName",
+          "text": "Marsh & Okonjo LLP"
+        },
+        {
+          "start": 2321,
+          "end": 2375,
+          "category": "Address",
+          "text": "450 Sansome Street, 9th Floor, San Francisco, CA 94111"
+        },
+        {
+          "start": 2381,
+          "end": 2395,
+          "category": "PhoneNumber",
+          "text": "(415) 555-0142"
+        },
+        {
+          "start": 2403,
+          "end": 2415,
+          "category": "PhoneNumber",
+          "text": "415.555.0143"
+        },
+        {
+          "start": 2424,
+          "end": 2439,
+          "category": "PhoneNumber",
+          "text": "+1 415 555 0199"
+        },
+        {
+          "start": 2440,
+          "end": 2464,
+          "category": "Email",
+          "text": "emarsh@marsh-okonjo.test"
+        },
+        {
+          "start": 2489,
+          "end": 2502,
+          "category": "PersonName",
+          "text": "Dana Holloway"
+        }
+      ]
+    }
+  ]
+}

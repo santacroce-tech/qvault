@@ -1,0 +1,277 @@
+{
+  "id": "en_demand_letter",
+  "lang": "en",
+  "split": "dev",
+  "kind": "letter",
+  "description": "Personal-injury demand letter. Medical record numbers, a licence plate, a passport number, initials and honorifics, a clinic and an insurer named only as institutions (optional), dates that are not DOB, a policy number in a table.",
+  "source": "src/en_demand_letter.txt",
+  "pages": [
+    {
+      "text": "Okafor Whitfield PLLC\nAttorneys at Law\n77 Water Street, Suite 310, Brooklyn, NY 11201\n(718) 555-0163\n\nOctober 3, 2024\n\nVIA CERTIFIED MAIL AND E-MAIL (claims.intake@northgate-mutual.example)\n\nNorthgate Mutual Insurance Company\nAttn: Claims Department\n1 Liberty Plaza, Hartford, CT 06103\n\nRe:     Our client:        Tobias R. Lindqvist\n        Your insured:      Harriet Pemberton-Shaw\n        Claim No.:         NGM-24-0073318\n        Date of loss:      May 18, 2024\n\nDear Claims Representative:\n\nThis firm represents Tobias R. Lindqvist (\"Mr. Lindqvist\") for injuries he sustained when the vehicle driven by your insured, a grey sedan bearing New York plate KXR-4471, struck his bicycle at the intersection of Atlantic Avenue and Court Street.\n\nMr. Lindqvist (date of birth 11/02/1979) was taken by ambulance to Riverside Clinic, where he was treated under medical record number MRN 00482913. He was later admitted to St. Brendan's Hospital (patient ID SBH-7731-0925) for surgery on May 21, 2024. His treating orthopedist, Dr. A. N. Castellanos, has confirmed a fracture of the left radius.\n\nBecause Mr. Lindqvist is a Swedish national, his identity was verified at admission with passport no. 91734528. Your insured's New York driver license number is 482 991 073.\n\nDamages to date:\n\n| Item                         | Date              | Amount       |\n|------------------------------|-------------------|--------------|\n| Ambulance transport          | 05/18/2024        | $1,840.00    |\n| Emergency department         | 05/18/2024        | $6,215.75    |\n| Surgery and admission        | 05/21/2024        | $38,904.10   |\n| Physical therapy (12 visits) | 06/03/2024–08/26/2024 | $2,760.00    |\n| Lost wages                   |                   | $11,500.00   |\n\nWe demand $185,000.00 in full settlement, within the policy limits under policy no. NGM-PA-5520193. This offer remains open for thirty (30) days. If we do not hear from you by November 4, 2024, we will file suit in the Supreme Court of the State of New York, Kings County.\n\nPlease direct all communication to the undersigned at j.whitfield@okafor-whitfield.test or 718-555-0164.\n\nVery truly yours,\n\nJ. Whitfield\nJerome Whitfield, Esq.\n\ncc: T. R. Lindqvist (client)\n",
+      "spans": [
+        {
+          "start": 0,
+          "end": 21,
+          "category": "CompanyName",
+          "text": "Okafor Whitfield PLLC"
+        },
+        {
+          "start": 39,
+          "end": 85,
+          "category": "Address",
+          "text": "77 Water Street, Suite 310, Brooklyn, NY 11201"
+        },
+        {
+          "start": 86,
+          "end": 100,
+          "category": "PhoneNumber",
+          "text": "(718) 555-0163"
+        },
+        {
+          "start": 102,
+          "end": 117,
+          "category": "Date",
+          "text": "October 3, 2024"
+        },
+        {
+          "start": 150,
+          "end": 188,
+          "category": "Email",
+          "text": "claims.intake@northgate-mutual.example"
+        },
+        {
+          "start": 191,
+          "end": 225,
+          "category": "CompanyName",
+          "text": "Northgate Mutual Insurance Company",
+          "optional": true
+        },
+        {
+          "start": 250,
+          "end": 285,
+          "category": "Address",
+          "text": "1 Liberty Plaza, Hartford, CT 06103",
+          "optional": true
+        },
+        {
+          "start": 314,
+          "end": 333,
+          "category": "PersonName",
+          "text": "Tobias R. Lindqvist"
+        },
+        {
+          "start": 361,
+          "end": 383,
+          "category": "PersonName",
+          "text": "Harriet Pemberton-Shaw"
+        },
+        {
+          "start": 411,
+          "end": 425,
+          "category": "ClientId",
+          "text": "NGM-24-0073318"
+        },
+        {
+          "start": 453,
+          "end": 465,
+          "category": "Date",
+          "text": "May 18, 2024"
+        },
+        {
+          "start": 517,
+          "end": 536,
+          "category": "PersonName",
+          "text": "Tobias R. Lindqvist"
+        },
+        {
+          "start": 543,
+          "end": 552,
+          "category": "PersonName",
+          "text": "Lindqvist"
+        },
+        {
+          "start": 658,
+          "end": 666,
+          "category": "LicensePlate",
+          "text": "KXR-4471"
+        },
+        {
+          "start": 749,
+          "end": 758,
+          "category": "PersonName",
+          "text": "Lindqvist"
+        },
+        {
+          "start": 774,
+          "end": 784,
+          "category": "DateOfBirth",
+          "text": "11/02/1979"
+        },
+        {
+          "start": 812,
+          "end": 828,
+          "category": "CompanyName",
+          "text": "Riverside Clinic",
+          "optional": true
+        },
+        {
+          "start": 879,
+          "end": 891,
+          "category": "MedicalRecordNumber",
+          "text": "MRN 00482913"
+        },
+        {
+          "start": 918,
+          "end": 940,
+          "category": "CompanyName",
+          "text": "St. Brendan's Hospital",
+          "optional": true
+        },
+        {
+          "start": 953,
+          "end": 966,
+          "category": "MedicalRecordNumber",
+          "text": "SBH-7731-0925"
+        },
+        {
+          "start": 983,
+          "end": 995,
+          "category": "Date",
+          "text": "May 21, 2024"
+        },
+        {
+          "start": 1027,
+          "end": 1044,
+          "category": "PersonName",
+          "text": "A. N. Castellanos"
+        },
+        {
+          "start": 1104,
+          "end": 1113,
+          "category": "PersonName",
+          "text": "Lindqvist"
+        },
+        {
+          "start": 1194,
+          "end": 1202,
+          "category": "PassportNumber",
+          "text": "91734528"
+        },
+        {
+          "start": 1253,
+          "end": 1264,
+          "category": "DriversLicense",
+          "text": "482 991 073"
+        },
+        {
+          "start": 1454,
+          "end": 1464,
+          "category": "Date",
+          "text": "05/18/2024"
+        },
+        {
+          "start": 1474,
+          "end": 1483,
+          "category": "MonetaryAmount",
+          "text": "$1,840.00"
+        },
+        {
+          "start": 1522,
+          "end": 1532,
+          "category": "Date",
+          "text": "05/18/2024"
+        },
+        {
+          "start": 1542,
+          "end": 1551,
+          "category": "MonetaryAmount",
+          "text": "$6,215.75"
+        },
+        {
+          "start": 1590,
+          "end": 1600,
+          "category": "Date",
+          "text": "05/21/2024"
+        },
+        {
+          "start": 1610,
+          "end": 1620,
+          "category": "MonetaryAmount",
+          "text": "$38,904.10"
+        },
+        {
+          "start": 1658,
+          "end": 1668,
+          "category": "Date",
+          "text": "06/03/2024"
+        },
+        {
+          "start": 1671,
+          "end": 1681,
+          "category": "Date",
+          "text": "08/26/2024"
+        },
+        {
+          "start": 1684,
+          "end": 1693,
+          "category": "MonetaryAmount",
+          "text": "$2,760.00"
+        },
+        {
+          "start": 1752,
+          "end": 1762,
+          "category": "MonetaryAmount",
+          "text": "$11,500.00"
+        },
+        {
+          "start": 1778,
+          "end": 1789,
+          "category": "MonetaryAmount",
+          "text": "$185,000.00"
+        },
+        {
+          "start": 1852,
+          "end": 1866,
+          "category": "ClientId",
+          "text": "NGM-PA-5520193"
+        },
+        {
+          "start": 1944,
+          "end": 1960,
+          "category": "Date",
+          "text": "November 4, 2024"
+        },
+        {
+          "start": 2096,
+          "end": 2129,
+          "category": "Email",
+          "text": "j.whitfield@okafor-whitfield.test"
+        },
+        {
+          "start": 2133,
+          "end": 2145,
+          "category": "PhoneNumber",
+          "text": "718-555-0164"
+        },
+        {
+          "start": 2167,
+          "end": 2179,
+          "category": "PersonName",
+          "text": "J. Whitfield"
+        },
+        {
+          "start": 2180,
+          "end": 2196,
+          "category": "PersonName",
+          "text": "Jerome Whitfield"
+        },
+        {
+          "start": 2208,
+          "end": 2223,
+          "category": "PersonName",
+          "text": "T. R. Lindqvist"
+        }
+      ]
+    }
+  ]
+}

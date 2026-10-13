@@ -1,0 +1,185 @@
+{
+  "id": "pt_procuracao_portugal",
+  "lang": "pt",
+  "split": "dev",
+  "kind": "power of attorney / letter",
+  "description": "Procuração e carta de acompanhamento (Portugal). NIF português, Cartão de Cidadão, IBAN PT50, código postal 4+3, telefones +351, carta de condução, iniciais, \"Apelido, Nome\". Armadilhas: Código do Notariado, Conservatória, números de artigos, \"Lda.\" genérico na lei.",
+  "source": "src/pt_procuracao_portugal.txt",
+  "pages": [
+    {
+      "text": "PROCURAÇÃO\n\nJoaquim Manuel Teixeira Fonseca, divorciado, natural da freguesia de Cedofeita, Porto, nascido em 22 de setembro de 1962, titular do Cartão de Cidadão n.º 12345678 9 ZX4, válido até 30/11/2029, contribuinte fiscal n.º 212 345 678, residente na Rua de Santa Catarina, 312, 2.º Esq., 4000-447 Porto,\n\nconstitui sua bastante procuradora a Dra. Inês Margarida Couto Sarmento, advogada, com a cédula profissional n.º 58123P, com escritório na Avenida da Liberdade, 190, 5.º, 1250-147 Lisboa,\n\na quem confere os poderes forenses gerais e ainda os especiais para, em seu nome, vender à sociedade Douro Vinhos & Quintas, Lda., NIPC 509 876 543, pelo preço de € 385.000,00, o prédio urbano descrito na Conservatória do Registo Predial do Porto sob o n.º 1847/20031015, receber o preço por transferência para a conta com o IBAN PT50 0002 0123 1234 5678 9015 4 e outorgar a respetiva escritura.\n\nPorto, 8 de abril de 2025\n\nJoaquim Manuel Teixeira Fonseca\n\nReconhecimento: Reconheço a assinatura supra, feita na minha presença por Joaquim Manuel Teixeira Fonseca, cuja identidade verifiquei pelo documento acima referido, nos termos do artigo 153.º do Código do Notariado.\n\n---\n\nExmo. Senhor\nFonseca, Joaquim\n\nLisboa, 10 de abril de 2025\n\nAssunto: Venda do prédio urbano – Rua de Santa Catarina\n\nCaro Sr. J. M. T. Fonseca,\n\nJunto envio a minuta da escritura. A compradora, representada pelo seu gerente, Eng. Rui Pedro Magalhães, pretende agendar a outorga para 29 de abril de 2025, no Cartório Notarial de Lisboa.\n\nPara efeitos de registo, preciso ainda de cópia da sua carta de condução n.º P-1234567 8 e do comprovativo do IMI de 2024. Pode contactar-me pelo +351 912 345 678 ou pelo 213 555 019, ou por e-mail para ines.sarmento@advogados.example.pt.\n\nOs honorários, no valor de 3.500 € acrescidos de IVA à taxa legal de 23%, serão faturados após a escritura.\n\nCom os melhores cumprimentos,\n\nInês Sarmento\n",
+      "spans": [
+        {
+          "start": 14,
+          "end": 45,
+          "category": "PersonName",
+          "text": "Joaquim Manuel Teixeira Fonseca"
+        },
+        {
+          "start": 112,
+          "end": 134,
+          "category": "DateOfBirth",
+          "text": "22 de setembro de 1962"
+        },
+        {
+          "start": 172,
+          "end": 186,
+          "category": "NationalId",
+          "text": "12345678 9 ZX4"
+        },
+        {
+          "start": 201,
+          "end": 211,
+          "category": "Date",
+          "text": "30/11/2029"
+        },
+        {
+          "start": 238,
+          "end": 249,
+          "category": "TaxId",
+          "text": "212 345 678"
+        },
+        {
+          "start": 264,
+          "end": 317,
+          "category": "Address",
+          "text": "Rua de Santa Catarina, 312, 2.º Esq., 4000-447 Porto"
+        },
+        {
+          "start": 362,
+          "end": 392,
+          "category": "PersonName",
+          "text": "Inês Margarida Couto Sarmento"
+        },
+        {
+          "start": 436,
+          "end": 442,
+          "category": "ClientId",
+          "text": "58123P",
+          "optional": true
+        },
+        {
+          "start": 463,
+          "end": 511,
+          "category": "Address",
+          "text": "Avenida da Liberdade, 190, 5.º, 1250-147 Lisboa"
+        },
+        {
+          "start": 616,
+          "end": 644,
+          "category": "CompanyName",
+          "text": "Douro Vinhos & Quintas, Lda."
+        },
+        {
+          "start": 651,
+          "end": 662,
+          "category": "TaxId",
+          "text": "509 876 543"
+        },
+        {
+          "start": 679,
+          "end": 693,
+          "category": "MonetaryAmount",
+          "text": "€ 385.000,00"
+        },
+        {
+          "start": 778,
+          "end": 791,
+          "category": "ClientId",
+          "text": "1847/20031015",
+          "optional": true
+        },
+        {
+          "start": 853,
+          "end": 884,
+          "category": "IBAN",
+          "text": "PT50 0002 0123 1234 5678 9015 4"
+        },
+        {
+          "start": 927,
+          "end": 945,
+          "category": "Date",
+          "text": "8 de abril de 2025"
+        },
+        {
+          "start": 947,
+          "end": 978,
+          "category": "PersonName",
+          "text": "Joaquim Manuel Teixeira Fonseca"
+        },
+        {
+          "start": 1056,
+          "end": 1087,
+          "category": "PersonName",
+          "text": "Joaquim Manuel Teixeira Fonseca"
+        },
+        {
+          "start": 1219,
+          "end": 1235,
+          "category": "PersonName",
+          "text": "Fonseca, Joaquim"
+        },
+        {
+          "start": 1245,
+          "end": 1264,
+          "category": "Date",
+          "text": "10 de abril de 2025"
+        },
+        {
+          "start": 1335,
+          "end": 1351,
+          "category": "PersonName",
+          "text": "J. M. T. Fonseca"
+        },
+        {
+          "start": 1439,
+          "end": 1459,
+          "category": "PersonName",
+          "text": "Rui Pedro Magalhães"
+        },
+        {
+          "start": 1493,
+          "end": 1512,
+          "category": "Date",
+          "text": "29 de abril de 2025"
+        },
+        {
+          "start": 1629,
+          "end": 1640,
+          "category": "DriversLicense",
+          "text": "P-1234567 8"
+        },
+        {
+          "start": 1698,
+          "end": 1714,
+          "category": "PhoneNumber",
+          "text": "+351 912 345 678"
+        },
+        {
+          "start": 1723,
+          "end": 1734,
+          "category": "PhoneNumber",
+          "text": "213 555 019"
+        },
+        {
+          "start": 1755,
+          "end": 1789,
+          "category": "Email",
+          "text": "ines.sarmento@advogados.example.pt"
+        },
+        {
+          "start": 1820,
+          "end": 1829,
+          "category": "MonetaryAmount",
+          "text": "3.500 €"
+        },
+        {
+          "start": 1938,
+          "end": 1952,
+          "category": "PersonName",
+          "text": "Inês Sarmento"
+        }
+      ]
+    }
+  ]
+}

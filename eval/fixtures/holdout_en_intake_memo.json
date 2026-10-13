@@ -1,0 +1,166 @@
+{
+  "id": "holdout_en_intake_memo",
+  "lang": "en",
+  "split": "holdout",
+  "kind": "memo (held out)",
+  "description": "Held-out internal intake memo, written after the Layer 1 changes and never used to tune them. Mixed formats the dev fixtures do not use (dotted dates, 10-digit phone without separators, ZIP+4, Discover card, ITIN-like number, Canadian address and SIN, bank account with \"acct\" abbreviation).",
+  "source": "src/holdout_en_intake_memo.txt",
+  "pages": [
+    {
+      "text": "PRIVILEGED & CONFIDENTIAL — ATTORNEY WORK PRODUCT\n\nMEMORANDUM\n\nTO:      Litigation Team\nFROM:    Naomi Fairbanks-Oyelaran\nDATE:    2025.03.18\nRE:      New matter intake – Desmond Achebe-Kowalczyk v. Pellucid Freight Systems, Inc. (our ref. M-25-0331)\n\n1. Client details\n\nOur client, Desmond Achebe-Kowalczyk (DOB 07.11.1968), lives at 83 Lantern Hill Terrace, Unit 12, Marietta, GA 30064-3317. He can be reached on 4045550127 (cell) or at desmond.ak@inbox.example.org. He previously lived in Canada at 2210 Rue Sainte-Catherine Ouest, Montréal, QC H3H 1M7 and still holds a Canadian Social Insurance Number, 046 454 286.\n\n2. The dispute\n\nDesmond drove for Pellucid from Feb. 3, 2021 to Nov. 30, 2024. Pellucid's dispatcher, Grete Mauldin, deducted fuel costs from his settlements without authorisation. Total deductions per his spreadsheet: USD 27,413.06. Reimbursements were paid to his checking acct. 000123456789 at Peachtree Community Bank.\n\n3. Payment card\n\nHe used a company fuel card ending 1117; the full number on the statement is 6011 1111 1111 1117.\n\n4. Opposing counsel\n\nBartholomew Quist, Quist Harrow & Lyle LLP, (678) 555-0110. He has asked for an extension until April 15, 2025.\n\n5. Next steps\n\nConflicts check cleared on 3/17/25. Engagement letter to go out under the standard terms (Fee Schedule B). Prepare a demand under O.C.G.A. § 34-7-2 and the Fair Labor Standards Act.\n\nN.F.\n",
+      "spans": [
+        {
+          "start": 99,
+          "end": 123,
+          "category": "PersonName",
+          "text": "Naomi Fairbanks-Oyelaran"
+        },
+        {
+          "start": 133,
+          "end": 143,
+          "category": "Date",
+          "text": "2025.03.18"
+        },
+        {
+          "start": 175,
+          "end": 199,
+          "category": "PersonName",
+          "text": "Desmond Achebe-Kowalczyk"
+        },
+        {
+          "start": 203,
+          "end": 233,
+          "category": "CompanyName",
+          "text": "Pellucid Freight Systems, Inc."
+        },
+        {
+          "start": 244,
+          "end": 253,
+          "category": "ClientId",
+          "text": "M-25-0331"
+        },
+        {
+          "start": 287,
+          "end": 311,
+          "category": "PersonName",
+          "text": "Desmond Achebe-Kowalczyk"
+        },
+        {
+          "start": 317,
+          "end": 327,
+          "category": "DateOfBirth",
+          "text": "07.11.1968"
+        },
+        {
+          "start": 339,
+          "end": 396,
+          "category": "Address",
+          "text": "83 Lantern Hill Terrace, Unit 12, Marietta, GA 30064-3317"
+        },
+        {
+          "start": 419,
+          "end": 429,
+          "category": "PhoneNumber",
+          "text": "4045550127"
+        },
+        {
+          "start": 443,
+          "end": 471,
+          "category": "Email",
+          "text": "desmond.ak@inbox.example.org"
+        },
+        {
+          "start": 506,
+          "end": 560,
+          "category": "Address",
+          "text": "2210 Rue Sainte-Catherine Ouest, Montréal, QC H3H 1M7"
+        },
+        {
+          "start": 613,
+          "end": 624,
+          "category": "NationalId",
+          "text": "046 454 286"
+        },
+        {
+          "start": 643,
+          "end": 650,
+          "category": "PersonName",
+          "text": "Desmond"
+        },
+        {
+          "start": 675,
+          "end": 687,
+          "category": "Date",
+          "text": "Feb. 3, 2021"
+        },
+        {
+          "start": 691,
+          "end": 704,
+          "category": "Date",
+          "text": "Nov. 30, 2024"
+        },
+        {
+          "start": 729,
+          "end": 742,
+          "category": "PersonName",
+          "text": "Grete Mauldin"
+        },
+        {
+          "start": 846,
+          "end": 859,
+          "category": "MonetaryAmount",
+          "text": "USD 27,413.06"
+        },
+        {
+          "start": 908,
+          "end": 920,
+          "category": "BankAccount",
+          "text": "000123456789"
+        },
+        {
+          "start": 924,
+          "end": 948,
+          "category": "CompanyName",
+          "text": "Peachtree Community Bank",
+          "optional": true
+        },
+        {
+          "start": 1045,
+          "end": 1064,
+          "category": "CreditCard",
+          "text": "6011 1111 1111 1117"
+        },
+        {
+          "start": 1088,
+          "end": 1105,
+          "category": "PersonName",
+          "text": "Bartholomew Quist"
+        },
+        {
+          "start": 1107,
+          "end": 1130,
+          "category": "CompanyName",
+          "text": "Quist Harrow & Lyle LLP"
+        },
+        {
+          "start": 1132,
+          "end": 1146,
+          "category": "PhoneNumber",
+          "text": "(678) 555-0110"
+        },
+        {
+          "start": 1184,
+          "end": 1198,
+          "category": "Date",
+          "text": "April 15, 2025"
+        },
+        {
+          "start": 1243,
+          "end": 1250,
+          "category": "Date",
+          "text": "3/17/25"
+        }
+      ]
+    }
+  ]
+}

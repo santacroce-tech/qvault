@@ -37,6 +37,11 @@ pub struct CatalogModel {
     pub source: &'static str,
     /// Default Layer 3 model.
     pub default_llm: bool,
+    /// Approximate memory needed to run it (bytes; measured peak of the
+    /// sidecar during the Phase 3 eval, rounded up). 0 for OCR models.
+    pub ram_needed: u64,
+    /// Shown in the Model Manager before download.
+    pub note: Option<&'static str>,
 }
 
 pub const CATALOG: &[CatalogModel] = &[
@@ -57,6 +62,8 @@ pub const CATALOG: &[CatalogModel] = &[
         licence_url: "https://github.com/clovaai/CRAFT-pytorch/blob/master/LICENSE",
         source: "QVAC model registry OCR_CRAFT (qvac_models_compiled/ocr/gguf/easyocr/2026-05-14)",
         default_llm: false,
+        ram_needed: 0,
+        note: None,
     },
     CatalogModel {
         id: "easyocr-latin-g2",
@@ -71,6 +78,77 @@ pub const CATALOG: &[CatalogModel] = &[
         licence_url: "https://github.com/JaidedAI/EasyOCR/blob/master/LICENSE",
         source: "QVAC model registry OCR_LATIN (qvac_models_compiled/ocr/gguf/easyocr/2026-05-14)",
         default_llm: false,
+        ram_needed: 0,
+        note: None,
+    },
+    // Layer 3 LLMs. Chosen on the Phase 3 eval (docs/qvac-integration.md
+    // §11.4): official Qwen GGUFs at pinned revisions, SHA-256 computed after
+    // download (and equal to the HF LFS object id). Qwen publishes the small
+    // Qwen3 models only as Q8_0. Memory needs are the measured peak RSS of the
+    // sidecar on the eval, rounded up.
+    CatalogModel {
+        id: "qwen3-0.6b-q8_0",
+        name: "Qwen3 0.6B (Q8_0) — light",
+        purpose: ModelPurpose::Llm,
+        file_name: "qwen3-0.6b-q8_0.gguf",
+        url: Some("https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/23749fefcc72300e3a2ad315e1317431b06b590a/Qwen3-0.6B-Q8_0.gguf"),
+        manual_url: None,
+        size: 639_446_688,
+        sha256: "9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031",
+        licence: "Apache-2.0",
+        licence_url: "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/blob/23749fefcc72300e3a2ad315e1317431b06b590a/LICENSE",
+        source: "Hugging Face Qwen/Qwen3-0.6B-GGUF @ 23749fe",
+        default_llm: false,
+        ram_needed: 1_610_612_736, // 1.5 GiB (measured 1.30 GB)
+        note: Some("For computers with little memory: finds less than the default model."),
+    },
+    CatalogModel {
+        id: "qwen3-1.7b-q8_0",
+        name: "Qwen3 1.7B (Q8_0)",
+        purpose: ModelPurpose::Llm,
+        file_name: "qwen3-1.7b-q8_0.gguf",
+        url: Some("https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/90862c4b9d2787eaed51d12237eafdfe7c5f6077/Qwen3-1.7B-Q8_0.gguf"),
+        manual_url: None,
+        size: 1_834_426_016,
+        sha256: "061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a",
+        licence: "Apache-2.0",
+        licence_url: "https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/blob/90862c4b9d2787eaed51d12237eafdfe7c5f6077/LICENSE",
+        source: "Hugging Face Qwen/Qwen3-1.7B-GGUF @ 90862c4",
+        default_llm: true,
+        ram_needed: 2_952_790_016, // 2.75 GiB (measured 2.43 GB)
+        note: None,
+    },
+    CatalogModel {
+        id: "qwen3-4b-q4_k_m",
+        name: "Qwen3 4B (Q4_K_M) — workstation",
+        purpose: ModelPurpose::Llm,
+        file_name: "qwen3-4b-q4_k_m.gguf",
+        url: Some("https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/bc640142c66e1fdd12af0bd68f40445458f3869b/Qwen3-4B-Q4_K_M.gguf"),
+        manual_url: None,
+        size: 2_497_280_256,
+        sha256: "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+        licence: "Apache-2.0",
+        licence_url: "https://huggingface.co/Qwen/Qwen3-4B-GGUF/blob/bc640142c66e1fdd12af0bd68f40445458f3869b/LICENSE",
+        source: "Hugging Face Qwen/Qwen3-4B-GGUF @ bc64014",
+        default_llm: false,
+        ram_needed: 3_758_096_384, // 3.5 GiB (measured 3.08 GB)
+        note: Some("Finds more, about twice as slow as the default. Best with 16 GB of memory or a GPU."),
+    },
+    CatalogModel {
+        id: "qwen3-8b-q4_k_m",
+        name: "Qwen3 8B (Q4_K_M) — large workstation",
+        purpose: ModelPurpose::Llm,
+        file_name: "qwen3-8b-q4_k_m.gguf",
+        url: Some("https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/7c41481f57cb95916b40956ab2f0b139b296d974/Qwen3-8B-Q4_K_M.gguf"),
+        manual_url: None,
+        size: 5_027_783_488,
+        sha256: "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+        licence: "Apache-2.0",
+        licence_url: "https://huggingface.co/Qwen/Qwen3-8B-GGUF/blob/7c41481f57cb95916b40956ab2f0b139b296d974/LICENSE",
+        source: "Hugging Face Qwen/Qwen3-8B-GGUF @ 7c41481",
+        default_llm: false,
+        ram_needed: 6_442_450_944, // 6 GiB (measured 5.52 GB)
+        note: Some("Highest recall in the eval, about 3.5× slower than the default. Needs a GPU workstation."),
     },
     CatalogModel {
         id: "qwen2.5-0.5b-instruct-q4_k_m",
@@ -84,7 +162,9 @@ pub const CATALOG: &[CatalogModel] = &[
         licence: "Apache-2.0",
         licence_url: "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/9217f5db79a29953eb74d5343926648285ec7e67/LICENSE",
         source: "Hugging Face Qwen/Qwen2.5-0.5B-Instruct-GGUF @ 9217f5d",
-        default_llm: true,
+        default_llm: false,
+        ram_needed: 1_073_741_824, // 1 GiB (measured 0.94 GB)
+        note: Some("Superseded by Qwen3 0.6B, which finds more and is faster."),
     },
     CatalogModel {
         id: "qwen2.5-1.5b-instruct-q4_k_m",
@@ -99,6 +179,8 @@ pub const CATALOG: &[CatalogModel] = &[
         licence_url: "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/blob/91cad51170dc346986eccefdc2dd33a9da36ead9/LICENSE",
         source: "Hugging Face Qwen/Qwen2.5-1.5B-Instruct-GGUF @ 91cad51",
         default_llm: false,
+        ram_needed: 1_879_048_192, // 1.75 GiB (measured 1.56 GB)
+        note: Some("Superseded by Qwen3 1.7B (more precise suggestions)."),
     },
 ];
 

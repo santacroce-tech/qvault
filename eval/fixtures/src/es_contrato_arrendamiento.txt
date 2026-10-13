@@ -1,0 +1,42 @@
+id: es_contrato_arrendamiento
+lang: es
+kind: contract
+description: Contrato de arrendamiento de vivienda (España). DNI y NIE con letra de control, NIF de sociedad, direcciones españolas, IBAN ES, teléfonos +34 y nacionales, importes en euros con coma decimal, fechas en texto, matrícula, nombres con dos apellidos repetidos y partidos entre líneas. Trampas: cláusulas en mayúsculas, referencias a la LAU y al Código Civil.
+---
+CONTRATO DE ARRENDAMIENTO DE VIVIENDA
+
+En Madrid, a [[Date|15 de marzo de 2024]].
+
+REUNIDOS
+
+De una parte, Dña. [[PersonName|María Inmaculada Ferrándiz Olmedo]], mayor de edad, con DNI [[NationalId|48291736Q]], nacida el [[DateOfBirth|3 de julio de 1975]], con domicilio en [[Address|Calle de Alcalá, 214, 3.º B, 28028 Madrid]], en adelante LA ARRENDADORA.
+
+De otra parte, D. [[PersonName|Tomás Ezequiel Barroso
+Quintanilla]], mayor de edad, con NIE [[NationalId|X1234567L]], con domicilio a efectos de notificaciones en [[Address|Avenida de la Albufera, 77, 2.º izda., 28038 Madrid]], teléfono [[PhoneNumber|+34 611 482 907]] y correo electrónico [[Email|tomas.barroso@correo.example.es]], en adelante EL ARRENDATARIO.
+
+Interviene asimismo, como fiadora solidaria, la sociedad [[CompanyName|Inversiones Quintanilla Hermanos, S.L.]], con NIF [[TaxId|B87654321]], representada por su administrador único D. [[PersonName|Rogelio Quintanilla Mateu]].
+
+EXPONEN
+
+I. Que LA ARRENDADORA es propietaria de la vivienda situada en [[Address|Calle del Doctor Esquerdo, 105, 5.º A, 28007 Madrid]], con referencia catastral [[?ClientId|9872023VH5797S0001WX]].
+
+II. Que ambas partes se reconocen capacidad legal suficiente y acuerdan celebrar el presente contrato, que se regirá por la Ley 29/1994, de 24 de noviembre, de Arrendamientos Urbanos (LAU), y supletoriamente por el Código Civil, con arreglo a las siguientes
+
+CLÁUSULAS
+
+PRIMERA. OBJETO Y DURACIÓN. El contrato tendrá una duración de un (1) año a contar desde el [[Date|1 de abril de 2024]], prorrogable conforme al artículo 9 de la LAU.
+
+SEGUNDA. RENTA. La renta mensual será de [[MonetaryAmount|1.250,00 €]] (mil doscientos cincuenta euros), pagadera dentro de los siete primeros días de cada mes mediante transferencia a la cuenta [[IBAN|ES91 2100 0418 4502 0005 1332]], de la que es titular la Sra. [[PersonName|Ferrándiz Olmedo]].
+
+TERCERA. FIANZA. EL ARRENDATARIO entrega en este acto la cantidad de [[MonetaryAmount|2.500 euros]] en concepto de fianza, equivalente a dos mensualidades, que se depositará en la Agencia de Vivienda Social de la Comunidad de Madrid.
+
+CUARTA. PLAZA DE GARAJE. Se incluye el uso de la plaza de garaje n.º 14, en la que EL ARRENDATARIO podrá estacionar exclusivamente el vehículo con matrícula [[LicensePlate|4821 KLM]].
+
+QUINTA. GASTOS. Los gastos de comunidad, por importe de [[MonetaryAmount|85,40 €]] mensuales, serán por cuenta de LA ARRENDADORA.
+
+SEXTA. NOTIFICACIONES. Las notificaciones a LA ARRENDADORA se dirigirán a [[Email|mi.ferrandiz@buzon.example.es]] o al teléfono [[PhoneNumber|915 550 142]].
+
+Y en prueba de conformidad, firman el presente contrato por duplicado en el lugar y fecha indicados.
+
+LA ARRENDADORA                                  EL ARRENDATARIO
+[[PersonName|María Inmaculada Ferrándiz Olmedo]]               [[PersonName|Tomás E. Barroso Quintanilla]]

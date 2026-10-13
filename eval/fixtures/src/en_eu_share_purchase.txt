@@ -1,0 +1,55 @@
+id: en_eu_share_purchase
+lang: en
+kind: contract (cross-border, EU/DE formats)
+description: Share purchase agreement between a German seller and a Dutch buyer. German tax ID, tax number, VAT ID, ID card number, address and licence plate; EU VAT numbers (DE, NL, FR, BE); IBANs from several countries; German and Dutch phone formats; register numbers (optional) and EU regulation numbers as traps.
+---
+SHARE PURCHASE AGREEMENT
+
+dated [[Date|12 June 2025]]
+
+between
+
+(1) Dr. [[PersonName|Henrike Vollmer-Baumgart]], born on [[DateOfBirth|17 February 1971]], residing at [[Address|Lindenallee 42, 10719 Berlin]], Germany, holder of German identity card no. [[NationalId|L01X00T47]], tax identification number (Steuer-ID) [[TaxId|12 345 678 903]] (the "Seller");
+
+and
+
+(2) [[CompanyName|Zeeland Marine Technologies B.V.]], a private limited company incorporated under Dutch law, registered with the Dutch Chamber of Commerce under number [[?TaxId|71849302]], VAT number [[TaxId|NL859632147B01]], with registered office at [[Address|Westerdok 118, 1013 BH Amsterdam]], the Netherlands (the "Purchaser"),
+
+concerning all shares in
+
+[[CompanyName|Vollmer Antriebstechnik GmbH]], registered with the commercial register of the Local Court (Amtsgericht) of Charlottenburg under [[?TaxId|HRB 184467 B]], tax number [[TaxId|27/614/04418]], VAT ID [[TaxId|DE298417365]] (the "Company").
+
+1. SALE AND PURCHASE
+
+1.1 The Seller sells to the Purchaser, and the Purchaser purchases, the shares with a nominal amount of [[MonetaryAmount|EUR 25,000]] (the "Sold Shares"), representing 100% of the share capital.
+
+1.2 The purchase price is [[MonetaryAmount|EUR 4,750,000.00]] (the "Purchase Price"), of which [[MonetaryAmount|EUR 500,000.00]] shall be paid into escrow with Notar Dr. [[PersonName|Felix Brandauer]], notary in Berlin.
+
+2. PAYMENT
+
+2.1 The Purchase Price shall be paid to the Seller's account, IBAN [[IBAN|DE44 5001 0517 5407 3249 31]], BIC [[BankAccount|INGDDEFFXXX]].
+
+2.2 Any refund to the Purchaser shall be paid to IBAN [[IBAN|NL91ABNA0417164300]]. Payments by the Purchaser's French affiliate, [[CompanyName|Zeeland Marine France SAS]] (VAT [[TaxId|FR61123456789]]), shall come from IBAN [[IBAN|FR14 2004 1010 0505 0001 3M02 606]]; payments by its Belgian affiliate (VAT [[TaxId|BE0123456749]]) from IBAN [[IBAN|BE68 5390 0754 7034]].
+
+3. COMPANY CAR
+
+3.1 The Seller may keep the company car, a Mercedes-Benz E 300 with registration number [[LicensePlate|B-HV 4471]], at its book value of [[MonetaryAmount|EUR 18,200]].
+
+4. REPRESENTATIONS
+
+4.1 The Seller represents that the Company complies with Regulation (EU) 2016/679 (General Data Protection Regulation) and Directive (EU) 2019/1937, and that no proceedings are pending before the Regional Court (Landgericht) of Berlin, except case [[CaseNumber|16 O 248/24]].
+
+5. NOTICES
+
+Seller: [[PersonName|Henrike Vollmer-Baumgart]], [[Email|h.vollmer@vollmer-antrieb.example.de]], [[PhoneNumber|+49 30 901820 44]], mobile [[PhoneNumber|+49 151 2345 6789]]
+Purchaser: [[CompanyName|Zeeland Marine Technologies B.V.]], attn. [[PersonName|Joost van der Linde]], [[Email|j.vanderlinde@zeeland-marine.example.nl]], [[PhoneNumber|+31 20 794 1180]]
+
+6. GOVERNING LAW
+
+This Agreement is governed by German law. Place of jurisdiction is Berlin.
+
+Berlin, [[Date|12 June 2025]]
+
+_______________________          _______________________
+[[PersonName|Henrike Vollmer-Baumgart]]          for [[CompanyName|Zeeland Marine Technologies B.V.]]
+                                 [[PersonName|Joost van der Linde]], Managing Director

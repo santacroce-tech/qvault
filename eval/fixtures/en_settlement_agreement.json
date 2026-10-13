@@ -1,0 +1,215 @@
+{
+  "id": "en_settlement_agreement",
+  "lang": "en",
+  "split": "dev",
+  "kind": "contract",
+  "description": "Confidential settlement and release after a data incident. Repeated names in many forms (full, surname only, initials, possessive, \"Last, First\" in a schedule), a name split across a line break, defined terms that look like names, a passport number, a UK National Insurance number, IP addresses, URLs, an ALL-CAPS signature block.",
+  "source": "src/en_settlement_agreement.txt",
+  "pages": [
+    {
+      "text": "CONFIDENTIAL SETTLEMENT AGREEMENT AND MUTUAL RELEASE\n\nThis Confidential Settlement Agreement and Mutual Release (the \"Agreement\") is made on January 22, 2025 between Siobhan Achterberg (\"Achterberg\" or the \"Employee\"), of 14 Kestrel Close, Didsbury, Manchester M20 6QT, United Kingdom, and Halcyon Data Systems Ltd, a company registered in England and Wales under number 09184472 (the \"Company\"). The Employee and the Company are each a \"Party\" and together the \"Parties\".\n\nRECITALS\n\nA. The Employee was employed by the Company as Senior Data Analyst from 4 March 2020 until 31 October 2024 (the \"Employment Period\").\n\nB. On 9 August 2024, a Company laptop assigned to S. Achterberg was accessed from IP address 192.0.2.118 without authorisation. Server logs also record requests from 198.51.100.34 to https://intranet.halcyon-data.example/hr/records?id=7781 (the \"Data Incident\").\n\nC. Achterberg's personnel file, including her passport number 548271936 and National Insurance number AB 12 34 56 C, was among the records exposed.\n\n1. DEFINITIONS\n\n1.1 \"Confidential Information\" means all non-public information concerning the Data Incident.\n1.2 \"Effective Date\" means the date on which the last Party signs this Agreement.\n1.3 \"Release Payment\" has the meaning given in Clause 2.1.\n1.4 \"Data Protection Officer\" means the Company's data protection officer from time to time, currently Rafferty\nOkonkwo-Bell.\n\n2. SETTLEMENT PAYMENT\n\n2.1 Within fourteen (14) days of the Effective Date the Company shall pay the Employee GBP 48,500.00 (the \"Release Payment\") into the account ending 4471 previously notified by the Employee.\n\n2.2 The Company shall also reimburse Ms Achterberg's legal fees of £3,600 plus VAT, payable to Pryce Lowther Solicitors LLP.\n\n3. RELEASE\n\n3.1 In consideration of the Release Payment, the Employee releases the Company, its officers (including Chief Executive Officer Gideon Farquharson) and its employees from all claims arising from the Employment Period or the Data Incident.\n\n4. CONFIDENTIALITY\n\n4.1 Neither Party shall disclose the terms of this Agreement, except to professional advisers, HM Revenue & Customs or as required by law. Any public statement shall be limited to: \"The matter has been resolved.\"\n\n5. GOVERNING LAW\n\n5.1 This Agreement is governed by the law of England and Wales. The courts of England and Wales have exclusive jurisdiction.\n\nSCHEDULE 1 – NOTICE DETAILS\n\nAchterberg, Siobhan           s.achterberg@post.example.co.uk       +44 161 496 0732\nFarquharson, Gideon           legal@halcyon-data.example           +44 20 7946 0518\n\nSigned by SIOBHAN ACHTERBERG        ___________________   Date: 22/01/2025\n\nSigned by GIDEON FARQUHARSON\nfor and on behalf of HALCYON DATA SYSTEMS LTD   ___________________   Date: 22/01/2025\n",
+      "spans": [
+        {
+          "start": 141,
+          "end": 157,
+          "category": "Date",
+          "text": "January 22, 2025"
+        },
+        {
+          "start": 166,
+          "end": 184,
+          "category": "PersonName",
+          "text": "Siobhan Achterberg"
+        },
+        {
+          "start": 222,
+          "end": 268,
+          "category": "Address",
+          "text": "14 Kestrel Close, Didsbury, Manchester M20 6QT"
+        },
+        {
+          "start": 290,
+          "end": 314,
+          "category": "CompanyName",
+          "text": "Halcyon Data Systems Ltd"
+        },
+        {
+          "start": 371,
+          "end": 379,
+          "category": "TaxId",
+          "text": "09184472",
+          "optional": true
+        },
+        {
+          "start": 556,
+          "end": 568,
+          "category": "Date",
+          "text": "4 March 2020"
+        },
+        {
+          "start": 575,
+          "end": 590,
+          "category": "Date",
+          "text": "31 October 2024"
+        },
+        {
+          "start": 625,
+          "end": 638,
+          "category": "Date",
+          "text": "9 August 2024"
+        },
+        {
+          "start": 669,
+          "end": 682,
+          "category": "PersonName",
+          "text": "S. Achterberg"
+        },
+        {
+          "start": 712,
+          "end": 723,
+          "category": "IpAddress",
+          "text": "192.0.2.118"
+        },
+        {
+          "start": 785,
+          "end": 798,
+          "category": "IpAddress",
+          "text": "198.51.100.34"
+        },
+        {
+          "start": 802,
+          "end": 858,
+          "category": "Url",
+          "text": "https://intranet.halcyon-data.example/hr/records?id=7781"
+        },
+        {
+          "start": 886,
+          "end": 896,
+          "category": "PersonName",
+          "text": "Achterberg"
+        },
+        {
+          "start": 945,
+          "end": 954,
+          "category": "PassportNumber",
+          "text": "548271936"
+        },
+        {
+          "start": 985,
+          "end": 998,
+          "category": "NationalId",
+          "text": "AB 12 34 56 C"
+        },
+        {
+          "start": 1386,
+          "end": 1407,
+          "category": "PersonName",
+          "text": "Rafferty\nOkonkwo-Bell"
+        },
+        {
+          "start": 1520,
+          "end": 1533,
+          "category": "MonetaryAmount",
+          "text": "GBP 48,500.00"
+        },
+        {
+          "start": 1582,
+          "end": 1586,
+          "category": "BankAccount",
+          "text": "4471",
+          "optional": true
+        },
+        {
+          "start": 1662,
+          "end": 1675,
+          "category": "PersonName",
+          "text": "Ms Achterberg"
+        },
+        {
+          "start": 1692,
+          "end": 1699,
+          "category": "MonetaryAmount",
+          "text": "£3,600"
+        },
+        {
+          "start": 1721,
+          "end": 1749,
+          "category": "CompanyName",
+          "text": "Pryce Lowther Solicitors LLP"
+        },
+        {
+          "start": 1892,
+          "end": 1910,
+          "category": "PersonName",
+          "text": "Gideon Farquharson"
+        },
+        {
+          "start": 2413,
+          "end": 2432,
+          "category": "PersonName",
+          "text": "Achterberg, Siobhan"
+        },
+        {
+          "start": 2443,
+          "end": 2474,
+          "category": "Email",
+          "text": "s.achterberg@post.example.co.uk"
+        },
+        {
+          "start": 2481,
+          "end": 2497,
+          "category": "PhoneNumber",
+          "text": "+44 161 496 0732"
+        },
+        {
+          "start": 2498,
+          "end": 2517,
+          "category": "PersonName",
+          "text": "Farquharson, Gideon"
+        },
+        {
+          "start": 2528,
+          "end": 2554,
+          "category": "Email",
+          "text": "legal@halcyon-data.example"
+        },
+        {
+          "start": 2565,
+          "end": 2581,
+          "category": "PhoneNumber",
+          "text": "+44 20 7946 0518"
+        },
+        {
+          "start": 2593,
+          "end": 2611,
+          "category": "PersonName",
+          "text": "SIOBHAN ACHTERBERG"
+        },
+        {
+          "start": 2647,
+          "end": 2657,
+          "category": "Date",
+          "text": "22/01/2025"
+        },
+        {
+          "start": 2669,
+          "end": 2687,
+          "category": "PersonName",
+          "text": "GIDEON FARQUHARSON"
+        },
+        {
+          "start": 2709,
+          "end": 2733,
+          "category": "CompanyName",
+          "text": "HALCYON DATA SYSTEMS LTD"
+        },
+        {
+          "start": 2764,
+          "end": 2774,
+          "category": "Date",
+          "text": "22/01/2025"
+        }
+      ]
+    }
+  ]
+}

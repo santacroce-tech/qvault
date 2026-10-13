@@ -1,3 +1,4 @@
+pub mod checks;
 pub mod global;
 pub mod us;
 pub mod eu;

@@ -1,0 +1,210 @@
+{
+  "id": "es_demanda_reclamacion",
+  "lang": "es",
+  "split": "dev",
+  "kind": "court filing",
+  "description": "Demanda de juicio verbal por reclamación de cantidad (España). Nombres en forma \"APELLIDOS, Nombre\", número de procedimiento y NIG, abogado y procurador con número de colegiado, tarjeta bancaria, pasaporte, importes y fechas. Trampas: juzgado, artículos de la LEC, jurisprudencia del Tribunal Supremo (STS) y nombres de leyes.",
+  "source": "src/es_demanda_reclamacion.txt",
+  "pages": [
+    {
+      "text": "AL JUZGADO DE PRIMERA INSTANCIA N.º 5 DE VALENCIA\n\nProcedimiento: Juicio Verbal 318/2024\nNIG: 46250 42 1 2024 0007731\n\nD. Álvaro Sendra Peiró, Procurador de los Tribunales (colegiado n.º 1184), en nombre y representación de LLORENTE ESCRIVÁ, Nuria, con DNI 20481957C, según acredito mediante poder que acompaño, bajo la dirección letrada de Dña. Beatriz Coloma Ruano (ICAV n.º 9.412), ante el Juzgado comparezco y, como mejor proceda en Derecho, DIGO:\n\nQue por medio del presente escrito formulo DEMANDA DE JUICIO VERBAL en reclamación de 4.380,25 euros contra la mercantil Reformas Turia Integral, S.L.U., con CIF B98765432 y domicilio social en Calle de Colón, 48, 46004 Valencia, y contra su administrador D. Fermín Aleixandre Bou, con domicilio en Avenida del Puerto, 211, 46023 Valencia, con base en los siguientes\n\nHECHOS\n\nPRIMERO. El 9 de enero de 2024 mi representada, Sra. Llorente Escrivá, encargó a la demandada la reforma de su cocina por un precio total de 6.900 €, según presupuesto n.º 2024/0031 que se acompaña como documento n.º 2.\n\nSEGUNDO. Mi mandante abonó un anticipo de 4.380,25 € el 12/01/2024 con su tarjeta 5555 5555 5555 4444, según justificante de Banco Mediterráneo Popular.\n\nTERCERO. Pese a los requerimientos remitidos los días 4 de marzo de 2024 y 2 de abril de 2024 al correo administracion@reformasturia.example.com y al teléfono 963 555 017, la demandada no inició los trabajos.\n\nCUARTO. El Sr. Aleixandre, con pasaporte PAA123456, abandonó España en mayo de 2024 según consta en el documento n.º 6.\n\nFUNDAMENTOS DE DERECHO\n\nI. Jurisdicción y competencia: artículos 45 y 50 de la Ley de Enjuiciamiento Civil (LEC).\nII. Procedimiento: artículo 250.2 LEC.\nIII. Fondo: artículos 1.101, 1.124 y 1.544 del Código Civil, y la doctrina de la STS 1/2015, de 27 de enero, de la Sala Primera del Tribunal Supremo.\nIV. Costas: artículo 394 LEC.\n\nPor lo expuesto,\n\nSUPLICO AL JUZGADO que tenga por presentada esta demanda y condene a los demandados a abonar a mi mandante la cantidad de 4.380,25 €, más los intereses legales y las costas.\n\nEn Valencia, a 20 de mayo de 2024.\n\nLdo./Lda.: Beatriz Coloma Ruano                Proc.: Álvaro Sendra Peiró\n",
+      "spans": [
+        {
+          "start": 81,
+          "end": 89,
+          "category": "CaseNumber",
+          "text": "318/2024"
+        },
+        {
+          "start": 95,
+          "end": 118,
+          "category": "CaseNumber",
+          "text": "46250 42 1 2024 0007731"
+        },
+        {
+          "start": 123,
+          "end": 144,
+          "category": "PersonName",
+          "text": "Álvaro Sendra Peiró"
+        },
+        {
+          "start": 191,
+          "end": 195,
+          "category": "ClientId",
+          "text": "1184",
+          "optional": true
+        },
+        {
+          "start": 229,
+          "end": 253,
+          "category": "PersonName",
+          "text": "LLORENTE ESCRIVÁ, Nuria"
+        },
+        {
+          "start": 263,
+          "end": 272,
+          "category": "NationalId",
+          "text": "20481957C"
+        },
+        {
+          "start": 356,
+          "end": 376,
+          "category": "PersonName",
+          "text": "Beatriz Coloma Ruano"
+        },
+        {
+          "start": 388,
+          "end": 393,
+          "category": "ClientId",
+          "text": "9.412",
+          "optional": true
+        },
+        {
+          "start": 551,
+          "end": 565,
+          "category": "MonetaryAmount",
+          "text": "4.380,25 euros"
+        },
+        {
+          "start": 586,
+          "end": 617,
+          "category": "CompanyName",
+          "text": "Reformas Turia Integral, S.L.U."
+        },
+        {
+          "start": 627,
+          "end": 636,
+          "category": "TaxId",
+          "text": "B98765432"
+        },
+        {
+          "start": 659,
+          "end": 694,
+          "category": "Address",
+          "text": "Calle de Colón, 48, 46004 Valencia"
+        },
+        {
+          "start": 725,
+          "end": 747,
+          "category": "PersonName",
+          "text": "Fermín Aleixandre Bou"
+        },
+        {
+          "start": 766,
+          "end": 805,
+          "category": "Address",
+          "text": "Avenida del Puerto, 211, 46023 Valencia"
+        },
+        {
+          "start": 855,
+          "end": 873,
+          "category": "Date",
+          "text": "9 de enero de 2024"
+        },
+        {
+          "start": 896,
+          "end": 913,
+          "category": "PersonName",
+          "text": "Llorente Escrivá"
+        },
+        {
+          "start": 986,
+          "end": 995,
+          "category": "MonetaryAmount",
+          "text": "6.900 €"
+        },
+        {
+          "start": 1115,
+          "end": 1127,
+          "category": "MonetaryAmount",
+          "text": "4.380,25 €"
+        },
+        {
+          "start": 1131,
+          "end": 1141,
+          "category": "Date",
+          "text": "12/01/2024"
+        },
+        {
+          "start": 1157,
+          "end": 1176,
+          "category": "CreditCard",
+          "text": "5555 5555 5555 4444"
+        },
+        {
+          "start": 1201,
+          "end": 1228,
+          "category": "CompanyName",
+          "text": "Banco Mediterráneo Popular",
+          "optional": true
+        },
+        {
+          "start": 1286,
+          "end": 1304,
+          "category": "Date",
+          "text": "4 de marzo de 2024"
+        },
+        {
+          "start": 1307,
+          "end": 1325,
+          "category": "Date",
+          "text": "2 de abril de 2024"
+        },
+        {
+          "start": 1336,
+          "end": 1376,
+          "category": "Email",
+          "text": "administracion@reformasturia.example.com"
+        },
+        {
+          "start": 1392,
+          "end": 1403,
+          "category": "PhoneNumber",
+          "text": "963 555 017"
+        },
+        {
+          "start": 1459,
+          "end": 1469,
+          "category": "PersonName",
+          "text": "Aleixandre"
+        },
+        {
+          "start": 1485,
+          "end": 1494,
+          "category": "PassportNumber",
+          "text": "PAA123456"
+        },
+        {
+          "start": 1517,
+          "end": 1529,
+          "category": "Date",
+          "text": "mayo de 2024"
+        },
+        {
+          "start": 2049,
+          "end": 2061,
+          "category": "MonetaryAmount",
+          "text": "4.380,25 €"
+        },
+        {
+          "start": 2120,
+          "end": 2138,
+          "category": "Date",
+          "text": "20 de mayo de 2024"
+        },
+        {
+          "start": 2152,
+          "end": 2172,
+          "category": "PersonName",
+          "text": "Beatriz Coloma Ruano"
+        },
+        {
+          "start": 2195,
+          "end": 2216,
+          "category": "PersonName",
+          "text": "Álvaro Sendra Peiró"
+        }
+      ]
+    }
+  ]
+}

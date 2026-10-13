@@ -1,0 +1,38 @@
+id: es_demanda_reclamacion
+lang: es
+kind: court filing
+description: Demanda de juicio verbal por reclamación de cantidad (España). Nombres en forma "APELLIDOS, Nombre", número de procedimiento y NIG, abogado y procurador con número de colegiado, tarjeta bancaria, pasaporte, importes y fechas. Trampas: juzgado, artículos de la LEC, jurisprudencia del Tribunal Supremo (STS) y nombres de leyes.
+---
+AL JUZGADO DE PRIMERA INSTANCIA N.º 5 DE VALENCIA
+
+Procedimiento: Juicio Verbal [[CaseNumber|318/2024]]
+NIG: [[CaseNumber|46250 42 1 2024 0007731]]
+
+D. [[PersonName|Álvaro Sendra Peiró]], Procurador de los Tribunales (colegiado n.º [[?ClientId|1184]]), en nombre y representación de [[PersonName|LLORENTE ESCRIVÁ, Nuria]], con DNI [[NationalId|20481957C]], según acredito mediante poder que acompaño, bajo la dirección letrada de Dña. [[PersonName|Beatriz Coloma Ruano]] (ICAV n.º [[?ClientId|9.412]]), ante el Juzgado comparezco y, como mejor proceda en Derecho, DIGO:
+
+Que por medio del presente escrito formulo DEMANDA DE JUICIO VERBAL en reclamación de [[MonetaryAmount|4.380,25 euros]] contra la mercantil [[CompanyName|Reformas Turia Integral, S.L.U.]], con CIF [[TaxId|B98765432]] y domicilio social en [[Address|Calle de Colón, 48, 46004 Valencia]], y contra su administrador D. [[PersonName|Fermín Aleixandre Bou]], con domicilio en [[Address|Avenida del Puerto, 211, 46023 Valencia]], con base en los siguientes
+
+HECHOS
+
+PRIMERO. El [[Date|9 de enero de 2024]] mi representada, Sra. [[PersonName|Llorente Escrivá]], encargó a la demandada la reforma de su cocina por un precio total de [[MonetaryAmount|6.900 €]], según presupuesto n.º 2024/0031 que se acompaña como documento n.º 2.
+
+SEGUNDO. Mi mandante abonó un anticipo de [[MonetaryAmount|4.380,25 €]] el [[Date|12/01/2024]] con su tarjeta [[CreditCard|5555 5555 5555 4444]], según justificante de [[?CompanyName|Banco Mediterráneo Popular]].
+
+TERCERO. Pese a los requerimientos remitidos los días [[Date|4 de marzo de 2024]] y [[Date|2 de abril de 2024]] al correo [[Email|administracion@reformasturia.example.com]] y al teléfono [[PhoneNumber|963 555 017]], la demandada no inició los trabajos.
+
+CUARTO. El Sr. [[PersonName|Aleixandre]], con pasaporte [[PassportNumber|PAA123456]], abandonó España en [[Date|mayo de 2024]] según consta en el documento n.º 6.
+
+FUNDAMENTOS DE DERECHO
+
+I. Jurisdicción y competencia: artículos 45 y 50 de la Ley de Enjuiciamiento Civil (LEC).
+II. Procedimiento: artículo 250.2 LEC.
+III. Fondo: artículos 1.101, 1.124 y 1.544 del Código Civil, y la doctrina de la STS 1/2015, de 27 de enero, de la Sala Primera del Tribunal Supremo.
+IV. Costas: artículo 394 LEC.
+
+Por lo expuesto,
+
+SUPLICO AL JUZGADO que tenga por presentada esta demanda y condene a los demandados a abonar a mi mandante la cantidad de [[MonetaryAmount|4.380,25 €]], más los intereses legales y las costas.
+
+En Valencia, a [[Date|20 de mayo de 2024]].
+
+Ldo./Lda.: [[PersonName|Beatriz Coloma Ruano]]                Proc.: [[PersonName|Álvaro Sendra Peiró]]

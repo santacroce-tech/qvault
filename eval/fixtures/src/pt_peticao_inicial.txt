@@ -1,0 +1,44 @@
+id: pt_peticao_inicial
+lang: pt
+kind: court filing
+description: Petição inicial de ação indenizatória (Brasil). Número de processo no padrão CNJ, "SOBRENOME, Nome", nomes repetidos por sobrenome, placa Mercosul, data de nascimento, prontuário médico, cartão de crédito, IP. Armadilhas: tribunal, artigos do CPC/CDC, súmulas do STJ e precedentes (REsp).
+---
+EXCELENTÍSSIMO SENHOR DOUTOR JUIZ DE DIREITO DA 3ª VARA CÍVEL DO FORO REGIONAL DE PINHEIROS – COMARCA DE SÃO PAULO/SP
+
+Processo nº [[CaseNumber|1002345-67.2024.8.26.0011]]
+
+[[PersonName|CARVALHO, Juliana Rezende de]], brasileira, solteira, enfermeira, nascida em [[DateOfBirth|03/04/1990]], portadora do CPF nº [[NationalId|529.982.247-25]], residente e domiciliada na [[Address|Rua dos Pinheiros, 1.288, apto. 54, Pinheiros, São Paulo/SP, CEP 05422-002]], endereço eletrônico [[Email|juliana.rezende@email.example.com.br]], por sua advogada que esta subscreve (procuração anexa), vem, respeitosamente, à presença de Vossa Excelência, propor a presente
+
+AÇÃO DE INDENIZAÇÃO POR DANOS MATERIAIS E MORAIS
+
+em face de [[CompanyName|Transportes Rodovia Sul S.A.]], inscrita no CNPJ sob o nº [[TaxId|12.345.678/0001-95]], com sede na [[Address|Rodovia Régis Bittencourt, km 279, Embu das Artes/SP, CEP 06803-480]], pelos fatos e fundamentos a seguir expostos.
+
+I – DOS FATOS
+
+1. Em [[Date|14 de março de 2024]], a Autora conduzia seu veículo, placa [[LicensePlate|FQX4D21]], quando foi atingida pelo caminhão placa [[LicensePlate|BRA-2E19]], de propriedade da Ré, conduzido pelo motorista [[PersonName|Edvaldo
+Nogueira Paixão]].
+
+2. A Autora foi socorrida ao [[?CompanyName|Hospital das Clínicas]], onde recebeu atendimento sob o prontuário nº [[MedicalRecordNumber|HC-2024-118845]], permanecendo internada até [[Date|22/03/2024]].
+
+3. As despesas médicas, pagas com o cartão [[CreditCard|4111 1111 1111 1111]], somaram [[MonetaryAmount|R$ 23.418,90]], e os reparos do veículo, [[MonetaryAmount|R$ 11.200,00]].
+
+4. Em contato com a Ré pelo telefone [[PhoneNumber|(11) 4555-0123]], a Autora foi informada pelo Sr. [[PersonName|Paixão]] de que nada seria pago. O registro de atendimento online foi feito a partir do IP [[IpAddress|198.51.100.77]].
+
+II – DO DIREITO
+
+5. A responsabilidade da Ré é objetiva, nos termos do art. 37, § 6º, da Constituição Federal e dos arts. 186 e 927 do Código Civil. Nesse sentido: STJ, REsp 1.737.412/SE, Rel. Min. [[?PersonName|Nancy Andrighi]], Terceira Turma, j. [[?Date|05/02/2019]]; Súmula 37 do STJ.
+
+6. O valor da causa observa o art. 292, V, do Código de Processo Civil.
+
+III – DOS PEDIDOS
+
+Diante do exposto, requer a condenação da Ré ao pagamento de [[MonetaryAmount|R$ 34.618,90]] a título de danos materiais e [[MonetaryAmount|R$ 30.000,00]] a título de danos morais.
+
+Dá-se à causa o valor de [[MonetaryAmount|R$ 64.618,90]].
+
+Termos em que pede deferimento.
+
+São Paulo, [[Date|2 de maio de 2024]].
+
+[[PersonName|Fernanda Lopes Tavares]]
+OAB/SP [[?ClientId|312.548]]

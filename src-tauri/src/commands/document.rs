@@ -243,14 +243,25 @@ pub async fn scan_document_text(
         #[cfg(not(desktop))]
         let engine: Option<&dyn crate::llm::llm_scanner::Layer3Engine> = None;
         let on_progress = if engine.is_some() { Some(&progress_cb) } else { None };
-        let (entities, l3) = pipeline::run_pipeline(text, page_num as u32, &jurisdictions, engine, on_progress);
-        match l3 {
-            pipeline::Layer3Status::Ran { entities: n, failed_chunks, .. } => {
-                layer3_entities += n;
-                layer3_failed_chunks += failed_chunks;
-            }
-            pipeline::Layer3Status::Aborted(reason) => {
-                layer3_entities += entities.iter().filter(|e| e.layer == crate::llm::llm_scanner::LAYER).count();
+
+        // Layers 1-2 first: stored and announced right away, so the review
+        // list fills in while the (much slower) Layer 3 works on the page.
+        let mut entities = pipeline::run_pipeline_no_llm(text, page_num as u32, &jurisdictions);
+        store_page_entities(&state, &id, page_num, &entities)?;
+        let _ = app_handle.emit("scan-page-results", serde_json::json!({
+            "documentId": id, "page": page_num, "layer": "rules", "count": entities.len(),
+        }));
+
+        if let Some(engine) = engine {
+            let existing: Vec<(usize, usize)> = entities.iter().map(|e| (e.start, e.end)).collect();
+            let report = crate::llm::llm_scanner::scan(engine, text, page_num as u32, &existing, on_progress);
+            layer3_entities += report.entities.len();
+            layer3_failed_chunks += report.failed_chunks;
+            store_page_entities(&state, &id, page_num, &report.entities)?;
+            let _ = app_handle.emit("scan-page-results", serde_json::json!({
+                "documentId": id, "page": page_num, "layer": "llm", "count": report.entities.len(),
+            }));
+            if let Some(reason) = report.aborted {
                 log::warn!("Layer 3 stopped on page {}: {}", page_num, reason);
                 layer3_skip = Some(reason);
                 // Remaining pages: Layers 1-2 only.
@@ -259,7 +270,8 @@ pub async fn scan_document_text(
                     layer3 = None;
                 }
             }
-            pipeline::Layer3Status::NotRun => {}
+            entities.extend(report.entities);
+            entities.sort_by_key(|e| e.start);
         }
 
         // Build cleaned text by applying redactions
@@ -275,44 +287,6 @@ pub async fn scan_document_text(
 
         // Store cleaned text
         let _ = state.db.update_page_cleaned_text(&id, page_num as i32, &cleaned);
-
-        for entity in &entities {
-            // Store redaction (for review workflow)
-            state
-                .db
-                .insert_redaction(
-                    &entity.id,
-                    &id,
-                    page_num as i32,
-                    entity.start as i32,
-                    entity.end as i32,
-                    &entity.text,
-                    &entity.replacement,
-                    &entity.category.to_string(),
-                    &entity.layer,
-                    entity.confidence,
-                )
-                .map_err(|e| format!("Failed to store redaction: {}", e))?;
-
-            // Store entity in knowledge base (normalized for cross-document search)
-            let normalized = entity.text.trim().to_string();
-            let entity_id = Uuid::new_v4().to_string();
-            state
-                .db
-                .insert_entity(
-                    &entity_id,
-                    &id,
-                    &entity.text,
-                    &normalized,
-                    &entity.category.to_string(),
-                    page_num as i32,
-                    entity.start as i32,
-                    entity.end as i32,
-                    entity.confidence,
-                    &entity.layer,
-                )
-                .map_err(|e| format!("Failed to store entity: {}", e))?;
-        }
 
         total_pii += entities.len();
     }
@@ -368,6 +342,53 @@ pub async fn scan_document_text(
     }
 
     Ok(total_pii as i32)
+}
+
+/// Store detections for one page: a pending redaction (review workflow) and
+/// an entity row (cross-document knowledge base) each.
+fn store_page_entities(
+    state: &State<'_, AppState>,
+    doc_id: &str,
+    page_num: usize,
+    entities: &[crate::pipeline::types::PiiEntity],
+) -> Result<(), String> {
+    for entity in entities {
+        state
+            .db
+            .insert_redaction(
+                &entity.id,
+                doc_id,
+                page_num as i32,
+                entity.start as i32,
+                entity.end as i32,
+                &entity.text,
+                &entity.replacement,
+                &entity.category.to_string(),
+                &entity.layer,
+                entity.confidence,
+            )
+            .map_err(|e| format!("Failed to store redaction: {}", e))?;
+
+        // Store entity in knowledge base (normalized for cross-document search)
+        let normalized = entity.text.trim().to_string();
+        let entity_id = Uuid::new_v4().to_string();
+        state
+            .db
+            .insert_entity(
+                &entity_id,
+                doc_id,
+                &entity.text,
+                &normalized,
+                &entity.category.to_string(),
+                page_num as i32,
+                entity.start as i32,
+                entity.end as i32,
+                entity.confidence,
+                &entity.layer,
+            )
+            .map_err(|e| format!("Failed to store entity: {}", e))?;
+    }
+    Ok(())
 }
 
 /// Manually add a redaction (for advanced mode — user selects text)

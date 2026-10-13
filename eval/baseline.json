@@ -1,0 +1,39 @@
+{
+  "system": "layers 1+2",
+  "recall_tolerance": 0.005,
+  "precision_tolerance": 0.02,
+  "overlap_recall": 0.8308026030368764,
+  "covered_recall": 0.754880694143167,
+  "exact_recall": 0.737527114967462,
+  "overlap_precision": 0.8485523385300668,
+  "by_category_overlap_recall": {
+    "Address": 0.8966,
+    "BankAccount": 0.7333,
+    "CaseNumber": 0.8333,
+    "ClientId": 0.8,
+    "CompanyName": 0.8108,
+    "CourtFileNumber": 1.0,
+    "CreditCard": 1.0,
+    "Date": 0.9167,
+    "DateOfBirth": 0.8889,
+    "DriversLicense": 1.0,
+    "Email": 0.96,
+    "IBAN": 1.0,
+    "IpAddress": 1.0,
+    "LicensePlate": 1.0,
+    "MedicalRecordNumber": 1.0,
+    "MonetaryAmount": 1.0,
+    "NationalId": 0.8824,
+    "PassportNumber": 1.0,
+    "PersonName": 0.5398,
+    "PhoneNumber": 1.0,
+    "SocialSecurityNumber": 1.0,
+    "TaxId": 1.0,
+    "Url": 1.0
+  },
+  "by_lang_overlap_recall": {
+    "en": 0.7879,
+    "es": 0.8646,
+    "pt": 0.9109
+  }
+}

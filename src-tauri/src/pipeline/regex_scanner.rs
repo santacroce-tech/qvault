@@ -1,3 +1,4 @@
+use regex::Regex;
 use uuid::Uuid;
 use crate::pipeline::patterns::global::{global_patterns, PatternDef};
 use crate::pipeline::patterns::{us, eu, br, de};
@@ -5,6 +6,7 @@ use crate::pipeline::types::{PiiEntity, PiiCategory};
 
 pub struct RegexScanner {
     patterns: Vec<PatternDef>,
+    dob_context: Regex,
 }
 
 impl RegexScanner {
@@ -23,9 +25,16 @@ impl RegexScanner {
         }
 
         // Sort by priority descending so high-priority patterns match first
+        // (stable: equal priorities keep their declaration order).
         patterns.sort_by(|a, b| b.priority.cmp(&a.priority));
 
-        RegexScanner { patterns }
+        // A date right after one of these is a date of birth.
+        let dob_context = Regex::new(
+            r"(?i)(?:date\s+of\s+birth|birth\s*date|born(?:\s+on)?|d\.?o\.?b\.?|nacid[oa](?:\s+el)?|fecha\s+de\s+nacimiento|nascid[oa](?:\s+em)?|data\s+de\s+nascimento|geboren(?:\s+am)?|geburtsdatum)\W{0,4}$",
+        )
+        .unwrap();
+
+        RegexScanner { patterns, dob_context }
     }
 
     pub fn scan(&self, text: &str, page: u32) -> Vec<PiiEntity> {
@@ -34,10 +43,21 @@ impl RegexScanner {
         let mut matched_ranges: Vec<(usize, usize)> = Vec::new();
 
         for pattern in &self.patterns {
-            for mat in pattern.regex.find_iter(text) {
-                let start = mat.start();
-                let end = mat.end();
-                let matched_text = mat.as_str();
+            for caps in pattern.regex.captures_iter(text) {
+                let Some(m) = caps.get(pattern.group) else { continue };
+                let start = m.start();
+                let mut end = m.end();
+                let mut confidence = pattern.confidence;
+                if let Some(check) = pattern.check {
+                    match check(m.as_str()) {
+                        Some((len, c)) => {
+                            end = start + len;
+                            confidence = c;
+                        }
+                        None => continue,
+                    }
+                }
+                let matched_text = &text[start..end];
 
                 // Skip very short matches
                 if matched_text.len() < 3 {
@@ -53,14 +73,18 @@ impl RegexScanner {
                 }
 
                 // Check if this region is already matched by a higher-priority pattern
-                let overlaps = matched_ranges.iter().any(|&(rs, re)| {
-                    start < re && end > rs
-                });
+                let overlaps = matched_ranges.iter().any(|&(rs, re)| start < re && end > rs);
                 if overlaps {
                     continue;
                 }
 
                 matched_ranges.push((start, end));
+
+                let category = if pattern.category == PiiCategory::Date && self.after_dob_label(text, start) {
+                    PiiCategory::DateOfBirth
+                } else {
+                    pattern.category.clone()
+                };
 
                 entities.push(PiiEntity {
                     id: Uuid::new_v4().to_string(),
@@ -68,10 +92,10 @@ impl RegexScanner {
                     start,
                     end,
                     page,
-                    category: pattern.category.clone(),
+                    replacement: category.replacement_label().to_string(),
+                    category,
                     layer: "regex".to_string(),
-                    confidence: 0.95,
-                    replacement: pattern.category.replacement_label().to_string(),
+                    confidence,
                 });
             }
         }
@@ -79,5 +103,13 @@ impl RegexScanner {
         // Sort by position for display
         entities.sort_by_key(|e| e.start);
         entities
+    }
+
+    fn after_dob_label(&self, text: &str, start: usize) -> bool {
+        let mut from = start.saturating_sub(40);
+        while !text.is_char_boundary(from) {
+            from += 1;
+        }
+        self.dob_context.is_match(&text[from..start])
     }
 }

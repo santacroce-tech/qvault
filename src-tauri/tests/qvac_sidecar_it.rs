@@ -90,7 +90,7 @@ fn real_sidecar_ocr_and_layer3() {
     assert!(matches!(status, Layer3Status::Ran { failed_chunks: 0, .. }), "{:?}", status);
     let llm_hits: Vec<_> = entities.iter().filter(|e| e.layer == "llm").collect();
     assert!(!llm_hits.is_empty(), "Layer 3 found nothing");
-    assert!(llm_hits.iter().all(|e| (e.confidence - 0.70).abs() < 1e-9));
+    assert!(llm_hits.iter().all(|e| e.confidence >= 0.5 && e.confidence < 0.95), "Layer 3 confidence stays below Layer 1");
 
     // Self-test path used by the app.
     let rep = svc.self_test(Some(&img));

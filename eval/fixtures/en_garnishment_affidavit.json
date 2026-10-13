@@ -1,0 +1,303 @@
+{
+  "id": "en_garnishment_affidavit",
+  "lang": "en",
+  "split": "dev",
+  "kind": "court filing (affidavit with tables)",
+  "description": "Affidavit in support of a writ of garnishment. Card numbers in several formats (grouped, Amex, undelimited), routing numbers with valid ABA checksums, SWIFT/BIC, IBANs with spaces, account numbers in tables, IP addresses and URLs from a fraud log, amounts. Numeric traps: statute sections, docket entry numbers, percentages, a zip code alone.",
+  "source": "src/en_garnishment_affidavit.txt",
+  "pages": [
+    {
+      "text": "SUPERIOR COURT OF THE STATE OF ARIZONA\nIN AND FOR THE COUNTY OF MARICOPA\n\nDesert Sun Credit Union,\n    Judgment Creditor,\nv.\nCalloway, Brent J.,\n    Judgment Debtor.\n\nCourt File No. CV2023-014482\n\nAFFIDAVIT OF LORNA FETTERMAN IN SUPPORT OF APPLICATION FOR WRIT OF GARNISHMENT (A.R.S. § 12-1574)\n\nI, Lorna Fetterman, being first duly sworn, state:\n\n1. I am the Recovery Manager of Desert Sun Credit Union and have personal knowledge of the facts below. Judgment was entered on July 7, 2023 (Dkt. 41) in the amount of $62,318.44, with interest at 10% per annum.\n\n2. The Judgment Debtor, Brent J. Calloway, resides at 6120 East Saguaro Vista Drive, Scottsdale, AZ 85266. His e-mail address of record is bcalloway77@mailbox.example.net.\n\n3. Records produced in discovery show the following accounts held by the Judgment Debtor:\n\n| Institution                  | Routing / BIC   | Account              | Balance       |\n|------------------------------|-----------------|----------------------|---------------|\n| Canyon State Bank            | 121000358       | 0047-221983          | $14,902.17    |\n| Pinnacle Federal Savings     | 026009593       | 884 120 33571        | $3,415.00     |\n| Bank of America, N.A.        | BOFAUS3N        | 3266 0519 8820       | $27,050.92    |\n\n4. On September 14, 2023, the Judgment Debtor wired EUR 40,000.00 to an account in Germany, IBAN DE89 3704 0044 0532 0130 00 (BIC COBADEFFXXX), and on September 18, 2023 a further GBP 12,500 to IBAN GB82 WEST 1234 5698 7654 32.\n\n5. The Judgment Debtor holds the following payment cards:\n   (a) Visa 4111 1111 1111 1111, expiring 09/27;\n   (b) Mastercard 5555-5555-5555-4444;\n   (c) American Express 3782 822463 10005;\n   (d) a Visa card stored in the merchant portal as 4012888888881881.\n\n6. The online banking audit log shows logins to the Judgment Debtor's profile from IP address 203.0.113.47 and 198.51.100.212 between October 1, 2023 and October 9, 2023, and transfers initiated from https://portal.desertsun-cu.example/accounts/88412/transfers.\n\n7. The Judgment Debtor's Social Security Number is 666-07-3391 and his Arizona driver license is D08847123.\n\n8. Garnishee: Canyon State Bank, Attn: Legal Process, P.O. Box 29001, Phoenix, AZ 85038.\n\nI declare under penalty of perjury under the laws of the State of Arizona that the foregoing is true and correct. Executed on November 2, 2023, at Phoenix, Arizona.\n\n______________________________\nLorna Fetterman\nSUBSCRIBED AND SWORN before me on November 2, 2023.\nNotary Public, commission no. AZ-618204\n",
+      "spans": [
+        {
+          "start": 74,
+          "end": 97,
+          "category": "CompanyName",
+          "text": "Desert Sun Credit Union"
+        },
+        {
+          "start": 125,
+          "end": 143,
+          "category": "PersonName",
+          "text": "Calloway, Brent J."
+        },
+        {
+          "start": 182,
+          "end": 195,
+          "category": "CourtFileNumber",
+          "text": "CV2023-014482"
+        },
+        {
+          "start": 210,
+          "end": 225,
+          "category": "PersonName",
+          "text": "LORNA FETTERMAN"
+        },
+        {
+          "start": 300,
+          "end": 315,
+          "category": "PersonName",
+          "text": "Lorna Fetterman"
+        },
+        {
+          "start": 381,
+          "end": 404,
+          "category": "CompanyName",
+          "text": "Desert Sun Credit Union"
+        },
+        {
+          "start": 477,
+          "end": 489,
+          "category": "Date",
+          "text": "July 7, 2023"
+        },
+        {
+          "start": 517,
+          "end": 527,
+          "category": "MonetaryAmount",
+          "text": "$62,318.44"
+        },
+        {
+          "start": 586,
+          "end": 603,
+          "category": "PersonName",
+          "text": "Brent J. Calloway"
+        },
+        {
+          "start": 616,
+          "end": 667,
+          "category": "Address",
+          "text": "6120 East Saguaro Vista Drive, Scottsdale, AZ 85266"
+        },
+        {
+          "start": 701,
+          "end": 732,
+          "category": "Email",
+          "text": "bcalloway77@mailbox.example.net"
+        },
+        {
+          "start": 1008,
+          "end": 1025,
+          "category": "CompanyName",
+          "text": "Canyon State Bank",
+          "optional": true
+        },
+        {
+          "start": 1039,
+          "end": 1048,
+          "category": "BankAccount",
+          "text": "121000358"
+        },
+        {
+          "start": 1057,
+          "end": 1068,
+          "category": "BankAccount",
+          "text": "0047-221983"
+        },
+        {
+          "start": 1080,
+          "end": 1090,
+          "category": "MonetaryAmount",
+          "text": "$14,902.17"
+        },
+        {
+          "start": 1098,
+          "end": 1122,
+          "category": "CompanyName",
+          "text": "Pinnacle Federal Savings",
+          "optional": true
+        },
+        {
+          "start": 1129,
+          "end": 1138,
+          "category": "BankAccount",
+          "text": "026009593"
+        },
+        {
+          "start": 1147,
+          "end": 1160,
+          "category": "BankAccount",
+          "text": "884 120 33571"
+        },
+        {
+          "start": 1170,
+          "end": 1179,
+          "category": "MonetaryAmount",
+          "text": "$3,415.00"
+        },
+        {
+          "start": 1188,
+          "end": 1209,
+          "category": "CompanyName",
+          "text": "Bank of America, N.A.",
+          "optional": true
+        },
+        {
+          "start": 1219,
+          "end": 1227,
+          "category": "BankAccount",
+          "text": "BOFAUS3N"
+        },
+        {
+          "start": 1237,
+          "end": 1251,
+          "category": "BankAccount",
+          "text": "3266 0519 8820"
+        },
+        {
+          "start": 1260,
+          "end": 1270,
+          "category": "MonetaryAmount",
+          "text": "$27,050.92"
+        },
+        {
+          "start": 1283,
+          "end": 1301,
+          "category": "Date",
+          "text": "September 14, 2023"
+        },
+        {
+          "start": 1329,
+          "end": 1342,
+          "category": "MonetaryAmount",
+          "text": "EUR 40,000.00"
+        },
+        {
+          "start": 1374,
+          "end": 1401,
+          "category": "IBAN",
+          "text": "DE89 3704 0044 0532 0130 00"
+        },
+        {
+          "start": 1407,
+          "end": 1418,
+          "category": "BankAccount",
+          "text": "COBADEFFXXX"
+        },
+        {
+          "start": 1428,
+          "end": 1446,
+          "category": "Date",
+          "text": "September 18, 2023"
+        },
+        {
+          "start": 1457,
+          "end": 1467,
+          "category": "MonetaryAmount",
+          "text": "GBP 12,500"
+        },
+        {
+          "start": 1476,
+          "end": 1503,
+          "category": "IBAN",
+          "text": "GB82 WEST 1234 5698 7654 32"
+        },
+        {
+          "start": 1576,
+          "end": 1595,
+          "category": "CreditCard",
+          "text": "4111 1111 1111 1111"
+        },
+        {
+          "start": 1631,
+          "end": 1650,
+          "category": "CreditCard",
+          "text": "5555-5555-5555-4444"
+        },
+        {
+          "start": 1676,
+          "end": 1693,
+          "category": "CreditCard",
+          "text": "3782 822463 10005"
+        },
+        {
+          "start": 1747,
+          "end": 1763,
+          "category": "CreditCard",
+          "text": "4012888888881881"
+        },
+        {
+          "start": 1860,
+          "end": 1872,
+          "category": "IpAddress",
+          "text": "203.0.113.47"
+        },
+        {
+          "start": 1877,
+          "end": 1891,
+          "category": "IpAddress",
+          "text": "198.51.100.212"
+        },
+        {
+          "start": 1900,
+          "end": 1915,
+          "category": "Date",
+          "text": "October 1, 2023"
+        },
+        {
+          "start": 1920,
+          "end": 1935,
+          "category": "Date",
+          "text": "October 9, 2023"
+        },
+        {
+          "start": 1966,
+          "end": 2026,
+          "category": "Url",
+          "text": "https://portal.desertsun-cu.example/accounts/88412/transfers"
+        },
+        {
+          "start": 2080,
+          "end": 2091,
+          "category": "SocialSecurityNumber",
+          "text": "666-07-3391"
+        },
+        {
+          "start": 2126,
+          "end": 2135,
+          "category": "DriversLicense",
+          "text": "D08847123"
+        },
+        {
+          "start": 2152,
+          "end": 2169,
+          "category": "CompanyName",
+          "text": "Canyon State Bank",
+          "optional": true
+        },
+        {
+          "start": 2192,
+          "end": 2225,
+          "category": "Address",
+          "text": "P.O. Box 29001, Phoenix, AZ 85038",
+          "optional": true
+        },
+        {
+          "start": 2354,
+          "end": 2370,
+          "category": "Date",
+          "text": "November 2, 2023"
+        },
+        {
+          "start": 2425,
+          "end": 2440,
+          "category": "PersonName",
+          "text": "Lorna Fetterman"
+        },
+        {
+          "start": 2475,
+          "end": 2491,
+          "category": "Date",
+          "text": "November 2, 2023"
+        },
+        {
+          "start": 2523,
+          "end": 2532,
+          "category": "ClientId",
+          "text": "AZ-618204",
+          "optional": true
+        }
+      ]
+    }
+  ]
+}

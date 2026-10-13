@@ -1,0 +1,65 @@
+id: en_court_complaint
+lang: en
+kind: court filing
+description: US civil complaint. Caption in "LAST, First" form, case number, attorney block, several phone formats, DOB vs. other dates, case citations and statutes as false-positive traps, a name split across a line break.
+---
+UNITED STATES DISTRICT COURT
+NORTHERN DISTRICT OF CALIFORNIA
+
+[[PersonName|HOLLOWAY, Dana]], an individual,
+        Plaintiff,
+    v.
+[[CompanyName|Brightwater Logistics Corp.]], a Delaware corporation, and
+[[PersonName|Marcus T. Feeney]], an individual,
+        Defendants.
+
+Case No. [[CaseNumber|3:24-cv-01187-JSW]]
+
+COMPLAINT FOR DAMAGES AND DEMAND FOR JURY TRIAL
+
+Plaintiff [[PersonName|Dana Holloway]] ("Plaintiff" or "Ms. [[PersonName|Holloway]]") alleges as follows:
+
+I. JURISDICTION AND VENUE
+
+1. This Court has jurisdiction under 28 U.S.C. § 1331 and 42 U.S.C. § 2000e-5(f)(3). Venue is proper in this District under 28 U.S.C. § 1391(b).
+
+II. PARTIES
+
+2. Plaintiff is an adult residing at [[Address|2287 Juniper Hollow Road, Apt. 4B, Oakland, CA 94611]]. Plaintiff was born on [[DateOfBirth|April 9, 1986]] and was employed by Defendant from [[Date|March 2, 2019]] until [[Date|August 30, 2023]].
+
+3. Defendant [[CompanyName|Brightwater Logistics Corp.]] ("Brightwater") maintains its principal office at [[Address|900 Harbor Point Boulevard, Suite 1400, Alameda, CA 94501]].
+
+4. Defendant [[PersonName|Marcus T. Feeney]] was Plaintiff's direct supervisor. On information and belief, Mr. [[PersonName|Feeney]] resides in Contra Costa County.
+
+III. FACTUAL ALLEGATIONS
+
+5. On [[Date|June 12, 2023]], Plaintiff reported to Human Resources Director [[PersonName|Priya
+Ramaswamy]] that Mr. [[PersonName|Feeney]] had altered her timesheets. Ms. [[PersonName|Ramaswamy]] acknowledged the report by e-mail from [[Email|p.ramaswamy@brightwater-logistics.example.com]].
+
+6. Plaintiff's employee number was [[ClientId|BWL-004417]]. Her payroll records list Social Security Number [[SocialSecurityNumber|666-41-2207]] and a California driver's license, No. [[DriversLicense|D4817265]].
+
+7. Plaintiff was terminated on [[Date|August 30, 2023]], eleven weeks after her report. See Burlington N. & Santa Fe Ry. Co. v. White, 548 U.S. 53, 68 (2006); Yartzoff v. Thomas, 809 F.2d 1371, 1376 (9th Cir. 1987).
+
+8. Plaintiff's unpaid wages total [[MonetaryAmount|$18,442.50]]. She seeks back pay, front pay and damages of not less than [[MonetaryAmount|$250,000]].
+
+IV. CAUSES OF ACTION
+
+FIRST CAUSE OF ACTION
+(Retaliation, Title VII of the Civil Rights Act of 1964)
+
+9. Plaintiff incorporates paragraphs 1 through 8. The Equal Employment Opportunity Commission issued a Notice of Right to Sue on [[Date|January 5, 2024]] (Charge No. [[CaseNumber|555-2023-01942]]).
+
+PRAYER FOR RELIEF
+
+WHEREFORE, Plaintiff requests judgment against Defendants, jointly and severally, together with costs under Fed. R. Civ. P. 54(d).
+
+Dated: [[Date|February 14, 2024]]
+
+Respectfully submitted,
+[[PersonName|Ellen K. Marsh]] (SBN [[?ClientId|287731]])
+[[CompanyName|Marsh & Okonjo LLP]]
+[[Address|450 Sansome Street, 9th Floor, San Francisco, CA 94111]]
+Tel: [[PhoneNumber|(415) 555-0142]] | Fax: [[PhoneNumber|415.555.0143]]
+Mobile: [[PhoneNumber|+1 415 555 0199]]
+[[Email|emarsh@marsh-okonjo.test]]
+Attorneys for Plaintiff [[PersonName|Dana Holloway]]

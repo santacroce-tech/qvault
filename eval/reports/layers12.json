@@ -1,0 +1,7364 @@
+{
+  "layer1": {
+    "by_category": {
+      "Address": {
+        "covered_recall": 0.8275862068965517,
+        "exact": {
+          "f1": 0.8727272727272727,
+          "precision": 0.9230769230769231,
+          "recall": 0.8275862068965517
+        },
+        "labels": 29,
+        "overlap": {
+          "f1": 0.9454545454545454,
+          "labels_found": 26,
+          "precision": 1.0,
+          "preds": 26,
+          "preds_correct": 26,
+          "recall": 0.896551724137931
+        },
+        "type_accuracy": 1.0
+      },
+      "BankAccount": {
+        "covered_recall": 0.7333333333333333,
+        "exact": {
+          "f1": 0.846153846153846,
+          "precision": 1.0,
+          "recall": 0.7333333333333333
+        },
+        "labels": 15,
+        "overlap": {
+          "f1": 0.846153846153846,
+          "labels_found": 11,
+          "precision": 1.0,
+          "preds": 10,
+          "preds_correct": 10,
+          "recall": 0.7333333333333333
+        },
+        "type_accuracy": 0.9090909090909091
+      },
+      "CaseNumber": {
+        "covered_recall": 0.8333333333333334,
+        "exact": {
+          "f1": 0.9090909090909091,
+          "precision": 1.0,
+          "recall": 0.8333333333333334
+        },
+        "labels": 6,
+        "overlap": {
+          "f1": 0.9090909090909091,
+          "labels_found": 5,
+          "precision": 1.0,
+          "preds": 5,
+          "preds_correct": 5,
+          "recall": 0.8333333333333334
+        },
+        "type_accuracy": 1.0
+      },
+      "ClientId": {
+        "covered_recall": 0.6,
+        "exact": {
+          "f1": 0.7499999999999999,
+          "precision": 1.0,
+          "recall": 0.6
+        },
+        "labels": 5,
+        "overlap": {
+          "f1": 0.888888888888889,
+          "labels_found": 4,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 0.8
+        },
+        "type_accuracy": 0.75
+      },
+      "CompanyName": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 37,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "CourtFileNumber": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 1,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 1,
+          "precision": 1.0,
+          "preds": 1,
+          "preds_correct": 1,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "CreditCard": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 8,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 8,
+          "precision": 1.0,
+          "preds": 8,
+          "preds_correct": 8,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Date": {
+        "covered_recall": 0.9166666666666666,
+        "exact": {
+          "f1": 0.9565217391304348,
+          "precision": 1.0,
+          "recall": 0.9166666666666666
+        },
+        "labels": 72,
+        "overlap": {
+          "f1": 0.9565217391304348,
+          "labels_found": 66,
+          "precision": 1.0,
+          "preds": 66,
+          "preds_correct": 66,
+          "recall": 0.9166666666666666
+        },
+        "type_accuracy": 1.0
+      },
+      "DateOfBirth": {
+        "covered_recall": 0.8888888888888888,
+        "exact": {
+          "f1": 0.9411764705882353,
+          "precision": 1.0,
+          "recall": 0.8888888888888888
+        },
+        "labels": 9,
+        "overlap": {
+          "f1": 0.9411764705882353,
+          "labels_found": 8,
+          "precision": 1.0,
+          "preds": 8,
+          "preds_correct": 8,
+          "recall": 0.8888888888888888
+        },
+        "type_accuracy": 1.0
+      },
+      "DriversLicense": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 4,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 4,
+          "precision": 1.0,
+          "preds": 4,
+          "preds_correct": 4,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Email": {
+        "covered_recall": 0.96,
+        "exact": {
+          "f1": 0.9795918367346939,
+          "precision": 1.0,
+          "recall": 0.96
+        },
+        "labels": 25,
+        "overlap": {
+          "f1": 0.9795918367346939,
+          "labels_found": 24,
+          "precision": 1.0,
+          "preds": 24,
+          "preds_correct": 24,
+          "recall": 0.96
+        },
+        "type_accuracy": 1.0
+      },
+      "IBAN": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 9,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 9,
+          "precision": 1.0,
+          "preds": 9,
+          "preds_correct": 9,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "IpAddress": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 6,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 6,
+          "precision": 1.0,
+          "preds": 6,
+          "preds_correct": 6,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "LicensePlate": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 5,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 5,
+          "precision": 1.0,
+          "preds": 5,
+          "preds_correct": 5,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "MedicalRecordNumber": {
+        "covered_recall": 0.75,
+        "exact": {
+          "f1": 0.75,
+          "precision": 0.75,
+          "recall": 0.75
+        },
+        "labels": 4,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 4,
+          "precision": 1.0,
+          "preds": 4,
+          "preds_correct": 4,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "MonetaryAmount": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 46,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 46,
+          "precision": 1.0,
+          "preds": 46,
+          "preds_correct": 46,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "NationalId": {
+        "covered_recall": 0.8823529411764706,
+        "exact": {
+          "f1": 0.9375,
+          "precision": 1.0,
+          "recall": 0.8823529411764706
+        },
+        "labels": 17,
+        "overlap": {
+          "f1": 0.9375,
+          "labels_found": 15,
+          "precision": 1.0,
+          "preds": 15,
+          "preds_correct": 15,
+          "recall": 0.8823529411764706
+        },
+        "type_accuracy": 1.0
+      },
+      "PassportNumber": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 3,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "PersonName": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 113,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "PhoneNumber": {
+        "covered_recall": 0.96,
+        "exact": {
+          "f1": 0.8962172647914646,
+          "precision": 0.9130434782608695,
+          "recall": 0.88
+        },
+        "labels": 25,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 25,
+          "precision": 1.0,
+          "preds": 23,
+          "preds_correct": 23,
+          "recall": 1.0
+        },
+        "type_accuracy": 0.92
+      },
+      "SocialSecurityNumber": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 3,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "TaxId": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 0.9473684210526316,
+          "precision": 0.9,
+          "recall": 1.0
+        },
+        "labels": 16,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 16,
+          "precision": 1.0,
+          "preds": 20,
+          "preds_correct": 20,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Url": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 3,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      }
+    },
+    "by_lang": {
+      "en": {
+        "covered_recall": 0.6022727272727273,
+        "exact": {
+          "f1": 0.7417840375586855,
+          "precision": 0.9753086419753086,
+          "recall": 0.5984848484848485
+        },
+        "labels": 264,
+        "overlap": {
+          "f1": 0.7605633802816901,
+          "labels_found": 162,
+          "precision": 1.0,
+          "preds": 162,
+          "preds_correct": 162,
+          "recall": 0.6136363636363636
+        },
+        "type_accuracy": 0.9814814814814815
+      },
+      "es": {
+        "covered_recall": 0.6458333333333334,
+        "exact": {
+          "f1": 0.7625000000000001,
+          "precision": 0.953125,
+          "recall": 0.6354166666666666
+        },
+        "labels": 96,
+        "overlap": {
+          "f1": 0.8,
+          "labels_found": 64,
+          "precision": 1.0,
+          "preds": 64,
+          "preds_correct": 64,
+          "recall": 0.6666666666666666
+        },
+        "type_accuracy": 0.984375
+      },
+      "pt": {
+        "covered_recall": 0.6534653465346535,
+        "exact": {
+          "f1": 0.7904191616766467,
+          "precision": 1.0,
+          "recall": 0.6534653465346535
+        },
+        "labels": 101,
+        "overlap": {
+          "f1": 0.7904191616766467,
+          "labels_found": 66,
+          "precision": 1.0,
+          "preds": 66,
+          "preds_correct": 66,
+          "recall": 0.6534653465346535
+        },
+        "type_accuracy": 1.0
+      }
+    },
+    "by_split": {
+      "dev": {
+        "covered_recall": 0.6608478802992519,
+        "exact": {
+          "f1": 0.7874251497005988,
+          "precision": 0.9850187265917603,
+          "recall": 0.655860349127182
+        },
+        "labels": 401,
+        "overlap": {
+          "f1": 0.7994011976047904,
+          "labels_found": 267,
+          "precision": 1.0,
+          "preds": 267,
+          "preds_correct": 267,
+          "recall": 0.6658354114713217
+        },
+        "type_accuracy": 0.9887640449438202
+      },
+      "holdout": {
+        "covered_recall": 0.36666666666666664,
+        "exact": {
+          "f1": 0.5176470588235295,
+          "precision": 0.88,
+          "recall": 0.36666666666666664
+        },
+        "labels": 60,
+        "overlap": {
+          "f1": 0.5882352941176471,
+          "labels_found": 25,
+          "precision": 1.0,
+          "preds": 25,
+          "preds_correct": 25,
+          "recall": 0.4166666666666667
+        },
+        "type_accuracy": 0.96
+      }
+    },
+    "false_negatives": [
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "HOLLOWAY, Dana"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Brightwater Logistics Corp."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Marcus T. Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Dana Holloway"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Holloway"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Brightwater Logistics Corp."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Marcus T. Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Priya\nRamaswamy"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ramaswamy"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ellen K. Marsh"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Marsh & Okonjo LLP"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Dana Holloway"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Okafor Whitfield PLLC"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Tobias R. Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Harriet Pemberton-Shaw"
+      },
+      {
+        "category": "ClientId",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "NGM-24-0073318"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Tobias R. Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindqvist"
+      },
+      {
+        "category": "MedicalRecordNumber",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "MRN 00482913"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "A. N. Castellanos"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. Whitfield"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Jerome Whitfield"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "T. R. Lindqvist"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "Meridian Consulting Group LLC"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "Maria Santos"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "Atlas Digital Solutions Inc"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "James Richardson"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "j.richardson@atlas-  \n  digital.com"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "Elena Kowalski"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "Roberto  \n  Fernandes"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "Meridian Consulting Group LLC"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "Maria Santos"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "Maria Santos"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "Maria Santos"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "Meridian Consulting Group LLC"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "James Richardson"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "Atlas Digital Solutions Inc"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "Elena Kowalski"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "Meridian Consulting Group LLC"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "Roberto Fernandes"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "Atlas Digital Solutions Inc"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "Address",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Westerdok 118, 1013 BH Amsterdam"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Vollmer Antriebstechnik GmbH"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Felix Brandauer"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zeeland Marine France SAS"
+      },
+      {
+        "category": "CaseNumber",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "16 O 248/24"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Joost van der Linde"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Joost van der Linde"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desert Sun Credit Union"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Calloway, Brent J."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "LORNA FETTERMAN"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lorna Fetterman"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desert Sun Credit Union"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Brent J. Calloway"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "0047-221983"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "884 120 33571"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "3266 0519 8820"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lorna Fetterman"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Siobhan Achterberg"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Halcyon Data Systems Ltd"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "S. Achterberg"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Achterberg"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rafferty\nOkonkwo-Bell"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ms Achterberg"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Pryce Lowther Solicitors LLP"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Gideon Farquharson"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Achterberg, Siobhan"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Farquharson, Gideon"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "SIOBHAN ACHTERBERG"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "GIDEON FARQUHARSON"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "HALCYON DATA SYSTEMS LTD"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "NORTHWIND HARBOR HOLDINGS LLC"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Northwind Harbor Holdings LLC"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Constance Varga-Ellison"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rupert Ashdown"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Imelda Szabo"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Varga Capital Partners LP"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Constance Varga-Ellison"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Bufete Arriaga & Solís, S.C."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Guadalupe Itzel Ramírez de la Garza"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ramírez de la Garza"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. M. Ortuño"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "José María Ortuño Villaseñor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Mariana Solís Echeverría"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "María Inmaculada Ferrándiz Olmedo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Tomás Ezequiel Barroso\nQuintanilla"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Inversiones Quintanilla Hermanos, S.L."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rogelio Quintanilla Mateu"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ferrándiz Olmedo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "María Inmaculada Ferrándiz Olmedo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Tomás E. Barroso Quintanilla"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Álvaro Sendra Peiró"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "LLORENTE ESCRIVÁ, Nuria"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Beatriz Coloma Ruano"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Reformas Turia Integral, S.L.U."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Fermín Aleixandre Bou"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Llorente Escrivá"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Aleixandre"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Beatriz Coloma Ruano"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Álvaro Sendra Peiró"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Naomi Fairbanks-Oyelaran"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "2025.03.18"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desmond Achebe-Kowalczyk"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Pellucid Freight Systems, Inc."
+      },
+      {
+        "category": "ClientId",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "M-25-0331"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desmond Achebe-Kowalczyk"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "07.11.1968"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "83 Lantern Hill Terrace, Unit 12, Marietta, GA 30064-3317"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "2210 Rue Sainte-Catherine Ouest, Montréal, QC H3H 1M7"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "046 454 286"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desmond"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feb. 3, 2021"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Nov. 30, 2024"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Grete Mauldin"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "000123456789"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Bartholomew Quist"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Quist Harrow & Lyle LLP"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "TALLERES METÁLICOS ARGAÑA, S.L."
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "C/ Gran Vía de Don Diego López de Haro, 45, 48011 Bilbao"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Íñigo Zabaleta Urrutia"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Arantxa Beloki Etxeberria"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zabaleta"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Beloki"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Auditores Ibaizabal, S.L.P."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Koldo Iturbe Larrañaga"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Alameda de Recalde, 27, 5.º dcha., 48009 Bilbao"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "0034 944 555 120"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Íñigo Zabaleta Urrutia"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Arantxa Beloki Etxeberria"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Benedita Aparecida Rocha Lins"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "39053344705"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Cláudio Henrique Vasconcelos"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Vasconcelos"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 jan. 2025"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 fev. 2025"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 mar. 2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Marcelo Tavares Quintão"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Benedita Aparecida Rocha Lins"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Laticínios Serra Azul Ltda."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Helena Cristina dos Santos Albuquerque"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Moura Dantas Consultoria Tributária EIRELI"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rodrigo Moura Dantas"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Priscila\nFagundes Teixeira"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rodrigo Moura Dantas"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "LATICÍNIOS SERRA AZUL LTDA."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Helena Cristina dos Santos Albuquerque"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "MOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rodrigo Moura Dantas"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Vanessa Lacerda Pimentel"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Otávio Brandão Neto"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "CARVALHO, Juliana Rezende de"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "Transportes Rodovia Sul S.A."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "Edvaldo\nNogueira Paixão"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "Paixão"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "Fernanda Lopes Tavares"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Joaquim Manuel Teixeira Fonseca"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Inês Margarida Couto Sarmento"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Douro Vinhos & Quintas, Lda."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Joaquim Manuel Teixeira Fonseca"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Joaquim Manuel Teixeira Fonseca"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Fonseca, Joaquim"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. M. T. Fonseca"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rui Pedro Magalhães"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Inês Sarmento"
+      }
+    ],
+    "false_positives": [],
+    "overall": {
+      "covered_recall": 0.6225596529284165,
+      "exact": {
+        "f1": 0.756972111553785,
+        "precision": 0.976027397260274,
+        "recall": 0.6182212581344902
+      },
+      "labels": 461,
+      "overlap": {
+        "f1": 0.7755644090305445,
+        "labels_found": 292,
+        "precision": 1.0,
+        "preds": 292,
+        "preds_correct": 292,
+        "recall": 0.6334056399132321
+      },
+      "type_accuracy": 0.9863013698630136
+    }
+  },
+  "layer2": {
+    "by_category": {
+      "Address": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "labels": 29,
+        "overlap": {
+          "f1": 0.3888888888888889,
+          "labels_found": 7,
+          "precision": 1.0,
+          "preds": 4,
+          "preds_correct": 4,
+          "recall": 0.2413793103448276
+        },
+        "type_accuracy": 0.5714285714285714
+      },
+      "BankAccount": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 15,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "CaseNumber": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 6,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "ClientId": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 5,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "CompanyName": {
+        "covered_recall": 0.4864864864864865,
+        "exact": {
+          "f1": 0.5483870967741935,
+          "precision": 0.68,
+          "recall": 0.4594594594594595
+        },
+        "labels": 37,
+        "overlap": {
+          "f1": 0.8619612742036228,
+          "labels_found": 30,
+          "precision": 0.92,
+          "preds": 25,
+          "preds_correct": 23,
+          "recall": 0.8108108108108109
+        },
+        "type_accuracy": 0.7666666666666667
+      },
+      "CourtFileNumber": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 1,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "CreditCard": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 8,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Date": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 72,
+        "overlap": {
+          "f1": 0.05405405405405406,
+          "labels_found": 2,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.027777777777777776
+        },
+        "type_accuracy": 0.0
+      },
+      "DateOfBirth": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 9,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "DriversLicense": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 4,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Email": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 25,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "IBAN": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 9,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "IpAddress": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 6,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "LicensePlate": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 5,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "MedicalRecordNumber": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 4,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "MonetaryAmount": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 46,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "NationalId": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 17,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "PassportNumber": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "PersonName": {
+        "covered_recall": 0.3805309734513274,
+        "exact": {
+          "f1": 0.30400000000000005,
+          "precision": 0.2773722627737226,
+          "recall": 0.336283185840708
+        },
+        "labels": 113,
+        "overlap": {
+          "f1": 0.5288156288156288,
+          "labels_found": 61,
+          "precision": 0.5182481751824818,
+          "preds": 137,
+          "preds_correct": 71,
+          "recall": 0.5398230088495575
+        },
+        "type_accuracy": 1.0
+      },
+      "PhoneNumber": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 25,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "SocialSecurityNumber": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "TaxId": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 16,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Url": {
+        "covered_recall": 0.0,
+        "exact": {
+          "f1": 0.0,
+          "precision": 1.0,
+          "recall": 0.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 0.0,
+          "labels_found": 0,
+          "precision": 1.0,
+          "preds": 0,
+          "preds_correct": 0,
+          "recall": 0.0
+        },
+        "type_accuracy": 1.0
+      }
+    },
+    "by_lang": {
+      "en": {
+        "covered_recall": 0.11742424242424243,
+        "exact": {
+          "f1": 0.15555555555555556,
+          "precision": 0.2916666666666667,
+          "recall": 0.10606060606060606
+        },
+        "labels": 264,
+        "overlap": {
+          "f1": 0.26666666666666666,
+          "labels_found": 48,
+          "precision": 0.5,
+          "preds": 96,
+          "preds_correct": 48,
+          "recall": 0.18181818181818182
+        },
+        "type_accuracy": 0.9166666666666666
+      },
+      "es": {
+        "covered_recall": 0.11458333333333333,
+        "exact": {
+          "f1": 0.128,
+          "precision": 0.27586206896551724,
+          "recall": 0.08333333333333333
+        },
+        "labels": 96,
+        "overlap": {
+          "f1": 0.34401876465989056,
+          "labels_found": 22,
+          "precision": 0.6896551724137931,
+          "preds": 29,
+          "preds_correct": 20,
+          "recall": 0.22916666666666666
+        },
+        "type_accuracy": 0.6818181818181818
+      },
+      "pt": {
+        "covered_recall": 0.18811881188118812,
+        "exact": {
+          "f1": 0.26760563380281693,
+          "precision": 0.4634146341463415,
+          "recall": 0.18811881188118812
+        },
+        "labels": 101,
+        "overlap": {
+          "f1": 0.4225352112676056,
+          "labels_found": 30,
+          "precision": 0.7317073170731707,
+          "preds": 41,
+          "preds_correct": 30,
+          "recall": 0.297029702970297
+        },
+        "type_accuracy": 0.9666666666666667
+      }
+    },
+    "by_split": {
+      "dev": {
+        "covered_recall": 0.13216957605985039,
+        "exact": {
+          "f1": 0.1761467889908257,
+          "precision": 0.3333333333333333,
+          "recall": 0.11970074812967581
+        },
+        "labels": 401,
+        "overlap": {
+          "f1": 0.3036088682696168,
+          "labels_found": 83,
+          "precision": 0.5694444444444444,
+          "preds": 144,
+          "preds_correct": 82,
+          "recall": 0.20698254364089774
+        },
+        "type_accuracy": 0.8674698795180723
+      },
+      "holdout": {
+        "covered_recall": 0.13333333333333333,
+        "exact": {
+          "f1": 0.17073170731707318,
+          "precision": 0.3181818181818182,
+          "recall": 0.11666666666666667
+        },
+        "labels": 60,
+        "overlap": {
+          "f1": 0.40779610194902544,
+          "labels_found": 17,
+          "precision": 0.7272727272727273,
+          "preds": 22,
+          "preds_correct": 16,
+          "recall": 0.2833333333333333
+        },
+        "type_accuracy": 0.9411764705882353
+      }
+    },
+    "false_negatives": [
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "HOLLOWAY, Dana"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Marcus T. Feeney"
+      },
+      {
+        "category": "CaseNumber",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "3:24-cv-01187-JSW"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Holloway"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "2287 Juniper Hollow Road, Apt. 4B, Oakland, CA 94611"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "April 9, 1986"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "March 2, 2019"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "August 30, 2023"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "900 Harbor Point Boulevard, Suite 1400, Alameda, CA 94501"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "partial",
+        "page": 1,
+        "text": "Marcus T. Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feeney"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_court_complaint",
+        "kind": "partial",
+        "page": 1,
+        "text": "June 12, 2023"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Priya\nRamaswamy"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ramaswamy"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "p.ramaswamy@brightwater-logistics.example.com"
+      },
+      {
+        "category": "ClientId",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "BWL-004417"
+      },
+      {
+        "category": "SocialSecurityNumber",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "666-41-2207"
+      },
+      {
+        "category": "DriversLicense",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "D4817265"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "August 30, 2023"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "$18,442.50"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "$250,000"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "January 5, 2024"
+      },
+      {
+        "category": "CaseNumber",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "555-2023-01942"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "February 14, 2024"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ellen K. Marsh"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_court_complaint",
+        "kind": "partial",
+        "page": 1,
+        "text": "Marsh & Okonjo LLP"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "450 Sansome Street, 9th Floor, San Francisco, CA 94111"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "(415) 555-0142"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "415.555.0143"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "+1 415 555 0199"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "emarsh@marsh-okonjo.test"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "Okafor Whitfield PLLC"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "77 Water Street, Suite 310, Brooklyn, NY 11201"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "(718) 555-0163"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "October 3, 2024"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "claims.intake@northgate-mutual.example"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Tobias R. Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "Harriet Pemberton-Shaw"
+      },
+      {
+        "category": "ClientId",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "NGM-24-0073318"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "May 18, 2024"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Tobias R. Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindqvist"
+      },
+      {
+        "category": "LicensePlate",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "KXR-4471"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindqvist"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "11/02/1979"
+      },
+      {
+        "category": "MedicalRecordNumber",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "MRN 00482913"
+      },
+      {
+        "category": "MedicalRecordNumber",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "SBH-7731-0925"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "May 21, 2024"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "A. N. Castellanos"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindqvist"
+      },
+      {
+        "category": "PassportNumber",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "91734528"
+      },
+      {
+        "category": "DriversLicense",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "482 991 073"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "05/18/2024"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "$1,840.00"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "05/18/2024"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "$6,215.75"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "05/21/2024"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "$38,904.10"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "06/03/2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "08/26/2024"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "$2,760.00"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "$11,500.00"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "$185,000.00"
+      },
+      {
+        "category": "ClientId",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "NGM-PA-5520193"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "November 4, 2024"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "j.whitfield@okafor-whitfield.test"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "718-555-0164"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. Whitfield"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "T. R. Lindqvist"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "June 15, 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "June 15, 2024"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "1420 Market Street, Suite 200, San Francisco, CA 94103"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "maria.santos@meridian-consulting.com"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "(415) 555-0187"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "350 Fifth Avenue, Floor 12, New York, NY 10118"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "j.richardson@atlas-  \n  digital.com"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "(212) 555-0234"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "June 15, 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "December 31,  \n  2025"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "March 1, 2026"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "elena.kowalski@meridian-consulting.com"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "Roberto  \n  Fernandes"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "r.fernandes@atlas-digital.com"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "$150,000.00"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "$85,000.00"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "$50,000.00"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "$15,000.00"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "7823401956"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "021000021"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "FNBCUS6S"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "$500.00"
+      },
+      {
+        "category": "CreditCard",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "4532-8901-2345-6789"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "82-4751093"
+      },
+      {
+        "category": "SocialSecurityNumber",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "412-68-9103"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 2,
+        "text": "March 15, 1985"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "June 15, 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "June 15, 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "June 15, 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 3,
+        "text": "June 15, 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "12 June 2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "17 February 1971"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindenallee 42, 10719 Berlin"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "L01X00T47"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "12 345 678 903"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "TaxId",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "NL859632147B01"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Westerdok 118, 1013 BH Amsterdam"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "27/614/04418"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "DE298417365"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "EUR 25,000"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "EUR 4,750,000.00"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "EUR 500,000.00"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Felix Brandauer"
+      },
+      {
+        "category": "IBAN",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "DE44 5001 0517 5407 3249 31"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "INGDDEFFXXX"
+      },
+      {
+        "category": "IBAN",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "NL91ABNA0417164300"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Zeeland Marine France SAS"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "FR61123456789"
+      },
+      {
+        "category": "IBAN",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "FR14 2004 1010 0505 0001 3M02 606"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "BE0123456749"
+      },
+      {
+        "category": "IBAN",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "BE68 5390 0754 7034"
+      },
+      {
+        "category": "LicensePlate",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "B-HV 4471"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "EUR 18,200"
+      },
+      {
+        "category": "CaseNumber",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "16 O 248/24"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "h.vollmer@vollmer-antrieb.example.de"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "+49 30 901820 44"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "+49 151 2345 6789"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Joost van der Linde"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "j.vanderlinde@zeeland-marine.example.nl"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "+31 20 794 1180"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "12 June 2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Joost van der Linde"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desert Sun Credit Union"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Calloway, Brent J."
+      },
+      {
+        "category": "CourtFileNumber",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "CV2023-014482"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "LORNA FETTERMAN"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desert Sun Credit Union"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "July 7, 2023"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "$62,318.44"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Brent J. Calloway"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "6120 East Saguaro Vista Drive, Scottsdale, AZ 85266"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "bcalloway77@mailbox.example.net"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "121000358"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "0047-221983"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "$14,902.17"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "026009593"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "884 120 33571"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "$3,415.00"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "BOFAUS3N"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "3266 0519 8820"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "$27,050.92"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "partial",
+        "page": 1,
+        "text": "September 14, 2023"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "EUR 40,000.00"
+      },
+      {
+        "category": "IBAN",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "DE89 3704 0044 0532 0130 00"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "COBADEFFXXX"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "September 18, 2023"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "GBP 12,500"
+      },
+      {
+        "category": "IBAN",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "GB82 WEST 1234 5698 7654 32"
+      },
+      {
+        "category": "CreditCard",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "4111 1111 1111 1111"
+      },
+      {
+        "category": "CreditCard",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "5555-5555-5555-4444"
+      },
+      {
+        "category": "CreditCard",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "3782 822463 10005"
+      },
+      {
+        "category": "CreditCard",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "4012888888881881"
+      },
+      {
+        "category": "IpAddress",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "203.0.113.47"
+      },
+      {
+        "category": "IpAddress",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "198.51.100.212"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "October 1, 2023"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "October 9, 2023"
+      },
+      {
+        "category": "Url",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "https://portal.desertsun-cu.example/accounts/88412/transfers"
+      },
+      {
+        "category": "SocialSecurityNumber",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "666-07-3391"
+      },
+      {
+        "category": "DriversLicense",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "D08847123"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "November 2, 2023"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "November 2, 2023"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "January 22, 2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Siobhan Achterberg"
+      },
+      {
+        "category": "Address",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "14 Kestrel Close, Didsbury, Manchester M20 6QT"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "4 March 2020"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "31 October 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "9 August 2024"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "S. Achterberg"
+      },
+      {
+        "category": "IpAddress",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "192.0.2.118"
+      },
+      {
+        "category": "IpAddress",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "198.51.100.34"
+      },
+      {
+        "category": "Url",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "https://intranet.halcyon-data.example/hr/records?id=7781"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Achterberg"
+      },
+      {
+        "category": "PassportNumber",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "548271936"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "AB 12 34 56 C"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rafferty\nOkonkwo-Bell"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "GBP 48,500.00"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ms Achterberg"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "£3,600"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Gideon Farquharson"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Achterberg, Siobhan"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "s.achterberg@post.example.co.uk"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "+44 161 496 0732"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Farquharson, Gideon"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "legal@halcyon-data.example"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "+44 20 7946 0518"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "SIOBHAN ACHTERBERG"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "22/01/2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "GIDEON FARQUHARSON"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "HALCYON DATA SYSTEMS LTD"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "22/01/2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Constance Varga-Ellison"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rupert Ashdown"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Imelda Szabo"
+      },
+      {
+        "category": "Date",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "March 1, 2019"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "partial",
+        "page": 1,
+        "text": "Constance Varga-Ellison"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Bufete Arriaga & Solís, S.C."
+      },
+      {
+        "category": "Address",
+        "fixture": "es_carta_requerimiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Paseo de la Reforma 2620, piso 11, Col. Lomas Altas, 11950 Ciudad de México"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "+52 55 5550 1234"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "7 de octubre de 2024"
+      },
+      {
+        "category": "ClientId",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "AS-2024-0193"
+      },
+      {
+        "category": "Address",
+        "fixture": "es_carta_requerimiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Calle Río Lerma 156, int. 3, Col. Cuauhtémoc, 06500 Ciudad de México"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ramírez de la Garza"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. M. Ortuño"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "MXN 58,400.00"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "2 de febrero de 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "30 de abril de 2024"
+      },
+      {
+        "category": "MedicalRecordNumber",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "HC-0045821"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "1 de febrero de 2024"
+      },
+      {
+        "category": "IpAddress",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "203.0.113.9"
+      },
+      {
+        "category": "Url",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "https://pacientes.clinica-ortuno.example.mx/presupuestos/2024/0177"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "RAGG850314MDFMRD09"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "14/03/1985"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "002180700112345678"
+      },
+      {
+        "category": "Email",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "cobranza@arriaga-solis.example.mx"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "15 de marzo de 2024"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "48291736Q"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "3 de julio de 1975"
+      },
+      {
+        "category": "Address",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Calle de Alcalá, 214, 3.º B, 28028 Madrid"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Tomás Ezequiel Barroso\nQuintanilla"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "X1234567L"
+      },
+      {
+        "category": "Address",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Avenida de la Albufera, 77, 2.º izda., 28038 Madrid"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "+34 611 482 907"
+      },
+      {
+        "category": "Email",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "tomas.barroso@correo.example.es"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Inversiones Quintanilla Hermanos, S.L."
+      },
+      {
+        "category": "TaxId",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "B87654321"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rogelio Quintanilla Mateu"
+      },
+      {
+        "category": "Address",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Calle del Doctor Esquerdo, 105, 5.º A, 28007 Madrid"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "1 de abril de 2024"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "1.250,00 €"
+      },
+      {
+        "category": "IBAN",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "ES91 2100 0418 4502 0005 1332"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "2.500 euros"
+      },
+      {
+        "category": "LicensePlate",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "4821 KLM"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "85,40 €"
+      },
+      {
+        "category": "Email",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "mi.ferrandiz@buzon.example.es"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "915 550 142"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Tomás E. Barroso Quintanilla"
+      },
+      {
+        "category": "CaseNumber",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "318/2024"
+      },
+      {
+        "category": "CaseNumber",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "46250 42 1 2024 0007731"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "LLORENTE ESCRIVÁ, Nuria"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "20481957C"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Beatriz Coloma Ruano"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "4.380,25 euros"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "partial",
+        "page": 1,
+        "text": "Reformas Turia Integral, S.L.U."
+      },
+      {
+        "category": "TaxId",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "B98765432"
+      },
+      {
+        "category": "Address",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Calle de Colón, 48, 46004 Valencia"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Fermín Aleixandre Bou"
+      },
+      {
+        "category": "Address",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Avenida del Puerto, 211, 46023 Valencia"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "9 de enero de 2024"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "6.900 €"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "4.380,25 €"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "12/01/2024"
+      },
+      {
+        "category": "CreditCard",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "5555 5555 5555 4444"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "4 de marzo de 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "2 de abril de 2024"
+      },
+      {
+        "category": "Email",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "administracion@reformasturia.example.com"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "963 555 017"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Aleixandre"
+      },
+      {
+        "category": "PassportNumber",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "PAA123456"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "mayo de 2024"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "4.380,25 €"
+      },
+      {
+        "category": "Date",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "20 de mayo de 2024"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Álvaro Sendra Peiró"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Naomi Fairbanks-Oyelaran"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "2025.03.18"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Desmond Achebe-Kowalczyk"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Pellucid Freight Systems, Inc."
+      },
+      {
+        "category": "ClientId",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "M-25-0331"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Desmond Achebe-Kowalczyk"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "07.11.1968"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "83 Lantern Hill Terrace, Unit 12, Marietta, GA 30064-3317"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "4045550127"
+      },
+      {
+        "category": "Email",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "desmond.ak@inbox.example.org"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "2210 Rue Sainte-Catherine Ouest, Montréal, QC H3H 1M7"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "046 454 286"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desmond"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feb. 3, 2021"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Nov. 30, 2024"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "USD 27,413.06"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "000123456789"
+      },
+      {
+        "category": "CreditCard",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "6011 1111 1111 1117"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Quist Harrow & Lyle LLP"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "(678) 555-0110"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "April 15, 2025"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "3/17/25"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "TALLERES METÁLICOS ARGAÑA, S.L."
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "C/ Gran Vía de Don Diego López de Haro, 45, 48011 Bilbao"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "28/06/2024"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Íñigo Zabaleta Urrutia"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "30651122B"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "72485390Q"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zabaleta"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Beloki"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "184.320,77 EUR"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "60.000 EUR"
+      },
+      {
+        "category": "IBAN",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "ES7921000813610123456789"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Auditores Ibaizabal, S.L.P."
+      },
+      {
+        "category": "TaxId",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "B95123456"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Koldo Iturbe Larrañaga"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Alameda de Recalde, 27, 5.º dcha., 48009 Bilbao"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "0034 944 555 120"
+      },
+      {
+        "category": "Email",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "kiturbe@ibaizabal-auditores.example.es"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Íñigo Zabaleta Urrutia"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "39053344705"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Avenida Getúlio Vargas, 1.540, apto. 302, Savassi, Belo Horizonte/MG, 30112-021"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Rua Pernambuco, 88, casa 2, Funcionários, Belo Horizonte/MG, 30130-150"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Vasconcelos"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 jan. 2025"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 fev. 2025"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 mar. 2025"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "R$ 7.950,00"
+      },
+      {
+        "category": "Email",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "benedita.lins@correio.example.com.br"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "+55 31 98877-6655"
+      },
+      {
+        "category": "Email",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "mtquintao@advocacia.example.com.br"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "17 de março de 2025"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "11.222.333/0001-81"
+      },
+      {
+        "category": "Address",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Avenida Brigadeiro Faria Lima, 3477, 14º andar, Itaim Bibi, São Paulo/SP, CEP 04538-133"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Helena Cristina dos Santos Albuquerque"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "23.456.789-1"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "111.444.777-35"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "45.987.321/0001-09"
+      },
+      {
+        "category": "Address",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Rua Padre Chagas, 415, sala 802, Moinhos de Vento, Porto Alegre/RS, CEP 90570-080"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "123.456.789-09"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "1º de fevereiro de 2024"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "31 de janeiro de 2025"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "R$ 18.500,00"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "R$ 250.000,00"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "3064-2"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "48.715-9"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "45.987.321/0001-09"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Priscila\nFagundes Teixeira"
+      },
+      {
+        "category": "Email",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "dpo@laticinios-serraazul.example.com.br"
+      },
+      {
+        "category": "Email",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "rodrigo@mouradantas.example.com.br"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "(51) 99876-5432"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "(51) 3555-0198"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "25 de janeiro de 2024"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "LATICÍNIOS SERRA AZUL LTDA."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Helena Cristina dos Santos Albuquerque"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "MOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "987.654.321-00"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "741.852.963-14"
+      },
+      {
+        "category": "CaseNumber",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "1002345-67.2024.8.26.0011"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "partial",
+        "page": 1,
+        "text": "CARVALHO, Juliana Rezende de"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "03/04/1990"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "529.982.247-25"
+      },
+      {
+        "category": "Address",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rua dos Pinheiros, 1.288, apto. 54, Pinheiros, São Paulo/SP, CEP 05422-002"
+      },
+      {
+        "category": "Email",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "juliana.rezende@email.example.com.br"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "12.345.678/0001-95"
+      },
+      {
+        "category": "Address",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rodovia Régis Bittencourt, km 279, Embu das Artes/SP, CEP 06803-480"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "14 de março de 2024"
+      },
+      {
+        "category": "LicensePlate",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "FQX4D21"
+      },
+      {
+        "category": "LicensePlate",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "BRA-2E19"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "partial",
+        "page": 1,
+        "text": "Edvaldo\nNogueira Paixão"
+      },
+      {
+        "category": "MedicalRecordNumber",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "HC-2024-118845"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "22/03/2024"
+      },
+      {
+        "category": "CreditCard",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "4111 1111 1111 1111"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "R$ 23.418,90"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "R$ 11.200,00"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "(11) 4555-0123"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "Paixão"
+      },
+      {
+        "category": "IpAddress",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "198.51.100.77"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "R$ 34.618,90"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "R$ 30.000,00"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "R$ 64.618,90"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "2 de maio de 2024"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "22 de setembro de 1962"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "12345678 9 ZX4"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "30/11/2029"
+      },
+      {
+        "category": "TaxId",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "212 345 678"
+      },
+      {
+        "category": "Address",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rua de Santa Catarina, 312, 2.º Esq., 4000-447 Porto"
+      },
+      {
+        "category": "Address",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Avenida da Liberdade, 190, 5.º, 1250-147 Lisboa"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "partial",
+        "page": 1,
+        "text": "Douro Vinhos & Quintas, Lda."
+      },
+      {
+        "category": "TaxId",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "509 876 543"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "€ 385.000,00"
+      },
+      {
+        "category": "IBAN",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "PT50 0002 0123 1234 5678 9015 4"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "8 de abril de 2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Fonseca, Joaquim"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 de abril de 2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. M. T. Fonseca"
+      },
+      {
+        "category": "Date",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "29 de abril de 2025"
+      },
+      {
+        "category": "DriversLicense",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "P-1234567 8"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "+351 912 345 678"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "213 555 019"
+      },
+      {
+        "category": "Email",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "ines.sarmento@advogados.example.pt"
+      },
+      {
+        "category": "MonetaryAmount",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "3.500 €"
+      }
+    ],
+    "false_positives": [
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "See Burlington"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Civil Rights Act"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Claims Department"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Claim No"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Dear Claims Representative"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "New York"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Because Mr"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Contract No"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Project Manager"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Client"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 2,
+        "text": "Internal Revenue Service"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 2,
+        "text": "Confidential Information"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "San Francisco"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "American Arbitration Association"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "Managing Partner"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "Chief Executive Officer"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "Senior Director"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Purchase Price"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Managing Director"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Creditor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Debtor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Recovery Manager"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Debtor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "American Express"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Debtor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Notary Public"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "This Confidential Settlement Agreement"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Employee"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Data Incident"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "National Insurance"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Confidential Information"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Effective Date"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Data Protection Officer"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Neither Party"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Delaware Limited"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Walt Disney Co"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Fair Market Value"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Force Majeure Event"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Internal Revenue Code"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Preferred Return"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Along Notice"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Effective Date"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Board"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Governing Law"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Entire Agreement"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Effective Date"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Managing Director"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Ciudad de México"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Estimada Sra"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "En Madrid"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Arrendamientos Urbanos"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Juicio Verbal"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Ley de Enjuiciamiento Civil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Código Civil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "En Valencia"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Litigation Team"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "En Bilbao"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Prezado Sr"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Ofício de Registro de Imóveis de Belo Horizonte"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Lei do Inquilinato"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Belo Horizonte"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Banco do Brasil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Lei Geral de Proteção de Dados"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Foro da Comarca de São Paulo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "São Paulo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Código de Processo Civil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "São Paulo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Caro Sr"
+      }
+    ],
+    "overall": {
+      "covered_recall": 0.13232104121475055,
+      "exact": {
+        "f1": 0.1754385964912281,
+        "precision": 0.3313253012048193,
+        "recall": 0.1193058568329718
+      },
+      "labels": 461,
+      "overlap": {
+        "f1": 0.31726504580918774,
+        "labels_found": 100,
+        "precision": 0.5903614457831325,
+        "preds": 166,
+        "preds_correct": 98,
+        "recall": 0.21691973969631237
+      },
+      "type_accuracy": 0.88
+    }
+  },
+  "layers12": {
+    "by_category": {
+      "Address": {
+        "covered_recall": 0.8275862068965517,
+        "exact": {
+          "f1": 0.8727272727272727,
+          "precision": 0.9230769230769231,
+          "recall": 0.8275862068965517
+        },
+        "labels": 29,
+        "overlap": {
+          "f1": 0.9454545454545454,
+          "labels_found": 26,
+          "precision": 1.0,
+          "preds": 26,
+          "preds_correct": 26,
+          "recall": 0.896551724137931
+        },
+        "type_accuracy": 1.0
+      },
+      "BankAccount": {
+        "covered_recall": 0.7333333333333333,
+        "exact": {
+          "f1": 0.846153846153846,
+          "precision": 1.0,
+          "recall": 0.7333333333333333
+        },
+        "labels": 15,
+        "overlap": {
+          "f1": 0.846153846153846,
+          "labels_found": 11,
+          "precision": 1.0,
+          "preds": 10,
+          "preds_correct": 10,
+          "recall": 0.7333333333333333
+        },
+        "type_accuracy": 0.9090909090909091
+      },
+      "CaseNumber": {
+        "covered_recall": 0.8333333333333334,
+        "exact": {
+          "f1": 0.9090909090909091,
+          "precision": 1.0,
+          "recall": 0.8333333333333334
+        },
+        "labels": 6,
+        "overlap": {
+          "f1": 0.9090909090909091,
+          "labels_found": 5,
+          "precision": 1.0,
+          "preds": 5,
+          "preds_correct": 5,
+          "recall": 0.8333333333333334
+        },
+        "type_accuracy": 1.0
+      },
+      "ClientId": {
+        "covered_recall": 0.6,
+        "exact": {
+          "f1": 0.7499999999999999,
+          "precision": 1.0,
+          "recall": 0.6
+        },
+        "labels": 5,
+        "overlap": {
+          "f1": 0.888888888888889,
+          "labels_found": 4,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 0.8
+        },
+        "type_accuracy": 0.75
+      },
+      "CompanyName": {
+        "covered_recall": 0.4864864864864865,
+        "exact": {
+          "f1": 0.5483870967741935,
+          "precision": 0.68,
+          "recall": 0.4594594594594595
+        },
+        "labels": 37,
+        "overlap": {
+          "f1": 0.8619612742036228,
+          "labels_found": 30,
+          "precision": 0.92,
+          "preds": 25,
+          "preds_correct": 23,
+          "recall": 0.8108108108108109
+        },
+        "type_accuracy": 0.7666666666666667
+      },
+      "CourtFileNumber": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 1,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 1,
+          "precision": 1.0,
+          "preds": 1,
+          "preds_correct": 1,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "CreditCard": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 8,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 8,
+          "precision": 1.0,
+          "preds": 8,
+          "preds_correct": 8,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Date": {
+        "covered_recall": 0.9166666666666666,
+        "exact": {
+          "f1": 0.9565217391304348,
+          "precision": 1.0,
+          "recall": 0.9166666666666666
+        },
+        "labels": 72,
+        "overlap": {
+          "f1": 0.9565217391304348,
+          "labels_found": 66,
+          "precision": 1.0,
+          "preds": 66,
+          "preds_correct": 66,
+          "recall": 0.9166666666666666
+        },
+        "type_accuracy": 1.0
+      },
+      "DateOfBirth": {
+        "covered_recall": 0.8888888888888888,
+        "exact": {
+          "f1": 0.9411764705882353,
+          "precision": 1.0,
+          "recall": 0.8888888888888888
+        },
+        "labels": 9,
+        "overlap": {
+          "f1": 0.9411764705882353,
+          "labels_found": 8,
+          "precision": 1.0,
+          "preds": 8,
+          "preds_correct": 8,
+          "recall": 0.8888888888888888
+        },
+        "type_accuracy": 1.0
+      },
+      "DriversLicense": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 4,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 4,
+          "precision": 1.0,
+          "preds": 4,
+          "preds_correct": 4,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Email": {
+        "covered_recall": 0.96,
+        "exact": {
+          "f1": 0.9795918367346939,
+          "precision": 1.0,
+          "recall": 0.96
+        },
+        "labels": 25,
+        "overlap": {
+          "f1": 0.9795918367346939,
+          "labels_found": 24,
+          "precision": 1.0,
+          "preds": 24,
+          "preds_correct": 24,
+          "recall": 0.96
+        },
+        "type_accuracy": 1.0
+      },
+      "IBAN": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 9,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 9,
+          "precision": 1.0,
+          "preds": 9,
+          "preds_correct": 9,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "IpAddress": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 6,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 6,
+          "precision": 1.0,
+          "preds": 6,
+          "preds_correct": 6,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "LicensePlate": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 5,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 5,
+          "precision": 1.0,
+          "preds": 5,
+          "preds_correct": 5,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "MedicalRecordNumber": {
+        "covered_recall": 0.75,
+        "exact": {
+          "f1": 0.75,
+          "precision": 0.75,
+          "recall": 0.75
+        },
+        "labels": 4,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 4,
+          "precision": 1.0,
+          "preds": 4,
+          "preds_correct": 4,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "MonetaryAmount": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 46,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 46,
+          "precision": 1.0,
+          "preds": 46,
+          "preds_correct": 46,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "NationalId": {
+        "covered_recall": 0.8823529411764706,
+        "exact": {
+          "f1": 0.9375,
+          "precision": 1.0,
+          "recall": 0.8823529411764706
+        },
+        "labels": 17,
+        "overlap": {
+          "f1": 0.9375,
+          "labels_found": 15,
+          "precision": 1.0,
+          "preds": 15,
+          "preds_correct": 15,
+          "recall": 0.8823529411764706
+        },
+        "type_accuracy": 1.0
+      },
+      "PassportNumber": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 3,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "PersonName": {
+        "covered_recall": 0.3805309734513274,
+        "exact": {
+          "f1": 0.3102040816326531,
+          "precision": 0.2878787878787879,
+          "recall": 0.336283185840708
+        },
+        "labels": 113,
+        "overlap": {
+          "f1": 0.5191489361702127,
+          "labels_found": 61,
+          "precision": 0.5,
+          "preds": 132,
+          "preds_correct": 66,
+          "recall": 0.5398230088495575
+        },
+        "type_accuracy": 1.0
+      },
+      "PhoneNumber": {
+        "covered_recall": 0.96,
+        "exact": {
+          "f1": 0.8962172647914646,
+          "precision": 0.9130434782608695,
+          "recall": 0.88
+        },
+        "labels": 25,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 25,
+          "precision": 1.0,
+          "preds": 23,
+          "preds_correct": 23,
+          "recall": 1.0
+        },
+        "type_accuracy": 0.92
+      },
+      "SocialSecurityNumber": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 3,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "TaxId": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 0.9473684210526316,
+          "precision": 0.9,
+          "recall": 1.0
+        },
+        "labels": 16,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 16,
+          "precision": 1.0,
+          "preds": 20,
+          "preds_correct": 20,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      },
+      "Url": {
+        "covered_recall": 1.0,
+        "exact": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "labels": 3,
+        "overlap": {
+          "f1": 1.0,
+          "labels_found": 3,
+          "precision": 1.0,
+          "preds": 3,
+          "preds_correct": 3,
+          "recall": 1.0
+        },
+        "type_accuracy": 1.0
+      }
+    },
+    "by_lang": {
+      "en": {
+        "covered_recall": 0.7196969696969697,
+        "exact": {
+          "f1": 0.7153846153846154,
+          "precision": 0.7265625,
+          "recall": 0.7045454545454546
+        },
+        "labels": 264,
+        "overlap": {
+          "f1": 0.8,
+          "labels_found": 208,
+          "precision": 0.8125,
+          "preds": 256,
+          "preds_correct": 208,
+          "recall": 0.7878787878787878
+        },
+        "type_accuracy": 0.9759615384615384
+      },
+      "es": {
+        "covered_recall": 0.7604166666666666,
+        "exact": {
+          "f1": 0.7419354838709677,
+          "precision": 0.7666666666666667,
+          "recall": 0.71875
+        },
+        "labels": 96,
+        "overlap": {
+          "f1": 0.8819362455726093,
+          "labels_found": 83,
+          "precision": 0.9,
+          "preds": 90,
+          "preds_correct": 81,
+          "recall": 0.8645833333333334
+        },
+        "type_accuracy": 0.9397590361445783
+      },
+      "pt": {
+        "covered_recall": 0.8415841584158416,
+        "exact": {
+          "f1": 0.8333333333333333,
+          "precision": 0.8252427184466019,
+          "recall": 0.8415841584158416
+        },
+        "labels": 101,
+        "overlap": {
+          "f1": 0.9019607843137256,
+          "labels_found": 92,
+          "precision": 0.8932038834951457,
+          "preds": 103,
+          "preds_correct": 92,
+          "recall": 0.9108910891089109
+        },
+        "type_accuracy": 0.9891304347826086
+      }
+    },
+    "by_split": {
+      "dev": {
+        "covered_recall": 0.7930174563591023,
+        "exact": {
+          "f1": 0.7726708074534161,
+          "precision": 0.7698019801980198,
+          "recall": 0.7755610972568578
+        },
+        "labels": 401,
+        "overlap": {
+          "f1": 0.8509252341194136,
+          "labels_found": 343,
+          "precision": 0.8465346534653465,
+          "preds": 404,
+          "preds_correct": 342,
+          "recall": 0.8553615960099751
+        },
+        "type_accuracy": 0.9737609329446064
+      },
+      "holdout": {
+        "covered_recall": 0.5,
+        "exact": {
+          "f1": 0.5523809523809524,
+          "precision": 0.6444444444444445,
+          "recall": 0.48333333333333334
+        },
+        "labels": 60,
+        "overlap": {
+          "f1": 0.7536231884057971,
+          "labels_found": 40,
+          "precision": 0.8666666666666667,
+          "preds": 45,
+          "preds_correct": 39,
+          "recall": 0.6666666666666666
+        },
+        "type_accuracy": 0.95
+      }
+    },
+    "false_negatives": [
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "HOLLOWAY, Dana"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Marcus T. Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Holloway"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "partial",
+        "page": 1,
+        "text": "Marcus T. Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Priya\nRamaswamy"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feeney"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ramaswamy"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ellen K. Marsh"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_court_complaint",
+        "kind": "partial",
+        "page": 1,
+        "text": "Marsh & Okonjo LLP"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "Okafor Whitfield PLLC"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Tobias R. Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "Harriet Pemberton-Shaw"
+      },
+      {
+        "category": "ClientId",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "NGM-24-0073318"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Tobias R. Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindqvist"
+      },
+      {
+        "category": "MedicalRecordNumber",
+        "fixture": "en_demand_letter",
+        "kind": "partial",
+        "page": 1,
+        "text": "MRN 00482913"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "A. N. Castellanos"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "Lindqvist"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. Whitfield"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "kind": "missed",
+        "page": 1,
+        "text": "T. R. Lindqvist"
+      },
+      {
+        "category": "Email",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "j.richardson@atlas-  \n  digital.com"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "kind": "missed",
+        "page": 1,
+        "text": "Roberto  \n  Fernandes"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "Address",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Westerdok 118, 1013 BH Amsterdam"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Felix Brandauer"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Zeeland Marine France SAS"
+      },
+      {
+        "category": "CaseNumber",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "16 O 248/24"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Joost van der Linde"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "partial",
+        "page": 1,
+        "text": "Henrike Vollmer-Baumgart"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zeeland Marine Technologies B.V."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "kind": "missed",
+        "page": 1,
+        "text": "Joost van der Linde"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desert Sun Credit Union"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Calloway, Brent J."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "LORNA FETTERMAN"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desert Sun Credit Union"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "Brent J. Calloway"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "0047-221983"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "884 120 33571"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "en_garnishment_affidavit",
+        "kind": "missed",
+        "page": 1,
+        "text": "3266 0519 8820"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Siobhan Achterberg"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "S. Achterberg"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Achterberg"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rafferty\nOkonkwo-Bell"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ms Achterberg"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Gideon Farquharson"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Achterberg, Siobhan"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Farquharson, Gideon"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "SIOBHAN ACHTERBERG"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "GIDEON FARQUHARSON"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_settlement_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "HALCYON DATA SYSTEMS LTD"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Constance Varga-Ellison"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rupert Ashdown"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "missed",
+        "page": 1,
+        "text": "Imelda Szabo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "kind": "partial",
+        "page": 1,
+        "text": "Constance Varga-Ellison"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Bufete Arriaga & Solís, S.C."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Ramírez de la Garza"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. M. Ortuño"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Tomás Ezequiel Barroso\nQuintanilla"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Inversiones Quintanilla Hermanos, S.L."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "missed",
+        "page": 1,
+        "text": "Rogelio Quintanilla Mateu"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "kind": "partial",
+        "page": 1,
+        "text": "Tomás E. Barroso Quintanilla"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "LLORENTE ESCRIVÁ, Nuria"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Beatriz Coloma Ruano"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "partial",
+        "page": 1,
+        "text": "Reformas Turia Integral, S.L.U."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Fermín Aleixandre Bou"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Aleixandre"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "kind": "missed",
+        "page": 1,
+        "text": "Álvaro Sendra Peiró"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Naomi Fairbanks-Oyelaran"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "2025.03.18"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Desmond Achebe-Kowalczyk"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Pellucid Freight Systems, Inc."
+      },
+      {
+        "category": "ClientId",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "M-25-0331"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Desmond Achebe-Kowalczyk"
+      },
+      {
+        "category": "DateOfBirth",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "07.11.1968"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "83 Lantern Hill Terrace, Unit 12, Marietta, GA 30064-3317"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "2210 Rue Sainte-Catherine Ouest, Montréal, QC H3H 1M7"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "046 454 286"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Desmond"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Feb. 3, 2021"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "Nov. 30, 2024"
+      },
+      {
+        "category": "BankAccount",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "missed",
+        "page": 1,
+        "text": "000123456789"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_en_intake_memo",
+        "kind": "partial",
+        "page": 1,
+        "text": "Quist Harrow & Lyle LLP"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "TALLERES METÁLICOS ARGAÑA, S.L."
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "C/ Gran Vía de Don Diego López de Haro, 45, 48011 Bilbao"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Íñigo Zabaleta Urrutia"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Zabaleta"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Beloki"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Auditores Ibaizabal, S.L.P."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "missed",
+        "page": 1,
+        "text": "Koldo Iturbe Larrañaga"
+      },
+      {
+        "category": "Address",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Alameda de Recalde, 27, 5.º dcha., 48009 Bilbao"
+      },
+      {
+        "category": "PhoneNumber",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "0034 944 555 120"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "kind": "partial",
+        "page": 1,
+        "text": "Íñigo Zabaleta Urrutia"
+      },
+      {
+        "category": "NationalId",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "39053344705"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "Vasconcelos"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 jan. 2025"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 fev. 2025"
+      },
+      {
+        "category": "Date",
+        "fixture": "holdout_pt_notificacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "10 mar. 2025"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Helena Cristina dos Santos Albuquerque"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Priscila\nFagundes Teixeira"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "LATICÍNIOS SERRA AZUL LTDA."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "partial",
+        "page": 1,
+        "text": "Helena Cristina dos Santos Albuquerque"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_contrato_prestacao",
+        "kind": "missed",
+        "page": 1,
+        "text": "MOURA DANTAS CONSULTORIA TRIBUTÁRIA EIRELI"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "partial",
+        "page": 1,
+        "text": "CARVALHO, Juliana Rezende de"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "partial",
+        "page": 1,
+        "text": "Edvaldo\nNogueira Paixão"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "kind": "missed",
+        "page": 1,
+        "text": "Paixão"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "partial",
+        "page": 1,
+        "text": "Douro Vinhos & Quintas, Lda."
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "Fonseca, Joaquim"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "kind": "missed",
+        "page": 1,
+        "text": "J. M. T. Fonseca"
+      }
+    ],
+    "false_positives": [
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "See Burlington"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_court_complaint",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Civil Rights Act"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Claims Department"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Claim No"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Dear Claims Representative"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "New York"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demand_letter",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Because Mr"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Contract No"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Project Manager"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Client"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 2,
+        "text": "Internal Revenue Service"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 2,
+        "text": "Confidential Information"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "San Francisco"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "American Arbitration Association"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "Managing Partner"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "Chief Executive Officer"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_demo_pdf",
+        "layer": "heuristic",
+        "page": 3,
+        "text": "Senior Director"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Purchase Price"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_eu_share_purchase",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Managing Director"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Creditor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Debtor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Recovery Manager"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Debtor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "American Express"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Judgment Debtor"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_garnishment_affidavit",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Notary Public"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "This Confidential Settlement Agreement"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Employee"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Data Incident"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "National Insurance"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Confidential Information"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Effective Date"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Data Protection Officer"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_settlement_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Neither Party"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Delaware Limited"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Fair Market Value"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Force Majeure Event"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Internal Revenue Code"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Preferred Return"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Along Notice"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Effective Date"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "The Board"
+      },
+      {
+        "category": "CompanyName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Walt Disney Co"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Governing Law"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Entire Agreement"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Effective Date"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "en_traps_llc_agreement",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Managing Director"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Ciudad de México"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_carta_requerimiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Estimada Sra"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "En Madrid"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_contrato_arrendamiento",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Arrendamientos Urbanos"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Juicio Verbal"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Ley de Enjuiciamiento Civil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Código Civil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "es_demanda_reclamacion",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "En Valencia"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_en_intake_memo",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Litigation Team"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_es_acta_junta",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "En Bilbao"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Prezado Sr"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Ofício de Registro de Imóveis de Belo Horizonte"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Lei do Inquilinato"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "holdout_pt_notificacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Belo Horizonte"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Banco do Brasil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Lei Geral de Proteção de Dados"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Foro da Comarca de São Paulo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_contrato_prestacao",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "São Paulo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Código de Processo Civil"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_peticao_inicial",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "São Paulo"
+      },
+      {
+        "category": "PersonName",
+        "fixture": "pt_procuracao_portugal",
+        "layer": "heuristic",
+        "page": 1,
+        "text": "Caro Sr"
+      }
+    ],
+    "overall": {
+      "covered_recall": 0.754880694143167,
+      "exact": {
+        "f1": 0.7472527472527472,
+        "precision": 0.7572383073496659,
+        "recall": 0.737527114967462
+      },
+      "labels": 461,
+      "overlap": {
+        "f1": 0.8395836689604382,
+        "labels_found": 383,
+        "precision": 0.8485523385300668,
+        "preds": 449,
+        "preds_correct": 381,
+        "recall": 0.8308026030368764
+      },
+      "type_accuracy": 0.9712793733681462
+    }
+  }
+}

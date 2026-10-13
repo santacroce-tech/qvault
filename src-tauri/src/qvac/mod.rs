@@ -23,7 +23,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
-use crate::llm::llm_scanner::{self, Layer3Engine, Layer3Error, RawEntity};
+use crate::llm::llm_scanner::{self, Layer3Engine, Layer3Error, PromptVersion};
 use catalog::{CatalogModel, ModelPurpose};
 use client::{CallOptions, CancelToken, ClientConfig, QvacClient, QvacError, SpawnSpec};
 use models::{ImportOutcome, ModelError, ModelStore};
@@ -36,6 +36,7 @@ const OCR_TIMEOUT: Duration = Duration::from_secs(180);
 const FIT_TIMEOUT: Duration = Duration::from_secs(90);
 const LLM_CTX: u64 = 4096;
 const LLM_PREDICT: u64 = 512;
+const LLM_SEED: u64 = 42;
 
 /// Where the bundled sidecar lives.
 #[derive(Debug, Clone)]
@@ -119,6 +120,10 @@ pub struct ModelInfo {
     pub default_llm: bool,
     pub download: Option<DownloadState>,
     pub fit: Option<FitInfo>,
+    /// Approximate memory needed to run the model (bytes, measured; 0 = unknown).
+    pub ram_needed: u64,
+    /// Short catalog note shown before download (licence or role caveats).
+    pub note: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -138,6 +143,8 @@ pub struct Capabilities {
     pub layer3_model: Option<String>,
     pub layer3_ready: bool,
     pub models: Vec<ModelInfo>,
+    /// Physical memory of this computer, when it can be read (macOS, Linux).
+    pub system_memory: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -173,6 +180,30 @@ pub struct QvacService {
     /// One OCR request at a time: results of concurrent requests on one OCR
     /// model must never be able to cross (see `discard_engine_after_abandoned_ocr`).
     ocr_lock: Mutex<()>,
+}
+
+/// Physical memory, for the Model Manager's pre-download estimate (the
+/// real check is assessFit on the downloaded file). Local reads only.
+pub fn system_memory_bytes() -> Option<u64> {
+    #[cfg(target_os = "macos")]
+    {
+        let out = std::process::Command::new("/usr/sbin/sysctl").args(["-n", "hw.memsize"]).output().ok()?;
+        return String::from_utf8_lossy(&out.stdout).trim().parse().ok();
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let info = std::fs::read_to_string("/proc/meminfo").ok()?;
+        let kb: u64 = info
+            .lines()
+            .find(|l| l.starts_with("MemTotal:"))?
+            .split_whitespace()
+            .nth(1)?
+            .parse()
+            .ok()?;
+        return Some(kb * 1024);
+    }
+    #[allow(unreachable_code)]
+    None
 }
 
 fn now_secs() -> u64 {
@@ -492,35 +523,41 @@ impl QvacService {
             model: id.clone(),
             loaded_in: load_time,
             on_tokens: Mutex::new(None),
+            prompt: llm_scanner::DEFAULT_PROMPT,
         })
     }
 
-    fn complete_layer3(&self, model: &str, chunk: &str, on_event: Option<client::EventFn>) -> Result<Vec<RawEntity>, Layer3Error> {
+    fn complete_layer3(
+        &self,
+        model: &str,
+        prompt: PromptVersion,
+        chunk: &str,
+        on_event: Option<client::EventFn>,
+    ) -> Result<String, Layer3Error> {
         let qid = match self.ensure_loaded(model) {
             Ok((q, _)) => q,
             Err(QvacError::Unavailable(r)) => return Err(Layer3Error::Fatal(r)),
             Err(e) => return Err(Layer3Error::Chunk(e.to_string())),
         };
-        let (shot_user, shot_assistant) = llm_scanner::few_shot();
+        let messages: Vec<Value> = llm_scanner::messages(prompt, chunk)
+            .into_iter()
+            .map(|(role, content)| json!({"role": role, "content": content}))
+            .collect();
         let params = json!({
             "modelId": qid,
-            "messages": [
-                {"role": "system", "content": llm_scanner::system_prompt()},
-                {"role": "user", "content": shot_user},
-                {"role": "assistant", "content": shot_assistant},
-                {"role": "user", "content": llm_scanner::user_prompt(chunk)},
-            ],
+            "messages": messages,
             "responseFormat": {"type": "json_schema", "json_schema": {
                 "name": "pii_entities", "schema": llm_scanner::response_schema(), "strict": true
             }},
-            "generationParams": {"temp": 0, "predict": LLM_PREDICT},
+            // Greedy decoding with a fixed seed (determinism), and no
+            // reasoning channel: Qwen3 / Gemma 4 would otherwise "think"
+            // first; `reasoning_budget: 0` turns it off for this request
+            // (a no-op for models without one).
+            "generationParams": {"temp": 0, "seed": LLM_SEED, "predict": LLM_PREDICT, "reasoning_budget": 0},
         });
         let opts = CallOptions { timeout: Some(COMPLETE_TIMEOUT), cancel: None, on_event };
         match self.call("complete", params, opts) {
-            Ok(r) => {
-                let text = r.get("text").and_then(|v| v.as_str()).unwrap_or("");
-                llm_scanner::parse_response(text).map_err(Layer3Error::Chunk)
-            }
+            Ok(r) => Ok(r.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string()),
             Err(QvacError::Unavailable(r)) => Err(Layer3Error::Fatal(r)),
             Err(QvacError::Remote { code, message }) if code == "MODEL_NOT_LOADED" => {
                 self.loaded.lock().unwrap().remove(model);
@@ -668,6 +705,8 @@ impl QvacService {
                 installed: self.store.is_installed(m),
                 custom: false,
                 default_llm: m.default_llm,
+                ram_needed: m.ram_needed,
+                note: m.note.map(Into::into),
                 download: downloads.get(m.id).cloned(),
                 fit: fit.get(m.id).cloned(),
             })
@@ -686,6 +725,8 @@ impl QvacService {
                 installed: true,
                 custom: true,
                 default_llm: false,
+                ram_needed: 0,
+                note: None,
                 download: None,
                 fit: fit.get(&c.id).cloned(),
             });
@@ -731,6 +772,7 @@ impl QvacService {
             layer3_ready: settings.layer3_enabled && layer3_model.is_some() && available,
             layer3_model,
             models: self.list_models(),
+            system_memory: system_memory_bytes(),
         }
     }
 
@@ -872,7 +914,13 @@ impl QvacService {
             Some(id) => {
                 let t = Instant::now();
                 let sample = "Witness statement of Dr. Amara Okafor, born 14/02/1979, regarding the incident at Riverside clinic.";
-                let session = Layer3Session { service: Arc::clone(self), model: id.clone(), loaded_in: None, on_tokens: Mutex::new(None) };
+                let session = Layer3Session {
+                    service: Arc::clone(self),
+                    model: id.clone(),
+                    loaded_in: None,
+                    on_tokens: Mutex::new(None),
+                    prompt: llm_scanner::DEFAULT_PROMPT,
+                };
                 let report = llm_scanner::scan(&session, sample, 0, &[], None);
                 rep.layer3_model = Some(id);
                 rep.layer3_ms = Some(t.elapsed().as_millis() as u64);
@@ -916,6 +964,8 @@ pub struct Layer3Session {
     /// Set when preparing the session loaded the model.
     pub loaded_in: Option<Duration>,
     on_tokens: Mutex<Option<client::EventFn>>,
+    /// Prompt version (the eval harness compares versions).
+    pub prompt: PromptVersion,
 }
 
 impl Layer3Session {
@@ -926,9 +976,9 @@ impl Layer3Session {
 }
 
 impl Layer3Engine for Layer3Session {
-    fn extract(&self, chunk_text: &str) -> Result<Vec<RawEntity>, Layer3Error> {
+    fn complete(&self, chunk_text: &str) -> Result<String, Layer3Error> {
         let cb = self.on_tokens.lock().unwrap().clone();
-        self.service.complete_layer3(&self.model, chunk_text, cb)
+        self.service.complete_layer3(&self.model, self.prompt, chunk_text, cb)
     }
 }
 

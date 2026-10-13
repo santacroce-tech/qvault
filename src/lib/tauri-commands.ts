@@ -264,6 +264,10 @@ export interface ModelInfo {
   defaultLlm: boolean;
   download: DownloadState | null;
   fit: FitInfo | null;
+  /** Approximate memory the model needs to run (bytes; 0 = unknown). */
+  ramNeeded: number;
+  /** Catalog note shown before download (licence or role caveats). */
+  note: string | null;
 }
 
 export interface AiCapabilities {
@@ -281,6 +285,8 @@ export interface AiCapabilities {
   layer3Model: string | null;
   layer3Ready: boolean;
   models: ModelInfo[];
+  /** Physical memory of this computer, when it can be read. */
+  systemMemory: number | null;
 }
 
 export type ImportOutcome =

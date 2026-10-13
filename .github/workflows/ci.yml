@@ -1,0 +1,79 @@
+name: CI
+
+# Tests and the deterministic detection eval (Layers 1-2, no models) on every
+# push and pull request. Public repo: no secrets, read-only token.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: cargo test + eval (Linux)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Type-check frontend
+        run: npx tsc --noEmit
+
+      - name: Eval fixtures are valid and up to date
+        run: node eval/build-fixtures.mjs --check
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      # The library links Tauri/WebKitGTK even for tests (same packages as
+      # build.yml). The QVAC sidecar is not built: build.rs writes a
+      # placeholder and the AI tests that need it skip themselves.
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: cargo test
+        working-directory: src-tauri
+        run: cargo test --locked
+
+      # Already part of `cargo test`; run again on its own so the numbers are
+      # in the log and the report is uploaded. Fails if recall drops below
+      # eval/baseline.json (see eval/README.md).
+      - name: Detection eval, Layers 1-2 vs baseline
+        working-directory: src-tauri
+        run: cargo test --locked --test eval_harness layers_1_2_against_baseline -- --nocapture
+
+      - name: Upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-layers12
+          path: src-tauri/target/eval/
+          if-no-files-found: ignore

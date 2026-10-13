@@ -250,7 +250,7 @@ const methods = {
     }
     if (params.generationParams != null) {
       const gp = params.generationParams
-      const allowed = ['temp', 'top_p', 'top_k', 'predict', 'seed', 'repeat_penalty']
+      const allowed = ['temp', 'top_p', 'top_k', 'predict', 'seed', 'repeat_penalty', 'reasoning_budget']
       const clean = {}
       for (const [k, v] of Object.entries(gp)) {
         if (!allowed.includes(k)) throw new ProtocolError('BAD_PARAMS', `generationParams key not allowed: ${k}`)
