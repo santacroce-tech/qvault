@@ -22,6 +22,7 @@
       <tbody>
         <tr><td>Camadas 1–2 (padrões, heurística)</td><td>Nenhum</td><td>Já incluídas</td></tr>
         <tr><td>Camada 3 (IA local)</td><td>Qwen3-1.7B (padrão); 0.6B, 4B ou 8B</td><td>Download pelo aplicativo ou importação de arquivo</td></tr>
+        <tr><td>Agrupamento de entidades (similaridade, opcional)</td><td>Nomic Embed Text v2 MoE</td><td>Download pelo aplicativo ou importação de arquivo. O agrupamento funciona sem ele.</td></tr>
         <tr><td>OCR (PDFs digitalizados, PNG, JPG, TIFF)</td><td>Detector CRAFT + reconhecedor latino</td><td>Download manual e importação</td></tr>
       </tbody>
     </table>
@@ -50,6 +51,18 @@
   SHA-256 (<code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code>): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
   SHA-256 (<code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code>): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
   <p>Em seguida, ative <strong>Usar detecção por IA (camada 3) ao analisar</strong>. As ocorrências encontradas pela IA entram com uma confiança que depende da categoria (80% para nomes, números de identificação, dados bancários e datas de nascimento; 50% para endereços e números de processo) e sempre aguardam a sua revisão. Se o mecanismo de IA não estiver disponível ou um trecho falhar, a análise termina mesmo assim com as camadas 1–2 e o visualizador informa o que foi pulado.</p>
+
+  <h2 id="embed">Modelo de agrupamento de entidades (opcional)</h2>
+  <p>O Qvault agrupa as variantes de um mesmo nome, empresa ou número com regras que não precisam de modelo. Um modelo de <em>embeddings</em> opcional acrescenta <em>propostas</em> extras baseadas no significado; ele nunca junta nada sozinho. No nosso pequeno conjunto de teste não melhorou o resultado, então você pode dispensá-lo.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Modelo</th><th>Arquivo</th><th>Tamanho</th><th>Memória necessária</th><th>Licença</th></tr></thead>
+      <tbody>
+        <tr><td>Nomic Embed Text v2 MoE (Q8_0)</td><td><code><a href="https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF/resolve/ffbcf4c99e5d617dda10ec8c0e9f75754b0cbb80/nomic-embed-text-v2-moe.Q8_0.gguf">nomic-embed-text-v2-moe.Q8_0.gguf</a></code></td><td>512.225.120 bytes (≈ 512 MB)</td><td>≈ 1,75 GB</td><td>Apache-2.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">SHA-256: <span class="hash">06e7a7e594a26985523c18383aba4aad39fe6e14f08ffc6ab5b554e1ccdc3cff</span></p>
 
   <h2 id="ocr">Modelos de OCR: download e importação</h2>
   <p>O aplicativo não baixa os modelos de OCR. Baixe você mesmo os dois arquivos abaixo, confira-os e importe-os. Isso só precisa ser feito uma vez por computador.</p>

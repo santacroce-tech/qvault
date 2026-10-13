@@ -22,6 +22,7 @@
       <tbody>
         <tr><td>Layers 1–2 (patterns, heuristics)</td><td>None</td><td>Built in</td></tr>
         <tr><td>Layer 3 (local AI)</td><td>Qwen3-1.7B (default); 0.6B, 4B or 8B</td><td>Download in the app, or import from a file</td></tr>
+        <tr><td>Entity grouping (optional similarity)</td><td>Nomic Embed Text v2 MoE</td><td>Download in the app, or import from a file. Grouping works without it.</td></tr>
         <tr><td>OCR (scanned PDFs, PNG, JPG, TIFF)</td><td>CRAFT detector + Latin recognizer</td><td>Download manually, then import</td></tr>
       </tbody>
     </table>
@@ -50,6 +51,18 @@
   SHA-256 (<code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code>): <span class="hash">74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db</span><br>
   SHA-256 (<code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code>): <span class="hash">6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e</span></p>
   <p>Then turn on <strong>Use AI detection (Layer 3) when scanning</strong>. AI findings are added with a confidence that depends on the category (80% for names, ID numbers, bank details and dates of birth, down to 50% for addresses and case numbers) and always wait for your review. If the AI engine is unavailable or a chunk fails, the scan still completes with Layers 1–2 and the viewer tells you what was skipped.</p>
+
+  <h2 id="embed">Entity grouping model (optional)</h2>
+  <p>Qvault groups spellings of the same name, company or number with rules that need no model. An optional embedding model adds extra <em>proposals</em> based on meaning; it never merges anything by itself. On our small test set it did not improve the result, so you can skip it.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Model</th><th>File</th><th>Size</th><th>Memory needed</th><th>Licence</th></tr></thead>
+      <tbody>
+        <tr><td>Nomic Embed Text v2 MoE (Q8_0)</td><td><code><a href="https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF/resolve/ffbcf4c99e5d617dda10ec8c0e9f75754b0cbb80/nomic-embed-text-v2-moe.Q8_0.gguf">nomic-embed-text-v2-moe.Q8_0.gguf</a></code></td><td>512,225,120 bytes (≈ 512 MB)</td><td>≈ 1.75 GB</td><td>Apache-2.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">SHA-256: <span class="hash">06e7a7e594a26985523c18383aba4aad39fe6e14f08ffc6ab5b554e1ccdc3cff</span></p>
 
   <h2 id="ocr">OCR models: download and import</h2>
   <p>The OCR models are not downloaded by the app. Download the two files below yourself, check them, and import them. You only need to do this once per computer.</p>

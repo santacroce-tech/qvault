@@ -37,8 +37,14 @@ Free and open source under the [MIT License](LICENSE).
      [QVAC](https://github.com/tetherto/qvac) SDK (Qwen3-1.7B by default;
      0.6B, 4B and 8B optional) running in the bundled sidecar. Desktop only.
 - **Review first.** Every detection goes to review with its confidence and
-  source layer. Nothing is redacted automatically. Manual redactions, an entity
-  overview across documents, and a metadata-only audit log.
+  source layer. Nothing is redacted automatically. Manual redactions and a
+  metadata-only audit log.
+- **Entity groups.** Spellings of the same name, company or number are grouped
+  across documents (unambiguous matches automatically, the rest proposed for
+  review), with merge and split by hand. Known entities that a new document's
+  detectors missed are suggested as pending redactions. An optional embedding
+  model (Nomic Embed Text v2) adds similarity proposals; rules alone work
+  without it.
 - **OCR.** QVAC OCR (EasyOCR CRAFT text detector + Latin recognizer, GGUF)
   for Latin-script text; recognised text goes through the same layers and
   review.

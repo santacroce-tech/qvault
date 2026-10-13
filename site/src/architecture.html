@@ -9,6 +9,7 @@
       <li><a href="#overview">Overview</a></li>
       <li><a href="#pipeline">Document pipeline</a></li>
       <li><a href="#detection">Detection layers</a></li>
+      <li><a href="#entities">Entity groups</a></li>
       <li><a href="#sidecar">The QVAC sidecar</a></li>
       <li><a href="#export">Verified export</a></li>
       <li><a href="#storage">Storage</a></li>
@@ -57,6 +58,16 @@
   <p>The text is split into chunks of about 150 words with 20 words of overlap. For each chunk the model is asked, with a fixed prompt and a JSON schema that constrains its output, to list personal data by category. Qvault then validates every answer (shape, known category, plausibility rules that reject whole sentences), finds every occurrence of each returned string in the chunk on word boundaries, drops anything Layers 1–2 already covered, removes legal vocabulary with a stop-list, and adds the rest for review. Confidence depends on the category and comes from how often the model’s additions were right in the evaluation: 0.80 for names, ID numbers, bank details and dates of birth, down to 0.50 for addresses and case numbers. Generation is deterministic (temperature 0, fixed seed, and the “thinking” mode of Qwen3 turned off), so the same document gives the same suggestions. Results appear page by page as they are found.</p>
   <p>The default model is Qwen3-1.7B (Q8_0, about 1.8 GB download, about 2.75 GB of memory). Qwen3 0.6B is offered for computers with little memory, and Qwen3 4B and 8B for workstations; the older Qwen2.5 models remain for existing installs. The Model Manager shows each model’s memory need and checks whether it fits before it can be selected. A chunk that fails is skipped; if the sidecar is unavailable, Layer 3 stops for that scan and the viewer says so. The scan always completes with Layers 1–2.</p>
 
+  <h2 id="entities">Entity groups</h2>
+  <p>Detected names, companies, numbers and addresses are collected into entities across all your documents, and spellings of the same entity are grouped. Entities of different categories are never compared.</p>
+  <ul>
+    <li><strong>Applied automatically</strong> only when the match is unambiguous: the same name after normalising case, accents, titles, spacing and “Last, First” order; a company with or without its legal form; the same number with other separators or a country code.</li>
+    <li><strong>Proposed for review</strong>: initials or a surname alone, a near-identical spelling, a partial company name or acronym, most of an address, and anything found by similarity. Proposals where the short form also fits another person are marked ambiguous. You accept or dismiss each one, and you can merge or split groups by hand.</li>
+    <li><strong>Known-entity suggestions.</strong> After a scan, Qvault looks for other spellings of known entities that no layer caught and adds them as pending findings (source “known entity”, confidence 0.40–0.60) with the reason shown. They are never approved automatically.</li>
+    <li><strong>Optional embeddings.</strong> With the Nomic Embed Text v2 model installed, similar-meaning variants are proposed too; vectors are stored in the local database. Without the model, everything above still works on rules alone. On our small synthetic test set (59 entities, 199 mentions in English, Spanish and Portuguese), no automatic merge was wrong, about two in three proposals were correct, and the embedding model did not change the result.</li>
+  </ul>
+  <p>Two different people written identically (for example “J. Santos”) cannot be told apart and end up in one group; nicknames such as “Bob” and “Robert” are not linked.</p>
+
   <h2 id="sidecar">The QVAC sidecar</h2>
   <p>QVAC’s inference packages run on Bare, a small JavaScript runtime. Qvault bundles the Bare executable and a short worker script with the app and starts it only when an AI feature is first used. Design choices:</p>
   <ul>
@@ -77,7 +88,7 @@
   <p>After writing, Qvault reads the exported file back, extracts every piece of text it can find, and deletes the file with an error if any approved string survives. The same check runs in the automated test suite.</p>
 
   <h2 id="storage">Storage</h2>
-  <p>Qvault keeps its data in the per-user app data folder: a SQLite database (documents, findings, cross-document entities, page text and an audit log) and copies of the imported document files. The audit log records actions and metadata, such as model downloads, scans and exports, but not document text. Clearing all data in Settings removes everything.</p>
+  <p>Qvault keeps its data in the per-user app data folder: a SQLite database (documents, findings, cross-document entities and their groups, optional entity embeddings, page text and an audit log) and copies of the imported document files. The audit log records actions and metadata, such as model downloads, scans and exports, but not document text. Clearing all data in Settings removes everything.</p>
 
   <h2 id="network">Network use</h2>
   <p>Qvault makes no network requests of its own except a model download you start in the Model Manager. That download goes to a pinned, revision-locked Hugging Face URL over HTTPS; the size is shown before you confirm, and the file is checked against a pinned SHA-256 before it is used. There is no telemetry, crash reporting, update check or account. The OCR models are not downloaded by the app at all: you fetch them yourself and import them (see <a href="{{models}}">Models and setup</a>).</p>
