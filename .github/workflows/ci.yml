@@ -76,6 +76,12 @@ jobs:
         working-directory: src-tauri
         run: 'cargo test --locked --test eval_harness entities:: -- --nocapture'
 
+      # Review memory and the "Not personal data" list on a simulated review
+      # history; fails if the list would ever remove a labelled item.
+      - name: Learning-from-reviews eval (no model)
+        working-directory: src-tauri
+        run: 'cargo test --locked --test eval_harness learning::decision_memory_layers12 -- --nocapture'
+
       - name: Upload eval report
         if: always()
         uses: actions/upload-artifact@v4

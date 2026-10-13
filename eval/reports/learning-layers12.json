@@ -1,0 +1,142 @@
+{
+  "layers12": [
+    {
+      "after": [
+        0.8485523385300668,
+        0.8308026030368764,
+        0.8395836689604382
+      ],
+      "before": [
+        0.8485523385300668,
+        0.8308026030368764,
+        0.8395836689604382
+      ],
+      "false_positives": 68,
+      "fp_marked": 9,
+      "fp_suppressed": 0,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 0.0,
+      "preds": 462,
+      "scenario": "leave one document out: memory only",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 381
+    },
+    {
+      "after": [
+        0.8485523385300668,
+        0.8308026030368764,
+        0.8395836689604382
+      ],
+      "before": [
+        0.8485523385300668,
+        0.8308026030368764,
+        0.8395836689604382
+      ],
+      "false_positives": 68,
+      "fp_marked": 9,
+      "fp_suppressed": 0,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 1.8125,
+      "preds": 462,
+      "scenario": "leave one document out: list = suggested candidates (rejected ≥ 3×)",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 381
+    },
+    {
+      "after": [
+        0.865909090909091,
+        0.8308026030368764,
+        0.8479926546006084
+      ],
+      "before": [
+        0.8485523385300668,
+        0.8308026030368764,
+        0.8395836689604382
+      ],
+      "false_positives": 68,
+      "fp_marked": 0,
+      "fp_suppressed": 9,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 57.4375,
+      "preds": 462,
+      "scenario": "leave one document out: list = every rejected string",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 381
+    },
+    {
+      "after": [
+        1.0,
+        0.8308026030368764,
+        0.9075829383886257
+      ],
+      "before": [
+        0.8485523385300668,
+        0.8308026030368764,
+        0.8395836689604382
+      ],
+      "false_positives": 68,
+      "fp_marked": 0,
+      "fp_suppressed": 68,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 61.0,
+      "preds": 462,
+      "scenario": "stress: list = every string rejected in any document, this one included",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 381
+    },
+    {
+      "after": [
+        0.8666666666666667,
+        0.6666666666666666,
+        0.7536231884057971
+      ],
+      "before": [
+        0.8666666666666667,
+        0.6666666666666666,
+        0.7536231884057971
+      ],
+      "false_positives": 6,
+      "fp_marked": 0,
+      "fp_suppressed": 0,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 0.0,
+      "preds": 45,
+      "scenario": "dev history → holdout documents: memory only",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 39
+    },
+    {
+      "after": [
+        0.8666666666666667,
+        0.6666666666666666,
+        0.7536231884057971
+      ],
+      "before": [
+        0.8666666666666667,
+        0.6666666666666666,
+        0.7536231884057971
+      ],
+      "false_positives": 6,
+      "fp_marked": 0,
+      "fp_suppressed": 0,
+      "labels_lost": 0,
+      "labels_lost_list": [],
+      "list_size_mean": 55.0,
+      "preds": 45,
+      "scenario": "dev history → holdout documents: list = every rejected string",
+      "tp_marked": 0,
+      "tp_suppressed": 0,
+      "true_positives": 39
+    }
+  ]
+}

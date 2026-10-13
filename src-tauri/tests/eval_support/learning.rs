@@ -354,12 +354,22 @@ struct FewShotRow {
     prompt_chars_added_mean: f64,
 }
 
+/// Control: the same number of "rejected" examples, but generic legal
+/// terms that come from no review. If this helps as much as the user's own
+/// decisions, the gain is from changing the prompt, not from learning.
+fn placebo(n: usize) -> Vec<Example> {
+    use app_lib::pipeline::types::PiiCategory::*;
+    let all = [("Schedule B", CompanyName), ("Governing Law", PersonName), ("Force Majeure", PersonName), ("Exhibit C", Address), ("Recitals", CompanyName), ("Annex II", Address)];
+    all.iter().take(n).map(|(t, c)| Example { text: t.to_string(), category: c.clone(), personal: false }).collect()
+}
+
 fn parse_variant(v: &str) -> (ExampleMix, usize) {
     let (mix, n) = v.split_at(v.find(|c: char| c.is_ascii_digit()).unwrap_or(v.len()));
     let mix = match mix {
+        "placebo" => ExampleMix::RejectedOnly,
         "mixed" => ExampleMix::Mixed,
         "rejected" => ExampleMix::RejectedOnly,
-        other => panic!("unknown few-shot variant {} (mixed<N> | rejected<N>)", other),
+        other => panic!("unknown few-shot variant {} (mixed<N> | rejected<N> | placebo<N>)", other),
     };
     (mix, n.parse().unwrap_or(6))
 }
@@ -432,7 +442,11 @@ fn fewshot_layer3() {
             for (fi, fx) in fixtures.iter().enumerate() {
                 // History: the baseline review of every *other* document.
                 let hist = history(&fixtures, &base, &|o| o != fi);
-                let ex: Vec<Example> = learning::select_examples(&candidates_from(&hist), n, mix);
+                let ex: Vec<Example> = if v.starts_with("placebo") {
+                    placebo(n)
+                } else {
+                    learning::select_examples(&candidates_from(&hist), n, mix)
+                };
                 ex_total += ex.len();
                 chars_total += llm_scanner::examples_paragraph(&ex).chars().count();
                 if fi < 3 {
