@@ -154,6 +154,79 @@ export interface RedactionNote {
   groupLabel: string | null;
 }
 
+/** A finding that was rejected before (decision memory, §13). */
+export interface RedactionMark {
+  redactionId: string;
+  /** Times rejected before (occurrences). */
+  rejected: number;
+  rejectedDocuments: number;
+  originalConfidence: number;
+}
+
+/** A finding the "Not personal data" list set aside in this document. */
+export interface SuppressedFinding {
+  id: string;
+  page: number;
+  startOffset: number;
+  endOffset: number;
+  originalText: string;
+  category: PiiCategory;
+  detectionLayer: string;
+  listItemId: string | null;
+  /** The list item still exists. */
+  listed: boolean;
+}
+
+export interface DocumentLearning {
+  marks: RedactionMark[];
+  suppressed: SuppressedFinding[];
+}
+
+export type ListItemSource = "review" | "settings" | "suggestion" | "import";
+
+export interface NotPersonalDataItem {
+  id: string;
+  category: PiiCategory;
+  text: string;
+  note: string | null;
+  source: ListItemSource;
+  createdAt: string;
+  /** Findings suppressed by this item (documents still stored). */
+  suppressed: number;
+}
+
+export interface ListFileItem {
+  text: string;
+  category: PiiCategory;
+  note?: string | null;
+}
+
+export interface ListImportPreview {
+  newItems: ListFileItem[];
+  alreadyListed: number;
+  duplicatesInFile: number;
+  invalid: { index: number; text: string; reason: string }[];
+}
+
+export interface ListCandidate {
+  category: PiiCategory;
+  text: string;
+  rejected: number;
+  rejectedDocuments: number;
+}
+
+export interface LearningSummary {
+  decisions: number;
+  rejectedStrings: number;
+  listItems: number;
+}
+
+export const ALL_PII_CATEGORIES: PiiCategory[] = [
+  "PersonName", "CompanyName", "Address", "Email", "PhoneNumber", "DateOfBirth", "Date", "MonetaryAmount",
+  "SocialSecurityNumber", "NationalId", "PassportNumber", "DriversLicense", "BankAccount", "CreditCard", "IBAN",
+  "TaxId", "CaseNumber", "CourtFileNumber", "ClientId", "IpAddress", "Url", "LicensePlate", "MedicalRecordNumber",
+];
+
 export interface DocumentPage {
   document_id: string;
   page_number: number;

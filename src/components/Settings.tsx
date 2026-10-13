@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ModelManager from "./ModelManager";
+import ReviewLearningSettings from "./ReviewLearningSettings";
 
 export default function Settings() {
   const { t } = useTranslation();
@@ -99,6 +100,16 @@ export default function Settings() {
           </h3>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <ModelManager />
+          </div>
+        </section>
+
+        {/* Learning from review decisions: "Not personal data" list + memory */}
+        <section className="mb-8">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">
+            {t('settings.learning')}
+          </h3>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <ReviewLearningSettings />
           </div>
         </section>
 

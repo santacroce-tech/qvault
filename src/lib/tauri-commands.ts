@@ -10,6 +10,12 @@ import type {
   EntityGroupDocument,
   RegroupReport,
   RedactionNote,
+  DocumentLearning,
+  NotPersonalDataItem,
+  ListFileItem,
+  ListImportPreview,
+  ListCandidate,
+  LearningSummary,
 } from "./types";
 
 // Documents
@@ -107,6 +113,59 @@ export async function dismissEntityProposal(groupA: string, groupB: string): Pro
 /** Explanations of known-entity suggestions in a document. */
 export async function getRedactionNotes(documentId: string): Promise<RedactionNote[]> {
   return invoke("get_redaction_notes", { documentId });
+}
+
+// Learning from review decisions (§13)
+
+/** Findings rejected before and findings the "Not personal data" list set aside in a document. */
+export async function getDocumentLearning(documentId: string): Promise<DocumentLearning> {
+  return invoke("get_document_learning", { documentId });
+}
+
+/** Reject every pending finding of the document that was rejected before (a user action). */
+export async function rejectPreviouslyRejected(documentId: string): Promise<number> {
+  return invoke("reject_previously_rejected", { documentId });
+}
+
+/** Put a suppressed finding back into the review list (pending). */
+export async function restoreSuppressedFinding(id: string, documentId: string): Promise<string> {
+  return invoke("restore_suppressed_finding", { id, documentId });
+}
+
+export async function getNotPersonalData(): Promise<NotPersonalDataItem[]> {
+  return invoke("get_not_personal_data");
+}
+
+export async function addNotPersonalData(category: string, text: string, source: "review" | "settings" | "suggestion", note?: string): Promise<string> {
+  return invoke("add_not_personal_data", { category, text, note: note ?? null, source });
+}
+
+export async function removeNotPersonalData(id: string): Promise<boolean> {
+  return invoke("remove_not_personal_data", { id });
+}
+
+export async function exportNotPersonalData(path: string): Promise<number> {
+  return invoke("export_not_personal_data", { path });
+}
+
+export async function previewNotPersonalDataImport(path: string): Promise<ListImportPreview> {
+  return invoke("preview_not_personal_data_import", { path });
+}
+
+export async function applyNotPersonalDataImport(items: ListFileItem[]): Promise<number> {
+  return invoke("apply_not_personal_data_import", { items });
+}
+
+export async function getNotPersonalDataCandidates(): Promise<ListCandidate[]> {
+  return invoke("get_not_personal_data_candidates");
+}
+
+export async function getLearningSummary(): Promise<LearningSummary> {
+  return invoke("get_learning_summary");
+}
+
+export async function clearReviewMemory(): Promise<number> {
+  return invoke("clear_review_memory");
 }
 
 export async function getDocumentPages(documentId: string): Promise<DocumentPage[]> {
