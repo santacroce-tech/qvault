@@ -31,8 +31,9 @@ pub trait Embedder: Send + Sync {
 
 /// The text given to the embedding model for one variant. Each model gets
 /// its documented query format, and the same format is used on both sides
-/// of a comparison (symmetric similarity): Qwen3-Embedding takes an
-/// instruction, nomic-embed-text-v2 a task prefix.
+/// of a comparison (symmetric similarity): nomic-embed-text-v2 (the catalog
+/// model) a task prefix, Qwen3-Embedding (compared in the eval) an
+/// instruction.
 pub fn embedding_input(model_id: &str, category: &str, text: &str) -> String {
     let text = text.trim();
     if model_id.contains("nomic") {

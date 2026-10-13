@@ -228,7 +228,10 @@ fn patterns(k: &Known) -> Vec<Pattern> {
             if form.legal.is_some() && form.legal_len > 0 && form.surface.len() > form.legal_len {
                 let core: Vec<String> = form.surface[..form.surface.len() - form.legal_len].to_vec();
                 let core_letters: usize = core.iter().map(|t| t.chars().filter(|c| c.is_alphabetic()).count()).sum();
-                let qualifies = (core.len() >= 2 && core_letters >= 6) || (core.len() == 1 && core_letters >= 5);
+                // Two words or more: a one-word core ("Delaware" from "Delaware
+                // limited liability company", "Meridian") is too often a place
+                // or a common word (measured on the eval, docs §12).
+                let qualifies = core.len() >= 2 && core_letters >= 6;
                 if qualifies {
                     out.push(Pattern { needle: Needle::Words(core.join(" ")), rule: FlagRule::CompanyWithoutLegalForm, capitalised: true, anchor });
                 }

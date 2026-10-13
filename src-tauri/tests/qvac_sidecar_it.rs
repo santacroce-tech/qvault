@@ -102,7 +102,7 @@ fn real_sidecar_ocr_and_layer3() {
 }
 
 /// Phase 4: the catalog embedding model through the real sidecar, and entity
-/// grouping with it. Needs `qwen3-embedding-0.6b-q8_0.gguf` in QVAC_MODELS_DIR.
+/// grouping with it. Needs the catalog embedding model file in QVAC_MODELS_DIR.
 #[test]
 fn real_sidecar_embeddings_and_grouping() {
     use app_lib::entities::resolve::ResolveConfig;

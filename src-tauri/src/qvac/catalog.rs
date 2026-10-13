@@ -185,23 +185,26 @@ pub const CATALOG: &[CatalogModel] = &[
         note: Some("Superseded by Qwen3 1.7B (more precise suggestions)."),
     },
     // Entity grouping (Phase 4, docs/qvac-integration.md §12). Official GGUF
-    // from Qwen at a pinned revision; SHA-256 computed after download (equal
-    // to the HF LFS object id). Optional: grouping works without it.
+    // from Nomic AI at a pinned revision; SHA-256 computed after download
+    // (equal to the HF LFS object id). Chosen over Qwen3-Embedding-0.6B,
+    // which needed ~5 GB of memory on the pinned addon (its 32k context
+    // cannot be lowered through @qvac/embed-llamacpp 0.43.0's config) for no
+    // better result. Optional: grouping works without it.
     CatalogModel {
-        id: "qwen3-embedding-0.6b-q8_0",
-        name: "Qwen3 Embedding 0.6B (Q8_0)",
+        id: "nomic-embed-text-v2-moe-q8_0",
+        name: "Nomic Embed Text v2 MoE (Q8_0)",
         purpose: ModelPurpose::Embedding,
-        file_name: "qwen3-embedding-0.6b-q8_0.gguf",
-        url: Some("https://huggingface.co/Qwen/Qwen3-Embedding-0.6B-GGUF/resolve/370f27d7550e0def9b39c1f16d3fbaa13aa67728/Qwen3-Embedding-0.6B-Q8_0.gguf"),
+        file_name: "nomic-embed-text-v2-moe.Q8_0.gguf",
+        url: Some("https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF/resolve/ffbcf4c99e5d617dda10ec8c0e9f75754b0cbb80/nomic-embed-text-v2-moe.Q8_0.gguf"),
         manual_url: None,
-        size: 639_150_592,
-        sha256: "06507c7b42688469c4e7298b0a1e16deff06caf291cf0a5b278c308249c3e439",
+        size: 512_225_120,
+        sha256: "06e7a7e594a26985523c18383aba4aad39fe6e14f08ffc6ab5b554e1ccdc3cff",
         licence: "Apache-2.0",
-        licence_url: "https://huggingface.co/Qwen/Qwen3-Embedding-0.6B-GGUF/blob/370f27d7550e0def9b39c1f16d3fbaa13aa67728/README.md",
-        source: "Hugging Face Qwen/Qwen3-Embedding-0.6B-GGUF @ 370f27d",
+        licence_url: "https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe-GGUF/blob/ffbcf4c99e5d617dda10ec8c0e9f75754b0cbb80/README.md",
+        source: "Hugging Face nomic-ai/nomic-embed-text-v2-moe-GGUF @ ffbcf4c",
         default_llm: false,
-        ram_needed: 1_073_741_824, // 1 GiB (measured, see §12)
-        note: Some("Optional. Improves suggestions for grouping name variants; grouping works without it."),
+        ram_needed: 1_879_048_192, // 1.75 GiB (measured 1.62 GB)
+        note: Some("Optional. Adds similarity-based suggestions when grouping name variants; grouping works without it."),
     },
 ];
 

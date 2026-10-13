@@ -745,7 +745,7 @@ fn entity_resolution_embeddings() {
             grid.push(ResolveConfig { embed_override_conflict: Some(over), ..ResolveConfig::default() });
         }
         for c in grid.clone() {
-            grid.push(ResolveConfig { suppress_ambiguous: false, ..c });
+            grid.push(ResolveConfig { suppress_ambiguous: true, ..c });
         }
         {
             {
@@ -755,7 +755,7 @@ fn entity_resolution_embeddings() {
                         "τ {:.2} · s {:.1} · veto {}{}{}",
                         tau, smin, veto.map(|v| format!("{:.1}", v)).unwrap_or("–".into()),
                         cfg.embed_override_conflict.map(|o| format!(" · override conflicts ≥ {:.2}", o)).unwrap_or_default(),
-                        if cfg.suppress_ambiguous { "" } else { " · ambiguous kept" }
+                        if cfg.suppress_ambiguous { " · ambiguous dropped" } else { "" }
                     );
                     let (r, res) = evaluate(&name, &p, &items, &cfg);
                     details.push_str(&sys_row(&r));
